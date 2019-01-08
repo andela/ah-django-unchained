@@ -14,16 +14,16 @@ These instructions will get you a copy of the project up and running in your loc
 - [Python 3 and above](https://www.python.org/downloads/)
 - [PostgreSQL](https://www.postgresql.org/)
 
+
 ## Installing
+### Setting up the database
+- Start your database server and create your database
+
+### Setting up and Activating a Virtual Environment
 - Create a working space in your local machine
 - Clone this [repository](https://github.com/andela/ah-django-unchained) `git clone https://github.com/andela/ah-django-unchained.git`
 - Navigate to the project directory
-- Create a virtual environment `python3 -m venv/path/to/new/virtual/environment`
-- Activate your virtual environment `source name_of_your_virtual_environment/bin/activate`
-- Install dependencies to your virtual environment `pip install -r requirements.txt`
-
-### Setting up the database
-- Start your database server and create your database
+- Create a virtual environment `python3 -m venv name_of_your_virtual_environment`
 - Create a .env file and put these key=values in it:
 ```
 source name_of_your_virtual_environment/bin/activate
@@ -34,6 +34,7 @@ export DB_HOST="localhost or any other host name"
 export DB_PORT="port_number"
 ```
 - Load the environment variable `source .env`
+- Install dependencies to your virtual environment `pip install -r requirements.txt`
 
 ## Starting the server
 - Ensure you are in the project directory on the same level with `manage.py` and the virtual environment is activated
