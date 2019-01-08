@@ -18,7 +18,6 @@ These instructions will get you a copy of the project up and running in your loc
 - Create a working space in your local machine
 - Clone this [repository](https://github.com/andela/ah-django-unchained) `git clone https://github.com/andela/ah-django-unchained.git`
 - Navigate to the project directory
-- Install virtual environment `pip install virtualenv`
 - Create a virtual environment `python3 -m venv /path/to/new/virtual/environment`
 - Activate your virtual environment `source venv/bin/activate`
 - Install dependencies to your virtual environment `pip install -r requirements.txt`
@@ -26,7 +25,6 @@ These instructions will get you a copy of the project up and running in your loc
 ### Setting up the database
 - Use this command to start your database sever `pg_ctl -D /usr/local/var/postgres start`
 - Create your database `CREATE DATABASE database_name`
-- Create your database
 - Create a .env file and put these key=values in it:
 ```
 source venv/bin/activate
@@ -36,7 +34,7 @@ export DB_PASS = "your_postgres_password"
 export DB_HOST = "localhost or any other host name"
 export DB_PORT = "port_number"
 ```
-- load the environment variable `source .env`
+- Load the environment variable `source .env`
 
 ## Starting the server
 - Ensure you are in the project directory on the same level with `manage.py` and the virtual environment is activated
