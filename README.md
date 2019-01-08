@@ -23,8 +23,7 @@ These instructions will get you a copy of the project up and running in your loc
 - Install dependencies to your virtual environment `pip install -r requirements.txt`
 
 ### Setting up the database
-- Use this command to start your database sever `pg_ctl -D /usr/local/var/postgres start`
-- Create your database `CREATE DATABASE database_name`
+- Start your database server and create your database
 - Create a .env file and put these key=values in it:
 ```
 source venv/bin/activate
