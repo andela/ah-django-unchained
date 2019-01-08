@@ -11,7 +11,7 @@ These instructions will get you a copy of the project up and running in your loc
 
 ## Prerequisites
 - [Git](https://git-scm.com/download/)
-- [Python 3 and above](https://www.python.org/downloads/)
+- [Python 3.6 and above](https://www.python.org/downloads/)
 - [PostgreSQL](https://www.postgresql.org/)
 
 
@@ -35,6 +35,7 @@ export DB_PORT="port_number"
 ```
 - Load the environment variable `source .env`
 - Install dependencies to your virtual environment `pip install -r requirements.txt`
+- Migrate changes to the newly created database `python manage.py makemigrations` then `python manage.py migrate`
 
 ## Starting the server
 - Ensure you are in the project directory on the same level with `manage.py` and the virtual environment is activated
