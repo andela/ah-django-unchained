@@ -6,6 +6,39 @@ Create a community of like minded authors to foster inspiration and innovation
 by leveraging the modern web.
 
 ---
+## Getting started 
+These instructions will get you a copy of the project up and running in your local machine for development and testing purposes.
+
+## Prerequisites
+- [Git](https://git-scm.com/download/)
+- [Python 3.7](https://www.python.org/downloads/)
+- [PostgreSQL](https://www.postgresql.org/)
+
+## Installing
+- Create a working space in your local machine
+- Clone this [repository](https://github.com/andela/ah-django-unchained) `git clone https://github.com/andela/ah-django-unchained.git`
+- Create a virtual environment `virtualenv your_env_name`
+- Activate your virtual environment `source venv/bin/activate`
+- Install dependencies to your virtual environment `pip install -r requirements.txt`
+
+### Setting up the database
+- Use this command to start your database sever `pg_ctl -D /usr/local/var/postgres start`
+- Create your database
+- Create a .env file and export the following db configurations:
+```
+source venv/bin/activate
+export DB_NAME = "your_db_name"
+export DB_USER = "your_postgres_username"
+export DB_PASS = "your_postgres_password"
+export DB_HOST = "localhost or any other host name"
+export DB_PORT = "port_number"
+```
+
+## Running the tests
+`python manage.py test`
+
+## Starting the server
+`python manage.py runserver`
 
 ## API Spec
 The preferred JSON object to be returned by the API should be structured as follows:
