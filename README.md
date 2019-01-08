@@ -19,7 +19,7 @@ These instructions will get you a copy of the project up and running in your loc
 - Clone this [repository](https://github.com/andela/ah-django-unchained) `git clone https://github.com/andela/ah-django-unchained.git`
 - Navigate to the project directory
 - Create a virtual environment `python3 -m venv /path/to/new/virtual/environment`
-- Activate your virtual environment `source venv/bin/activate`
+- Activate your virtual environment `source name_of_your_virtual_environment/bin/activate`
 - Install dependencies to your virtual environment `pip install -r requirements.txt`
 
 ### Setting up the database
