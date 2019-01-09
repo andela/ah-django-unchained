@@ -41,6 +41,9 @@ export DB_PORT="port_number"
 - Ensure you are in the project directory on the same level with `manage.py` and the virtual environment is activated
 - Run the server `python manage.py runserver`
 
+##Run Tests
+-Run your tests `python manage.py test`
+
 ## API Spec
 The preferred JSON object to be returned by the API should be structured as follows:
 
