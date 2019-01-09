@@ -14,7 +14,7 @@ before-script:
   - psql -c 'CREATE DATABASE test;' -U postgres
 
 script:
-  - export DB_NAME="test"
+  - export DB_NAME="postgres"
   - export DB_USER="postgres"
   - export DB_PASS=""
   - export DB_HOST="localhost"
