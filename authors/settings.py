@@ -44,6 +44,9 @@ INSTALLED_APPS = [
     'authors.apps.authentication',
     'authors.apps.core',
     'authors.apps.profiles',
+
+    # Enables API to be documented using Swagger
+    'rest_framework_swagger', 
 ]
 
 MIDDLEWARE = [
