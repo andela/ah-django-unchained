@@ -9,58 +9,68 @@ class RegistrationTestCase(APITestCase):
         self.login_url =reverse('authentication:auth-login')
         self.signup_url = reverse('authentication:auth-register')
         self.signup_data = {
+  "user":{
             "username":"gigz",
             "email": "jake@jake.jake",
             "password": "jakejake"
-            }
+            }}
         self.login_data = {
+  "user":{
             "email": "jake@jake.jake",
             "password": "jakejake"
-            }
-        self.login_unregistered_user_data = {
+            }}
+        self.login_unregistered_user_data ={
+  "user":{
             "email": "muinde@jake.jake",
             "password": "jakejake"
-            }
+            }}
         self.signup_empty_username={
+  "user":{
             "username":"",
             "email": "jake@jake.jake",
             "password": "jakejake"
-        }
-        self.signup_empty_email={
+        }}
+        self.signup_empty_email={"user":{
             "username":"gigz",
             "email": "",
             "password": "jakejake"
-        }
+        }}
         self.signup_empty_password={
+            "user":{
             "username":"gigz",
             "email": "jake@andela.com",
             "password": ""
-        }
+        }}
         self.signup1 = {
+  "user":{
             "username":"gigz",
             "email": "jake@andela.com",
             "password": "jakejake"
-            }
+            }}
         self.signup2 = {
+  "user":{
             "username":"jake",
             "email": "jake@andela.com",
             "password": "jakejake"
-            }
+            }}
         self.signup3 = {
+  "user":{
             "username":"jake",
             "email": "jakey@andela.com",
             "password": "jakejake"
-            }
+            }}
         self.duplicate_email={
+  "user":{
             "username":"jake",
             "email": "jacky@andela.com",
             "password": "jakejake"
-            }
+            }}
         self.duplicate_email2={
+  "user":{
             "username":"jacky",
             "email": "jacky@andela.com",
             "password": "jakejake"
-            }
+            }}
     def test_register_user(self):
         ''''Test register user'''
         response = self.client.post(self.signup_url,

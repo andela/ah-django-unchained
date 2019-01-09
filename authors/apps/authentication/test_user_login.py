@@ -9,38 +9,44 @@ class LoginTestCase(APITestCase):
         self.client = APIClient()
         self.login_url =reverse('authentication:auth-login')
         self.signup_data = {
+  "user":{
             "username":"gigz",
             "email": "jake@jake.jake",
             "password": "jakejake"
-            }
+            }}
         self.login_data = {
+  "user":{
             "email": "jake@jake.jake",
             "password": "jakejake"
             }
+        }
         self.login_unregistered_user_data = {
+  "user":{
             "email": "jake@jake.jake",
             "password": "jakejake"
             }
-        
+        }
         self.token={'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9'}
 
     def test_login(self):
         ''' if user is registered'''
         register=self.client.post(self.login_url,
             self.signup_data,
-            format="json")
-        
+            format='json')
+        self.
         self.assertEqual(register.status_code, status.HTTP_201_CREATED)
         
         '''Test login'''
 
         response= self.client.post(self.login_url,
-        self.login_data,format="json")
+        self.login_data,format='json')
         self.assertEqual(response.status_code, status.HTT0_200_OK)
         self.assertIn(b"Successfully Logged in",response.content)
     
     def test_login_unregistered_user(self):
         '''Test login for unregistered users'''
-        response = self.client.post(self.login_url,self.login_unregistered_user_data)
+        response = self.client.post(self.login_url,
+        self.login_unregistered_user_data,
+        format='json')
         self.assertEqual(response.status_code,status.HTTP_401_UNAUTHORIZED)
 
