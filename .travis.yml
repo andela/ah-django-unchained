@@ -16,6 +16,7 @@ before-script:
   - python manage.py makemigrations
   - python manage.py migrate
 
+
 script:
   - python manage.py makemigrations
   - python manage.py migrate
