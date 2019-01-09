@@ -1,5 +1,5 @@
 Authors Haven - A Social platform for the creative at heart.
-=======
+
 ## Badges
 [![Build Status](https://travis-ci.org/andela/ah-django-unchained.svg?branch=master)](https://travis-ci.org/andela/ah-django-unchained)
 
