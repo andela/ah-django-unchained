@@ -8,6 +8,7 @@ class LoginTestCase(APITestCase):
     def setUp(self):
         self.client = APIClient()
         self.login_url =reverse('authentication:auth-login')
+        self.signup_url = reverse('authentication:auth-register')
         self.signup_data = {
   "user":{
             "username":"gigz",
@@ -15,11 +16,10 @@ class LoginTestCase(APITestCase):
             "password": "jakejake"
             }}
         self.login_data = {
-  "user":{
-            "email": "jake@jake.jake",
-            "password": "jakejake"
-            }
-        }
+            "user":{
+    "email": "jake@jake.jake",
+    "password": "jakejake"
+    }}
         self.login_unregistered_user_data = {
   "user":{
             "email": "jake@jake.jake",
@@ -30,23 +30,21 @@ class LoginTestCase(APITestCase):
 
     def test_login(self):
         ''' if user is registered'''
-        register=self.client.post(self.login_url,
+        register=self.client.post(self.signup_url,
             self.signup_data,
             format='json')
-        self.
         self.assertEqual(register.status_code, status.HTTP_201_CREATED)
         
-        '''Test login'''
+        '''Test if user can login'''
 
-        response= self.client.post(self.login_url,
+        response= self.client.post('http://127.0.0.1:8000/api/users/login/',
         self.login_data,format='json')
-        self.assertEqual(response.status_code, status.HTT0_200_OK)
-        self.assertIn(b"Successfully Logged in",response.content)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
     
     def test_login_unregistered_user(self):
         '''Test login for unregistered users'''
         response = self.client.post(self.login_url,
         self.login_unregistered_user_data,
         format='json')
-        self.assertEqual(response.status_code,status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.status_code,status.HTTP_400_BAD_REQUEST)
 
