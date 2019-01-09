@@ -21,7 +21,6 @@ script:
   - python manage.py makemigrations
   - python manage.py migrate
   - python --version
-  - coverage run --source=authors manage.py test
 
 after-success:
   - coveralls
