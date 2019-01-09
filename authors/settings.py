@@ -152,3 +152,21 @@ REST_FRAMEWORK = {
 }
 
 django_heroku.settings(locals())
+
+# Set the settings for Swagger documentation
+SWAGGER_SETTINGS = {
+    'USE_SESSION_AUTH': False,
+    'enabled_methods': [
+        'get',
+        'post',
+        'put',
+        'delete',
+    ],
+    'SECURITY_DEFINITIONS': {
+        'api_key': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'
+        },
+    },
+}
