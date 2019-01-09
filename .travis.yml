@@ -5,14 +5,13 @@ python:
 
 install:
   - pip install -r requirements.txt
+  - pip install coveralls
 
 services: 
   - postgres
 
 before-script:
   - psql -c 'CREATE DATABASE test;' -U postgres
-  - python manage.py makemigrations
-  - python manage.py migrate
   - export DB_NAME="test"
   - export DB_USER="postgres"
   - export DB_PASS=""
@@ -20,4 +19,10 @@ before-script:
   - export DB_PORT="5432"
 
 script:
-  - python manage.py test
+  - python manage.py makemigrations
+  - python manage.py migrate
+  - coverage run --source=authors manage.py test
+
+after-success:
+  - coveralls
+
