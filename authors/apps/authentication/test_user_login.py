@@ -3,8 +3,7 @@ from django.urls import reverse
 from rest_framework.views import status
 from rest_framework.test import APITestCase,APIClient
 
-# from authors.apps.authentication.backends import JWTAuthentication
-# 
+ 
 class LoginTestCase(APITestCase):
     def setUp(self):
         self.client = APIClient()
