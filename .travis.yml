@@ -12,11 +12,6 @@ services:
 
 before-script:
   - psql -c 'CREATE DATABASE test;' -U postgres
-  - export DB_NAME="test"
-  - export DB_USER="postgres"
-  - export DB_PASS=""
-  - export DB_HOST="localhost"
-  - export DB_PORT="5432"
 
 script:
   - python manage.py makemigrations
