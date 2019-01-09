@@ -37,7 +37,7 @@ class LoginTestCase(APITestCase):
         
         '''Test if user can login'''
 
-        response= self.client.post('http://127.0.0.1:8000/api/users/login/',
+        response= self.client.post(self.login_url,
         self.login_data,format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
     
