@@ -12,10 +12,10 @@ services:
 
 before-script:
   - psql -c 'CREATE DATABASE test;' -U postgres
-
-script:
   - python manage.py makemigrations
   - python manage.py migrate
+
+script:
   - coverage run --source=authors manage.py test
 
 after-success:
