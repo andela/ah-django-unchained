@@ -41,6 +41,9 @@ export DB_PORT="port_number"
 - Ensure you are in the project directory on the same level with `manage.py` and the virtual environment is activated
 - Run the server `python manage.py runserver`
 
+## Use pycodestyle to check your Python code against PEP8 standard
+- Installation `pip install pycodestyle` then `pip install --upgrade pycodestyle`
+- Usage `pycodestyle --first nameoffile.py`
 ## Run Tests
 -Run your tests `python manage.py test`
 
