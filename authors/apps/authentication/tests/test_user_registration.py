@@ -73,7 +73,7 @@ class RegistrationTestCase(APITestCase):
                 "email": "jacky@andela.com",
                 "password": "jakejake"
                 }}
-                
+
     def test_register_user(self):
         ''''Test register user'''
         response = self.client.post(self.signup_url, self.signup_data,
@@ -87,7 +87,8 @@ class RegistrationTestCase(APITestCase):
                                     format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(json.loads(response.content), {"errors": {"username":
-                                                        ["This field may not be blank."]}})
+                                                        ["This field may not"
+                                                            " be blank."]}})
 
     def test_empty_email(self):
         '''Test register user with an empty email'''
@@ -97,7 +98,8 @@ class RegistrationTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(json.loads(response.content), {"errors":
                                                         {"email":
-                                                         ["This field may not be blank."]}})
+                                                         ["This field may not "
+                                                          "be blank."]}})
 
     def test_empty_password(self):
         '''Test register user with an empty password'''
@@ -107,7 +109,8 @@ class RegistrationTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(json.loads(response.content),  {"errors":
                                                          {"password":
-                                                          ["This field may not be blank."]}})
+                                                          ["This field may not"
+                                                           " be blank."]}})
 
     def test_register_duplicate_email(self):
         '''Test register user with a duplicate email'''
@@ -119,8 +122,9 @@ class RegistrationTestCase(APITestCase):
                                     format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(json.loads(response.content), {"errors": {"email":
-                                                        ["user with this email already exists."]}})
-    
+                                                        ["user with this email"
+                                                         " already exists."]}})
+
     def test_register_duplicate_username(self):
         '''Test register user with a duplicate email'''
         self.client.post(self.signup_url, self.signup2, format="json")
@@ -128,4 +132,6 @@ class RegistrationTestCase(APITestCase):
                                     format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(json.loads(response.content), {"errors": {"username":
-                                                        ["user with this username already exists."]}})
+                                                        ["user with this"
+                                                         " username already"
+                                                         " exists."]}})

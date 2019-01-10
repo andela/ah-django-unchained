@@ -50,4 +50,3 @@ class LoginTestCase(APITestCase):
                                                          ['A user with this'
                                                           ' email and password'
                                                           ' was not found.']}})
-                                                          
