@@ -79,6 +79,8 @@ class RegistrationTestCase(APITestCase):
         response = self.client.post(self.signup_url, self.signup_data,
                                     format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.content, {"user": {"email": "jake@jake.jake",
+                                            "username": "gigz"}})
 
     def test_empty_username(self):
         '''Test register user with empty username'''
