@@ -25,22 +25,21 @@ class LoginTestCase(APITestCase):
                 "email": "jake@jake.jake",
                 "password": "jakejake"
                 }}
-        self.token = {'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9'}
 
     def test_login(self):
-        ''' if user is registered'''
+        """if user is registered"""
         register = self.client.post(self.signup_url,
                                     self.signup_data,
                                     format='json')
         self.assertEqual(register.status_code, status.HTTP_201_CREATED)
-        '''Test if user can login'''
+        """Test if user can login"""
         response = self.client.post(self.login_url,
                                     self.login_data,
                                     format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_login_unregistered_user(self):
-        '''Test login for unregistered users'''
+        """Test login for unregistered users"""
         response = self.client.post(self.login_url,
                                     self.login_unregistered_user_data,
                                     format='json')

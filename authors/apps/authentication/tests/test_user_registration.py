@@ -75,7 +75,7 @@ class RegistrationTestCase(APITestCase):
                 }}
 
     def test_register_user(self):
-        ''''Test register user'''
+        """Test register user"""
         response = self.client.post(self.signup_url, self.signup_data,
                                     format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -83,7 +83,7 @@ class RegistrationTestCase(APITestCase):
                                             "username": "gigz"}})
 
     def test_empty_username(self):
-        '''Test register user with empty username'''
+        """Test register user with empty username"""
         response = self.client.post(self.signup_url,
                                     self.signup_empty_username,
                                     format="json")
@@ -93,7 +93,7 @@ class RegistrationTestCase(APITestCase):
                                                             " be blank."]}})
 
     def test_empty_email(self):
-        '''Test register user with an empty email'''
+        """Test register user with an empty email"""
         response = self.client.post(self.signup_url,
                                     self.signup_empty_email,
                                     format="json")
@@ -104,7 +104,7 @@ class RegistrationTestCase(APITestCase):
                                                           "be blank."]}})
 
     def test_empty_password(self):
-        '''Test register user with an empty password'''
+        """Test register user with an empty password"""
         response = self.client.post(self.signup_url,
                                     self.signup_empty_password,
                                     format="json")
@@ -115,7 +115,7 @@ class RegistrationTestCase(APITestCase):
                                                            " be blank."]}})
 
     def test_register_duplicate_email(self):
-        '''Test register user with a duplicate email'''
+        """Test register user with a duplicate email"""
         self.client.post(self.signup_url,
                          self.duplicate_email,
                          format="json")
@@ -128,7 +128,7 @@ class RegistrationTestCase(APITestCase):
                                                          " already exists."]}})
 
     def test_register_duplicate_username(self):
-        '''Test register user with a duplicate email'''
+        """Test register user with a duplicate email"""
         self.client.post(self.signup_url, self.signup2, format="json")
         response = self.client.post(self.signup_url, self.signup3,
                                     format="json")
