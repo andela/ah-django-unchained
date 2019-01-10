@@ -127,9 +127,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         payload = {
             'email': self.email,
             'exp': int(date.strftime('%s')),
-            # 'id': self.pk,
         }
 
         token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
-        # print(token.decode())
-        return token.decode()
+        return token

@@ -18,12 +18,15 @@ class RegistrationSerializer(serializers.ModelSerializer):
         max_length=128,
         min_length=8,
         write_only=True,
+<<<<<<< HEAD
         error_messages={
             'required': 'Password field required',
             'min_length': 'Ensure Password field has at least 8 characters',
             'invalid': 'Password should contain a lowercase, uppercase numeric'
             ' and special character'
         }
+=======
+>>>>>>> feat(JWT): Implement jwt authentication
     )
     
     # Ensure username doesnt have special characters or numbers only
