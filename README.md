@@ -1,7 +1,9 @@
 Authors Haven - A Social platform for the creative at heart.
 
 ## Badges
-[![Build Status](https://travis-ci.org/andela/ah-django-unchained.svg?branch=master)](https://travis-ci.org/andela/ah-django-unchained)
+[![Build Status](https://travis-ci.org/andela/ah-django-unchained.png?branch=master)](https://travis-ci.org/andela/ah-django-unchained)
+
+[![Coverage Status](https://coveralls.io/repos/github/andela/ah-django-unchained/badge.svg?branch=master)](https://coveralls.io/github/andela/ah-django-unchained?branch=master)
 
 ## Vision
 Create a community of like minded authors to foster inspiration and innovation
