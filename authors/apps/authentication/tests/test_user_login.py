@@ -11,14 +11,14 @@ class LoginTestCase(APITestCase):
         self.signup_url = reverse('authentication:auth-register')
         self.signup_data = {
             "user": {
-                "username": "gigz",
+                "username": "MaryGigz",
                 "email": "jake@jake.jake",
-                "password": "jakejake"
+                "password": "g@_Gigz-2416"
                 }}
         self.login_data = {
             "user": {
                 "email": "jake@jake.jake",
-                "password": "jakejake"
+                "password": "g@_Gigz-2416"
                 }}
         self.login_unregistered_user_data = {
             "user": {

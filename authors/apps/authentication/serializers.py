@@ -1,4 +1,5 @@
 from django.contrib.auth import authenticate
+import re
 
 from rest_framework import serializers
 
@@ -8,13 +9,40 @@ from .models import User
 class RegistrationSerializer(serializers.ModelSerializer):
     """Serializers registration requests and creates a new user."""
 
-    # Ensure passwords are at least 8 characters long, no longer than 128
+    # Ensure passwords are at least 8 characters long,contain alphanumerics
+    # special characters and
+    # no longer than 128
     # characters, and can not be read by the client.
-    password = serializers.CharField(
+    password = serializers.RegexField(
+        regex='^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[@#$%^&+=*!])',
         max_length=128,
         min_length=8,
-        write_only=True
+        write_only=True,
+        error_messages={
+            'required': 'Password field required',
+            'min_length': 'Ensure Password field has at least 8 characters',
+            'invalid': 'password should contain a lowercase, uppercase numeric'
+            ' and special character'
+        }
     )
+    
+    # Ensure username doesnt have special characters or numbers only
+    # Ensure username is greater than six
+    def validate_username(self, data):
+        """Function check a valid username."""
+        if re.match('^(?=.*[@#$%^&+=*!])', data):
+            raise serializers.ValidationError(
+                'Username should not contain special character'
+            )
+        if re.match("^[0-9]*$", data):
+            raise serializers.ValidationError(
+                'Username should not contain numbers only'
+            )
+        if len(data) < 6:
+            raise serializers.ValidationError(
+                'Username should have atleast 6 characters'
+            )
+        return data
 
     # The client should not be able to send a token along with a registration
     # request. Making `token` read-only handles that for us.
