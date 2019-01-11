@@ -74,42 +74,48 @@ class RegistrationTestCase(APITestCase):
                 "password": "g@_Gigz-2416"
                 }}
         self.username_characters_only = {
-                                            "user": {
-                                                "username": "#@##@#@##@#",
-                                                "email": "jake@jake.jake",
-                                                "password": "g@AHJA473"
-                                                }}
+            "user": {
+                "username": "#@##@#@##@#",
+                "email": "jake@jake.jake",
+                "password": "g@AHJA473"
+                }}
         self.username_number_only = {
-                                            "user": {
-                                                "username": "123455",
-                                                "email": "jake@jake.jake",
-                                                "password": "g@AHJA473"
-                                                }}
+            "user": {
+                "username": "123455",
+                "email": "jake@jake.jake",
+                "password": "g@AHJA473"
+                }}
         self.username_less_than_six = {
-                                            "user": {
-                                                "username": "Mary",
-                                                "email": "jake@jake.jake",
-                                                "password": "g@AHJA473"
-                                            }}
+            "user": {
+                "username": "Mary",
+                "email": "jake@jake.jake",
+                "password": "g@AHJA473"
+            }}
         self.invalid_password = {
-                                            "user": {
-                                                "username": "MaryWnaja",
-                                                "email": "jake1@jake.jake",
-                                                "password": "gmnbjhggu"
-                                            }}
+            "user": {
+                "username": "MaryWnaja",
+                "email": "jake1@jake.jake",
+                "password": "gmnbjhggu"
+            }}
         self.invalid_password_less_characters = {
-                                            "user": {
-                                                    "username": "MaryWnaja",
-                                                    "email": "jake1@jake.jake",
-                                                    "password": "@Maty1"
-                                                }} 
+            "user": {
+                    "username": "MaryWnaja",
+                    "email": "jake1@jake.jake",
+                    "password": "@Maty1"
+                }} 
+        self.invalid_email = {
+            "user": {
+                    "username": "MaryWnaja",
+                    "email": "jake1jake.jake",
+                    "password": "@Maty112Mna"
+                }} 
 
     def test_register_user(self):
         """Test register user"""
         response = self.client.post(self.signup_url, self.signup_data,
                                     format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.content, b'{"user": {"email": "jake@jake.jake", "username": "Marygigz"}}')
+        self.assertEqual(json.loads(response.content), {"user": {"email": "jake@jake.jake", "username": "Marygigz"}})
 
     def test_empty_username(self):
         """Test register user with empty username"""
@@ -167,19 +173,16 @@ class RegistrationTestCase(APITestCase):
                                                          " username already"
                                                          " exists."]}})
 
-    def test_username_special_characters_only(self):
+    def test_registration_rejects_username_with_special_characters(self):
         """Test user details with username contaning characters only."""
         response = self.client.post(self.signup_url,
                                     self.username_characters_only,
                                     format="json")
-        self.assertEqual(json.loads(response.content), {'errors':
-                                                        {'username':
-                                                         ['Username should not'
-                                                          ' contain special'
-                                                          ' character']}})
+        self.assertEqual(json.loads(response.content), {'errors': {'username':
+                          ['Username should not contain special character']}})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_username_numbers_only(self):
+    def test_registration_rejects_username_with_numbers_characters(self):
         """Test user details with username contaning numbers only."""
         response = self.client.post(self.signup_url,
                                     self.username_number_only, format="json")
@@ -187,7 +190,7 @@ class RegistrationTestCase(APITestCase):
                          ['Username should not contain numbers only']}})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
     
-    def test_username_characters_less_than_six(self):
+    def test_registration_rejects_username_with_characters_less_than_six(self):
         """Test user details with username with less than six characters."""
         response = self.client.post(self.signup_url,
                                     self.username_less_than_six, format="json")
@@ -195,20 +198,29 @@ class RegistrationTestCase(APITestCase):
                          ['Username should have atleast 6 characters']}})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_invalid_password(self):
+    def test_registration_rejects_invlaid_passsword(self):
         """Test user details with invalid password."""
         response = self.client.post(self.signup_url,
                                     self.invalid_password, format="json")
         self.assertEqual(json.loads(response.content), {'errors': {'password':  
-                         ['password should contain a lowercase, '
+                         ['Password should contain a lowercase, '
                           'uppercase numeric and special character']}})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
     
-    def test_invalid_password_less_characters(self):
+    def test_registration_rejects_password_with_less_than_six_characters(self):
         """Test user details with password less than 6 characters."""
         response = self.client.post(self.signup_url,
                                     self.invalid_password_less_characters,
                                     format="json")
         self.assertEqual(json.loads(response.content), {'errors': {'password': 
                          ['Ensure Password field has at least 8 characters']}})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+    
+    def test_registration_rejects_invalid_email(self):
+        """Test user details with password less than 6 characters."""
+        response = self.client.post(self.signup_url,
+                                    self.invalid_email,
+                                    format="json")
+        self.assertEqual(json.loads(response.content), {'errors': {'email': 
+                         ['Enter a valid email address.']}})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

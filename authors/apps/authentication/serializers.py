@@ -1,6 +1,6 @@
-from django.contrib.auth import authenticate
 import re
 
+from django.contrib.auth import authenticate
 from rest_framework import serializers
 
 from .models import User
@@ -21,7 +21,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
         error_messages={
             'required': 'Password field required',
             'min_length': 'Ensure Password field has at least 8 characters',
-            'invalid': 'password should contain a lowercase, uppercase numeric'
+            'invalid': 'Password should contain a lowercase, uppercase numeric'
             ' and special character'
         }
     )
