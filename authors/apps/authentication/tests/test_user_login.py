@@ -37,6 +37,9 @@ class LoginTestCase(APITestCase):
                                     self.login_data,
                                     format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('email', response.data)
+        self.assertIn('username', response.data)
+        self.assertIn('token', response.data)
 
     def test_login_unregistered_user(self):
         """Test login for unregistered users"""
