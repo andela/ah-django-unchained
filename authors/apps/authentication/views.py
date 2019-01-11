@@ -3,9 +3,9 @@ from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from . import serializers
 from rest_framework.renderers import BrowsableAPIRenderer
 from .renderers import UserJSONRenderer
+from . import serializers
 from .serializers import (
     LoginSerializer, RegistrationSerializer, UserSerializer
 )
