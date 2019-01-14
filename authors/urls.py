@@ -16,9 +16,17 @@ Including another URLconf
 from django.urls import include, path
 from django.contrib import admin
 
+# import from django_rest_swagger
+from rest_framework_swagger.views import get_swagger_view
+
+schema_view = get_swagger_view(title='Author\'s Haven API')
+
 urlpatterns = [
     path('admin/', admin.site.urls),
 
     path('api/', include('authors.apps.authentication.urls',
                          namespace='authentication')),
+
+    # Set the API documentation at the root of the site
+    path('', schema_view)
 ]
