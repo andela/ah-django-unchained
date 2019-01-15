@@ -5,7 +5,7 @@ from django.contrib.auth.models import (
     AbstractBaseUser, BaseUserManager, PermissionsMixin
 )
 from django.db import models
-
+from cloudinary.models import CloudinaryField
 
 class UserManager(BaseUserManager):
     """
@@ -80,6 +80,22 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     # A timestamp reprensenting when this object was last updated.
     updated_at = models.DateTimeField(auto_now=True)
+
+    # A char field to hold bio data
+    bio = models.CharField(max_length=200)
+
+    # A choice field to hold multiple choice 
+    gender_choices = (('M','MALE'),('F','FEMALE'))
+    gender = models.CharField(max_length=10, choices=gender_choices, default='M')
+
+    # cloudinary field
+    profile_image = CloudinaryField('images', null=True)
+
+    # A char field for the First name
+    first_name = models.CharField(max_length=100)
+
+    # A char field for the user Last name
+    last_name = models.CharField(max_length=100)
 
     # More fields required by Django when specifying a custom user model.
 
