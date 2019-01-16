@@ -3,7 +3,7 @@ import jwt
 import os
 from jwt import ExpiredSignatureError
 from datetime import datetime, timedelta
-
+from django.template.loader import render_to_string
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import send_mail
 from rest_framework import status, generics
@@ -108,8 +108,18 @@ class ResetPasswordAPIView(generics.CreateAPIView):
             DEFAULT_FROM_EMAIL = "django.unchained500@gmail.com"
             host_url = os.getenv("PASSWORD_RESET_URL")
             link = 'http://' + str(host_url) + '/users/passwordresetdone/'+ token
-            message = "Click on this to reset you password " + link
-            send_mail(subject, message, DEFAULT_FROM_EMAIL, to_email, fail_silently= False)
+            message = render_to_string(
+            'email.html', {
+                'user': to_email,
+                'domain': link,
+                'token': token,
+                'username': to_email,
+                'link': link
+            })
+            send_mail('You requested password reset', 'Reset your password', '', [to_email, ], html_message=message,
+                  fail_silently=False)
+            # message = "Click on this to reset you password " + link
+            # send_mail(subject, message, DEFAULT_FROM_EMAIL, to_email, fail_silently= False)
             message = {
                 "Message": "Successfully sent.Check your email",
             }
