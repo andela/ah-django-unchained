@@ -1,15 +1,18 @@
+
+import jwt
+import os
+from jwt import ExpiredSignatureError
+from datetime import datetime, timedelta
+
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import send_mail
-from jwt import ExpiredSignatureError
 from rest_framework import status, generics
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from authors.apps.authentication.backends import JWTAuthentication
 from rest_framework.renderers import BrowsableAPIRenderer
-import jwt
-import os
-from datetime import datetime, timedelta
+
+from authors.apps.authentication.backends import JWTAuthentication
 from .renderers import UserJSONRenderer
 from authors import settings
 from . import serializers
