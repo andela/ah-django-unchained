@@ -1,0 +1,37 @@
+from django.test import TestCase
+from django.urls import reverse
+from rest_framework.test import APIClient
+from .apps.authentication.models import User
+
+
+class BaseTestCase(TestCase):
+    """Base tests to be used by all other tests"""
+    def setUp(self):
+        self.client = APIClient()
+        self.register_url = reverse('authentication:auth-register')
+        self.login_url = reverse("authentication:auth-login")
+        self.new_user = {
+            "username": "andrew",
+            "email": "andrewhinga5@gmail.com",
+            "password": "g@_Gigz-2416"
+            }
+
+        self.username = "testuser"
+        self.email = "testuser@gmail.com"
+        self.password = "this_user123@A"
+
+        self.test_user = User.objects.create_user(
+            username=self.username,
+            email=self.email,
+            password=self.password)
+
+        self.data_for_test = {
+            "email": self.email,
+            "password": self.password
+        }
+
+        response = self.client.post(
+            self.login_url, self.data_for_test, format='json')
+        assert response.data.get("token")
+        self.token = response.data["token"]
+        assert response.status_code == 200
