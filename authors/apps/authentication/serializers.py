@@ -121,6 +121,39 @@ class LoginSerializer(serializers.Serializer):
         }
 
 
+class ResetSerializer(serializers.ModelSerializer):
+    """Get users email"""
+    email = serializers.EmailField()
+
+    def validate_email(self, data):
+        email = data.get('email', None)
+
+    class Meta:
+        model = User
+        fields = ('email',)
+
+
+class PasswordSerializer(serializers.ModelSerializer):
+    """Validates Password"""
+    password = serializers.RegexField(
+        regex='^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[@#$%^&+=*!])',
+        max_length=128,
+        min_length=8,
+        write_only=True,
+        error_messages={
+            'required': 'Password field required',
+            'min_length': 'Ensure Password field has at least 8 characters',
+            'invalid': 'Password should contain a lowercase, uppercase numeric'
+            ' and special character'
+        }
+    )
+    confirm_password = serializers.CharField()
+
+    class Meta:
+        model = User
+        fields = ('password', 'confirm_password')
+
+
 class UserSerializer(serializers.ModelSerializer):
     """Handles serialization and deserialization of User objects."""
     # Passwords must be at least 8 characters, but no more than 128
