@@ -33,6 +33,7 @@ class ResetPasswordTestCase(APITestCase):
         }
 
     def create_url(self, email):
+        """create a url with the token, this is done after user receives an email"""
         token = jwt.encode({"email": email, "iat": datetime.now(),
                                 "exp": datetime.utcnow() + timedelta(minutes=5)},
                                settings.SECRET_KEY, algorithm='HS256').decode()
@@ -41,7 +42,7 @@ class ResetPasswordTestCase(APITestCase):
         return password_reset_url
     
     def test_reset_password(self):
-        """tests"""
+        """Test user can reset the password"""
         register = self.client.post(self.signup_url,
                                     self.signup_data,
                                     format='json')
