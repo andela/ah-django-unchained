@@ -1,8 +1,13 @@
 from rest_framework import serializers
-from ..authentication.models import User
+from .models import UserProfile
+
 
 class UserProfileSerializer(serializers.ModelSerializer):
+    """
+    Class to serialize user profile data
+    """
+    profile_image = serializers.ImageField(default=None)
     class Meta:
-        model = User
-        fields = ('gender', 'bio', 'profile_image')
-
+        model = UserProfile
+        profile_image = serializers.ImageField()
+        fields = ('first_name','last_name','gender', 'bio', 'profile_image')

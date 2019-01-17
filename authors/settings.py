@@ -174,7 +174,6 @@ SWAGGER_SETTINGS = {
     },
 }
 
-
 SECRET_KEY = os.getenv('SECRET_KEY')
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
@@ -184,7 +183,8 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_USE_TLS = True
 
 cloudinary.config(
-     cloud_name='authors',
-     api_key='777468436252743',
-     api_secret='_mRwkwGpbRKurTYgzSuSPlxG3uk'
+     cloud_name = 'authors',
+     api_key = '777468436252743',
+     api_secret = '_mRwkwGpbRKurTYgzSuSPlxG3uk'
  )
+
