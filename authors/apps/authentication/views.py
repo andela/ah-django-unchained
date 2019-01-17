@@ -38,7 +38,7 @@ class RegistrationAPIView(generics.CreateAPIView):
         email = serializer.data.get('email', None)
         payload = {'email':  email}
         token = jwt.encode(payload,SECRET_KEY, algorithm='HS256').decode()
-        from_email, to_email =os.getenv("email"), [email]
+        from_email, to_email =EMAIL_HOST_USER , [email]
         subject = "Authors Haven Verification Link"
         site_url = get_current_site(request).domain
         link_url = "http://" + site_url + \
@@ -48,7 +48,7 @@ class RegistrationAPIView(generics.CreateAPIView):
         send_mail(subject, body, from_email, to_email, fail_silently=False)   
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-class VerifyAPIView(generics.UpdateAPIView):
+class VerifyAPIView(generics.ListCreateAPIView):
     def get_queryset(self):
         token = jwt.decode(
             self.kwargs["token"],SECRET_KEY, algorithm='HS256')
