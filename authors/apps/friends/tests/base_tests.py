@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
-from .apps.authentication.models import User
+from authors.apps.authentication.models import User
 
 
 class BaseTestCase(TestCase):
@@ -25,13 +25,18 @@ class BaseTestCase(TestCase):
             email=self.email,
             password=self.password)
 
-        self.data_for_test = {
+        self.test_user1 = User.objects.create_user(
+            username="andrew",
+            email="andrewhinga5@gmail.com",
+            password="g@_Gigz-2416")
+
+        self.data_for_test = {"user": {
             "email": self.email,
             "password": self.password
-        }
+        }}
 
         response = self.client.post(
             self.login_url, self.data_for_test, format='json')
-        assert response.data.get("token")
+        # assert response.data.get("token")
         self.token = response.data["token"]
         assert response.status_code == 200

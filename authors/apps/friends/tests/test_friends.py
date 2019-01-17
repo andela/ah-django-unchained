@@ -1,43 +1,37 @@
 from rest_framework import status
-from .base_test import BaseTestCase
+from .base_tests import BaseTestCase
+from authors.apps.authentication.models import User
 
 
 class TestUserFollow(BaseTestCase):
     """Test the follow/unfollow functionality"""
-    friend_url = 'http://127.0.0.1:8000/api/profiles'
+    friend_url = 'http://127.0.0.1:8000/api/users'
 
     def test_follow_other_user(self):
-        self.client.post(
-            'http://127.0.0.1:8000/api/users/',
-            data=self.new_user
-            )
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
         response = self.client.post(self.friend_url + '/andrew/follow')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        assert response.data['username'] == 'andrew'
+        self.assertEqual(response.data['email'], 'andrewhinga5@gmail.com')
+        self.assertEqual(response.data['username'], 'andrew')
 
     def test_unfollow_other_user(self):
-        self.client.post(
-            'http://127.0.0.1:8000/api/users/',
-            data=self.new_user
-            )
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
         res1 = self.client.post(self.friend_url + '/andrew/follow')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        assert response.data['username'] == 'andrew'
-        res2 = self.client.delete((self.friend_url, '/andrew/unfollow'))
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        assert res2.data['username'] == 'andrew'
+        self.assertEqual(res1.status_code, status.HTTP_200_OK)
+        assert res1.data['username'] == 'andrew'
+        res2 = self.client.delete(self.friend_url + '/andrew/unfollow')
+        self.assertEqual(res2.status_code, status.HTTP_200_OK)
+        self.assertEqual(res2.data['username'], 'andrew')
 
     def test_follow_self(self):
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
-        respsonse = self.client.post(self.friend_url + '/testuser/follow')
-        self.assertEqual(respsonse.status_code, status.HTTP_406_NOT_ACCEPTABLE)
-        assert response.data['message'] == 'You cannot follow yourself'
+        response = self.client.post(self.friend_url + '/testuser/follow')
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertEqual(response.data['message'], 'You cannot follow yourself')
 
     def test_follow_nonexisting_user(self):
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
-        response = self.client.post(self.friend_url, '/andrew12/follow')
+        response = self.client.post(self.friend_url + '/ken/follow')
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         assert response.data['detail'] == 'Not found.'
 
@@ -45,10 +39,10 @@ class TestUserFollow(BaseTestCase):
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
         response = self.client.get(self.friend_url + '/andrew/followers')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        assert response.data["count"] == 0
+        self.assertEqual(len(response.data), 0)
 
     def test_get_following(self):
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
         response = self.client.get(self.friend_url + '/andrew/following')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        assert response.data["count"] == 0
+        self.assertEqual(len(response.data), 0)
