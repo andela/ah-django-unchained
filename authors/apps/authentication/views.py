@@ -105,7 +105,7 @@ class ResetPasswordAPIView(generics.CreateAPIView):
                                settings.SECRET_KEY, algorithm='HS256').decode()
             to_email = [email]
             subject = "You requested a password Reset"
-            DEFAULT_FROM_EMAIL = "django.unchained500@gmail.com"
+            DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
             host_url = os.getenv("PASSWORD_RESET_URL")
             link = 'http://' + str(host_url) + '/users/passwordresetdone/'+ token
             message = render_to_string(
