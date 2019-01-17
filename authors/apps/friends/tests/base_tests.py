@@ -1,6 +1,7 @@
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
+from rest_framework import status
 from authors.apps.authentication.models import User
 
 
@@ -37,6 +38,6 @@ class BaseTestCase(TestCase):
 
         response = self.client.post(
             self.login_url, self.data_for_test, format='json')
-        # assert response.data.get("token")
+
         self.token = response.data["token"]
-        assert response.status_code == 200
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
