@@ -4,14 +4,7 @@ from rest_framework import serializers
 from .models import User
 
 
-class RegistrationSerializer(serializers.ModelSerializer):
-    """Serializers registration requests and creates a new user."""
-
-    # Ensure passwords are at least 8 characters long,contain alphanumerics
-    # special characters and
-    # no longer than 128
-    # characters, and can not be read by the client.
-    def password_validate():
+def password_validate():
         return serializers.RegexField(
             regex='^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[@#$%^&+=*!])',
             max_length=128,
@@ -24,6 +17,15 @@ class RegistrationSerializer(serializers.ModelSerializer):
                 ' and special character'
             })
 
+
+class RegistrationSerializer(serializers.ModelSerializer):
+    """Serializers registration requests and creates a new user."""
+
+    # Ensure passwords are at least 8 characters long,contain alphanumerics
+    # special characters and
+    # no longer than 128
+    # characters, and can not be read by the client.
+    
     password = password_validate()
 
     # Ensure username doesnt have special characters or numbers only
@@ -135,7 +137,7 @@ class ResetSerializerEmail(serializers.ModelSerializer):
 
 class ResetSerializerPassword(serializers.ModelSerializer):
     """Validates Password"""
-    password = RegistrationSerializer.password_validate()
+    password = password_validate()
     confirm_password = serializers.CharField()
 
     class Meta:
