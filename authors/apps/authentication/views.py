@@ -109,17 +109,16 @@ class ResetPasswordAPIView(generics.CreateAPIView):
             host_url = os.getenv("PASSWORD_RESET_URL")
             link = 'http://' + str(host_url) + '/users/passwordresetdone/'+ token
             message = render_to_string(
-            'email.html', {
-                'user': to_email,
-                'domain': link,
-                'token': token,
-                'username': to_email,
-                'link': link
-            })
-            send_mail('You requested password reset', 'Reset your password', '', [to_email, ], html_message=message,
-                  fail_silently=False)
-            # message = "Click on this to reset you password " + link
-            # send_mail(subject, message, DEFAULT_FROM_EMAIL, to_email, fail_silently= False)
+                'email.html', {
+                    'user': to_email,
+                    'domain': link,
+                    'token': token,
+                    'username': to_email,
+                    'link': link
+                })
+            send_mail('You requested password reset',
+                      'Reset your password', 'DEFAULT_FROM_EMAIL',
+                      [to_email, ], html_message=message, fail_silently=False)
             message = {
                 "Message": "Successfully sent.Check your email",
             }
@@ -147,7 +146,8 @@ class UpdatePasswordAPIView(generics.UpdateAPIView):
                 return Response({"Passwords do not match"},
                                 status=status.HTTP_200_OK)
             serializer = self.serializer_class(data={"password": password,
-                                                "confirm_password": confirm_password})
+                                                     "confirm_password":
+                                                     confirm_password})
             serializer.is_valid(raise_exception=True)
             decode_token = jwt.decode(token, settings.SECRET_KEY,
                                       algorithms='HS256')
