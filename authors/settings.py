@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'authors.apps.core',
     'authors.apps.profiles',
     'authors.apps.friends',
+    'authors.apps.articles',
 
     # Enables API to be documented using Swagger
     'rest_framework_swagger',
