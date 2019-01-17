@@ -64,7 +64,7 @@ class UnFollowApiView(generics.DestroyAPIView):
 
         if followed == follower:
             return Response(
-                {"message": "you cannot follow yourself"},
+                {"message": "You cannot unfollow yourself"},
                 status=status.HTTP_406_NOT_ACCEPTABLE)
         Friend.objects.filter(user_from=follower, user_to=followed).delete()
         user = get_user_model().objects.get(pk=followed.id)

@@ -150,7 +150,7 @@ class UserSerializer(serializers.ModelSerializer):
     """Handles serialization and deserialization of User objects."""
     following = serializers.SerializerMethodField()
     followers = serializers.SerializerMethodField()
-    
+
     # Passwords must be at least 8 characters, but no more than 128
     # characters. These values are the default provided by Django. We could
     # change them, but that would create extra work while introducing no real
@@ -174,7 +174,7 @@ class UserSerializer(serializers.ModelSerializer):
         # field.
     def get_followers(self, obj):
        return len(json.loads(json.dumps([u.username for u in obj.followers.all()])))
-       
+
     def get_following(self, obj):
        return len(json.loads(json.dumps([u.username for u in obj.following.all()])))
 

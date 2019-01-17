@@ -24,10 +24,10 @@ class Friend(models.Model):
         ordering = ('-created_at',)
         unique_together = ('user_from', 'user_to')
 
-        def __str__(self):
-            '{} follows {}'.format(
-                self.user_from.username,
-                self.user_to.username)
+    def __str__(self):
+        return '{} follows {}'.format(
+            self.user_from.username,
+            self.user_to.username)
 
 # adds following field to user dynamically
 get_user_model().add_to_class('following', models.ManyToManyField(
