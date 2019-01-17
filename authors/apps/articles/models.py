@@ -1,13 +1,13 @@
 from django.db import models
 from authors.apps.authentication.models import User
 from django.template.defaultfilters import slugify
-from models.Cloudinary import CloudinaryField
+from cloudinary.models import CloudinaryField
 
 class Article(models.Model):
     title = models.CharField(max_length=50, blank=False, unique=True)
     body = models.TextField(blank=False, unique=True)
     description = models.CharField(max_length=50, blank=False)
-    images = models.CloudinaryField(blank=False, default='')
+    images = CloudinaryField(blank=False, default='')
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
     slug = models.SlugField(max_length=50, blank=False)
