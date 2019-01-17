@@ -8,18 +8,26 @@ from rest_framework import status, generics
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from social_django.utils import load_strategy, load_backend
+from social_core.exceptions import MissingBackend
 from rest_framework.renderers import BrowsableAPIRenderer
+from social_core.backends.oauth import BaseOAuth1, BaseOAuth2
+
+from authors.apps.core.permissions import IsAuthorOrReadOnly
+from authors.apps.authentication.backends import JWTAuthentication
 from .renderers import UserJSONRenderer
 from . import models
 from .serializers import (
     LoginSerializer, RegistrationSerializer, UserSerializer,
-    ResetSerializerEmail, ResetSerializerPassword
+    ResetSerializerEmail, ResetSerializerPassword, SocialAuthSerialize
 )
 from .models import User
 from .utils import send_link
 
 
 class RegistrationAPIView(generics.CreateAPIView):
+
     # Allow any user (authenticated or not) to hit this endpoint.
     permission_classes = (AllowAny,)
     renderer_classes = (UserJSONRenderer,)
@@ -195,3 +203,56 @@ class UpdatePasswordAPIView(generics.UpdateAPIView):
             return Response({"The link expired"},
                             status=status.HTTP_400_BAD_REQUEST)
                             
+
+class SocialAuthenticationView(generics.CreateAPIView):
+    """Social authentication."""
+    permission_classes = (AllowAny,)
+    serializer_class = SocialAuthSerializer
+    render_classes = (UserJSONRenderer,)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        provider = request.data['provider']
+        strategy = load_strategy(request)
+        authenticated_user = request.user if not request.user.is_anonymous else None
+
+        try:
+            backend = load_backend(
+                strategy=strategy,
+                name=provider,
+                redirect_uri=None
+            )
+
+            if isinstance(backend, BaseOAuth1):
+                if "access_token_secret" in request.data:
+                    token = {
+                        'oauth_token': request.data['access_token'],
+                        'oauth_token_secret': 
+                        request.data['access_token_secret']
+                    }
+                    
+                else:
+                    return Response({'error': 
+                                    'Please enter your secret token'},
+                                    status=status.HTTP_400_BAD_REQUEST)
+            elif isinstance(backend, BaseOAuth2):
+                token = serializer.data.get('access_token')
+            
+        except MissingBackend:
+            return Response({
+                'error': 'Please enter a valid social provider'
+                }, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            user = backend.do_auth(token, user=authenticated_user)
+        except BaseException as error:
+            return Response({"error": str(error)})
+        if user:
+            user.is_active = True
+            user.save()
+        serializer = UserSerializer(user)
+        serialized_details = serializer.data
+        serialized_details["token"] = JWTAuthentication.generate_token(
+            serialized_details["email"], serialized_details["username"])
+       
+        return Response(serialized_details, status.HTTP_200_OK)
