@@ -15,8 +15,7 @@ from .serializers import (
     LoginSerializer, RegistrationSerializer, UserSerializer,
     ResetSerializerEmail, ResetSerializerPassword
 )
-from authors.apps.core.permissions import IsAuthorOrReadOnly
-
+from .models import User
 
 class RegistrationAPIView(generics.CreateAPIView):
     # Allow any user (authenticated or not) to hit this endpoint.
@@ -32,9 +31,31 @@ class RegistrationAPIView(generics.CreateAPIView):
         # your own work later on. Get familiar with it.
         serializer = self.serializer_class(data=user)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        serializer.save()        
 
+        # Email verification email configuration via
+        # gmail API
+        email = serializer.data.get('email', None)
+        payload = {'email':  email}
+        token = jwt.encode(payload,SECRET_KEY, algorithm='HS256').decode()
+        from_email, to_email =os.getenv("email"), [email]
+        subject = "Authors Haven Verification Link"
+        site_url = get_current_site(request).domain
+        link_url = "http://" + site_url + \
+            '/api/users/verify/{}/'.format(token)
+        body = "Hi {},\n Please click on this link to verify your email: "\
+                .format(serializer.data['username']) + link_url
+        send_mail(subject, body, from_email, to_email, fail_silently=False)   
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+class VerifyAPIView(generics.UpdateAPIView):
+    def get_queryset(self):
+        token = jwt.decode(
+            self.kwargs["token"],SECRET_KEY, algorithm='HS256')
+        queryset = User.objects.filter(email=token['email'])
+        User.objects.filter(email=token['email']).update(is_verified=True)
+        return queryset
+    serializer_class = UserSerializer
 
 
 class LoginAPIView(generics.CreateAPIView):

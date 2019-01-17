@@ -26,20 +26,20 @@ class LoginTestCase(APITestCase):
                 "password": "jakejake"
                 }}
 
-    def test_login(self):
+    def test_unverified_account_login(self):
         """if user is registered"""
         register = self.client.post(self.signup_url,
                                     self.signup_data,
                                     format='json')
         self.assertEqual(register.status_code, status.HTTP_201_CREATED)
-        """Test if user can login"""
+        """Test if user can login without verification"""
         response = self.client.post(self.login_url,
                                     self.login_data,
                                     format='json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn('email', response.data)
-        self.assertIn('username', response.data)
-        self.assertIn('token', response.data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(json.loads(response.content), {'errors':
+                                                {'error':
+                                                    ['Please verify your account by clicking on the link sent to your email.']}})
 
     def test_login_unregistered_user(self):
         """Test login for unregistered users"""

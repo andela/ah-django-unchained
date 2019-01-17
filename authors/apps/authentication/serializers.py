@@ -112,6 +112,12 @@ class LoginSerializer(serializers.Serializer):
                 'This user has been deactivated.'
             )
 
+        #If user has not verified their email account an exception will be raised
+        if not user.is_verified:
+            raise serializers.ValidationError(
+                'Please verify your account by clicking on the link sent to your email.'
+            )
+
         # The `validate` method should return a dictionary of validated data.
         # This is the data that is passed to the `create` and `update` methods
         # that we will see later on.
