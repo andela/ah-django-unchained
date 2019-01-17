@@ -9,5 +9,4 @@ class UserProfileSerializer(serializers.ModelSerializer):
     profile_image = serializers.ImageField(default=None)
     class Meta:
         model = UserProfile
-        profile_image = serializers.ImageField()
         fields = ('first_name','last_name','gender', 'bio', 'profile_image')

@@ -15,14 +15,14 @@ class UserProfile(models.Model):
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     # A char field to hold bio data
-    bio = models.TextField(max_length=200)
+    bio = models.TextField(max_length=200, default='')
 
     # A choice field to hold multiple choice 
     gender_choices = (('M','MALE'),('F','FEMALE'))
     gender = models.CharField(max_length=10, choices=gender_choices, default='M')
 
     # cloudinary field
-    profile_image = CloudinaryField('image', null=True, default='')
+    profile_image = CloudinaryField('image', null=True, default='', blank=True)
 
     # A char field for the First name
     first_name = models.CharField(max_length=100, default='')
