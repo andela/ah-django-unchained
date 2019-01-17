@@ -1,7 +1,7 @@
 import json
 import jwt
 from datetime import datetime, timedelta
-from authors import settings
+from django.conf import settings
 from django.urls import reverse
 from django.core import mail
 from rest_framework.views import status
@@ -35,22 +35,22 @@ class ResetPasswordTestCase(APITestCase):
     def create_url(self, email):
         """create a url with the token, this is done after user receives an email"""
         token = jwt.encode({"email": email, "iat": datetime.now(),
-                                "exp": datetime.utcnow() + timedelta(minutes=5)},
-                               settings.SECRET_KEY, algorithm='HS256').decode()
+                            "exp": datetime.utcnow() + timedelta(minutes=5)},
+                                    settings.SECRET_KEY, algorithm='HS256').decode()
         password_reset_url = reverse("authentication:passwordresetdone",
                     kwargs={"token": token})
         return password_reset_url
-    
+
     def test_reset_password(self):
         """Test user can reset the password"""
         register = self.client.post(self.signup_url,
                                     self.signup_data,
                                     format='json')
         response = self.client.put(self.create_url("chegemaggie1@gmail.com"),
-                                   self.test_update_password_data, 
+                                   self.test_update_password_data,
                                    format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        
+
     def test_email_not_registered(self):
         """Test if user that is not registered can get the email"""
         response = self.client.post(self.password_reset_url,

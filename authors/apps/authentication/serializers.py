@@ -1,8 +1,6 @@
 import re
-
 from django.contrib.auth import authenticate
 from rest_framework import serializers
-
 from .models import User
 
 
@@ -13,18 +11,20 @@ class RegistrationSerializer(serializers.ModelSerializer):
     # special characters and
     # no longer than 128
     # characters, and can not be read by the client.
-    password = serializers.RegexField(
-        regex='^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[@#$%^&+=*!])',
-        max_length=128,
-        min_length=8,
-        write_only=True,
-        error_messages={
-            'required': 'Password field required',
-            'min_length': 'Ensure Password field has at least 8 characters',
-            'invalid': 'Password should contain a lowercase, uppercase numeric'
-            ' and special character'
-        }
-    )
+    def password_validate():
+        return serializers.RegexField(
+            regex='^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[@#$%^&+=*!])',
+            max_length=128,
+            min_length=8,
+            write_only=True,
+            error_messages={
+                'required': 'Password field required',
+                'min_length': 'Ensure Password field has at least 8 characters',
+                'invalid': 'Password should contain a lowercase, uppercase numeric'
+                ' and special character'
+            })
+
+    password = password_validate()
 
     # Ensure username doesnt have special characters or numbers only
     # Ensure username is greater than six
@@ -121,7 +121,7 @@ class LoginSerializer(serializers.Serializer):
         }
 
 
-class ResetSerializer(serializers.ModelSerializer):
+class ResetSerializerEmail(serializers.ModelSerializer):
     """Get users email"""
     email = serializers.EmailField()
 
@@ -133,20 +133,9 @@ class ResetSerializer(serializers.ModelSerializer):
         fields = ('email',)
 
 
-class PasswordSerializer(serializers.ModelSerializer):
+class ResetSerializerPassword(serializers.ModelSerializer):
     """Validates Password"""
-    password = serializers.RegexField(
-        regex='^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[@#$%^&+=*!])',
-        max_length=128,
-        min_length=8,
-        write_only=True,
-        error_messages={
-            'required': 'Password field required',
-            'min_length': 'Ensure Password field has at least 8 characters',
-            'invalid': 'Password should contain a lowercase, uppercase numeric'
-            ' and special character'
-        }
-    )
+    password = RegistrationSerializer.password_validate()
     confirm_password = serializers.CharField()
 
     class Meta:

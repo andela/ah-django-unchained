@@ -3,6 +3,7 @@ import jwt
 import os
 from jwt import ExpiredSignatureError
 from datetime import datetime, timedelta
+from django.conf import settings
 from django.template.loader import render_to_string
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import send_mail
@@ -14,12 +15,11 @@ from rest_framework.renderers import BrowsableAPIRenderer
 
 from authors.apps.authentication.backends import JWTAuthentication
 from .renderers import UserJSONRenderer
-from authors import settings
 from . import serializers
 from . import models
 from .serializers import (
-    LoginSerializer, RegistrationSerializer, UserSerializer, ResetSerializer,
-    PasswordSerializer
+    LoginSerializer, RegistrationSerializer, UserSerializer, 
+    ResetSerializerEmail, ResetSerializerPassword
 )
 
 
@@ -89,7 +89,7 @@ class UserRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
 
 class ResetPasswordAPIView(generics.CreateAPIView):
     """Sends password reset link to email"""
-    serializer_class = ResetSerializer
+    serializer_class = ResetSerializerEmail
 
     def post(self, request):
 
@@ -136,7 +136,7 @@ class ResetPasswordAPIView(generics.CreateAPIView):
 class UpdatePasswordAPIView(generics.UpdateAPIView):
     """Allows you to reset you password"""
     permission_classes = (AllowAny,)
-    serializer_class = PasswordSerializer
+    serializer_class = ResetSerializerPassword
 
     def put(self, request, token, **kwargs):
         try:
