@@ -102,7 +102,7 @@ class ResetPasswordAPIView(generics.CreateAPIView):
             host_url = os.getenv("PASSWORD_RESET_URL")
             link = 'http://' + str(host_url) + '/users/passwordresetdone/' + token
             message = render_to_string(
-                'email_template.html', {
+                'email_password_reset.html', {
                     'user': to_email,
                     'domain': link,
                     'token': token,
