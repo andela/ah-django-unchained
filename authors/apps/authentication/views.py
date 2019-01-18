@@ -113,7 +113,7 @@ class ResetPasswordAPIView(generics.CreateAPIView):
                       'Reset your password', 'DEFAULT_FROM_EMAIL',
                       [to_email, ], html_message=message, fail_silently=False)
             message = {
-                "Message": "Successfully sent.Check your email",
+                "message": "Successfully sent.Check your email",
             }
             return Response(message, status=status.HTTP_200_OK)
 
@@ -128,7 +128,6 @@ class ResetPasswordAPIView(generics.CreateAPIView):
 
 class UpdatePasswordAPIView(generics.UpdateAPIView):
     """Allows you to reset you password"""
-    permission_classes = (IsAuthorOrReadOnly,)
     serializer_class = ResetSerializerPassword
 
     def put(self, request, token, **kwargs):
@@ -147,7 +146,7 @@ class UpdatePasswordAPIView(generics.UpdateAPIView):
             user = models.User.objects.get(email=email)
             user.set_password(password)
             user.save()
-            return Response({"Message": "Password Successfully Updated"},
+            return Response({"message": "Password Successfully Updated"},
                             status=status.HTTP_200_OK)
         except jwt.ExpiredSignatureError:
             return Response({"The link expired"},
