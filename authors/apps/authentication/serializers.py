@@ -148,8 +148,8 @@ class ResetSerializerPassword(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     """Handles serialization and deserialization of User objects."""
-    following = serializers.SerializerMethodField()
-    followers = serializers.SerializerMethodField()
+    number_of_following = serializers.SerializerMethodField()
+    number_of_followers = serializers.SerializerMethodField()
 
     # Passwords must be at least 8 characters, but no more than 128
     # characters. These values are the default provided by Django. We could
@@ -164,7 +164,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
-            'id', 'email', 'username', 'password', 'following', 'followers'
+            'id', 'email', 'username', 'password', 'number_of_following', 'number_of_followers'
             )
 
         # The `read_only_fields` option is an alternative for explicitly
@@ -174,10 +174,10 @@ class UserSerializer(serializers.ModelSerializer):
         # password field, we needed to specify the `min_length` and
         # `max_length` properties too, but that isn't the case for the token
         # field.
-    def get_followers(self, obj):
+    def get_number_of_followers(self, obj):
         return len(json.loads(json.dumps([u.username for u in obj.followers.all()])))
 
-    def get_following(self, obj):
+    def get_number_of_following(self, obj):
         return len(json.loads(json.dumps([u.username for u in obj.following.all()])))
 
     def update(self, instance, validated_data):
