@@ -72,5 +72,5 @@ class ResetPasswordTestCase(APITestCase):
                                     self.email,
                                     format="json")
         self.assertEqual(response. status_code, status.HTTP_200_OK)
-        self.assertEqual(json.loads(response.content), {'Message':
+        self.assertEqual(json.loads(response.content), {'message':
                                                         'Successfully sent.Check your email'})
