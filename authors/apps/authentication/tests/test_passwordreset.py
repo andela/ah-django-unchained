@@ -63,7 +63,7 @@ class ResetPasswordTestCase(APITestCase):
                                     format="json")
         self.assertEqual(response. status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(json.loads(response.content), {'errors': {'email':
-                                                        ['User with this email doesnot exist.']}})
+                                                        ['User with this email does not exist.']}})
 
     def test_send_email(self):
         """First register a new user and check if user is registered"""

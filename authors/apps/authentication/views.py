@@ -1,5 +1,5 @@
 import os
-from jwt import ExpiredSignatureError
+import jwt
 from datetime import datetime, timedelta
 from django.conf import settings
 from django.template.loader import render_to_string
@@ -12,9 +12,10 @@ from rest_framework.renderers import BrowsableAPIRenderer
 from .renderers import UserJSONRenderer
 from . import models
 from .serializers import (
-    LoginSerializer, RegistrationSerializer, UserSerializer, 
+    LoginSerializer, RegistrationSerializer, UserSerializer,
     ResetSerializerEmail, ResetSerializerPassword
 )
+from authors.apps.core.permissions import IsAuthorOrReadOnly
 
 
 class RegistrationAPIView(generics.CreateAPIView):
@@ -127,7 +128,7 @@ class ResetPasswordAPIView(generics.CreateAPIView):
 
 class UpdatePasswordAPIView(generics.UpdateAPIView):
     """Allows you to reset you password"""
-    permission_classes = (AllowAny,)
+    permission_classes = (IsAuthorOrReadOnly,)
     serializer_class = ResetSerializerPassword
 
     def put(self, request, token, **kwargs):
@@ -148,6 +149,6 @@ class UpdatePasswordAPIView(generics.UpdateAPIView):
             user.save()
             return Response({"Message": "Password Successfully Updated"},
                             status=status.HTTP_200_OK)
-        except ExpiredSignatureError:
+        except jwt.ExpiredSignatureError:
             return Response({"The link expired"},
                             status=status.HTTP_400_BAD_REQUEST)
