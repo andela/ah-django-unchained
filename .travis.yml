@@ -12,11 +12,14 @@ services:
   - postgresql
 
 addons:
-  postgresql: "9.6"
+  postgresql: '9.4'
+  apt:
+    packages:
+      - postgresql-server-dev-9.4
 
 before-script:
   - psql -c 'CREATE DATABASE test;' -U postgres
-  - python manage.py makemigrations
+  - python manage.py makemigrations 
   - python manage.py migrate
 
 script:

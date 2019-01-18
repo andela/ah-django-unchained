@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'taggit',
 
+    
     'authors.apps.authentication',
     'authors.apps.core',
     'authors.apps.profiles',
@@ -50,6 +51,8 @@ INSTALLED_APPS = [
     'oauth2_provider',
     'social_django',
     'rest_framework_social_oauth2',
+   
+    
 
     # Enables API to be documented using Swagger
     'rest_framework_swagger',

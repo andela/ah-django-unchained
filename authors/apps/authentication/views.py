@@ -1,26 +1,31 @@
 import os
 import jwt
 from datetime import datetime, timedelta
+
 from django.conf import settings
 from django.core.mail import send_mail
+<<<<<<< HEAD
 from django.template.loader import render_to_string
+=======
+from django.db import IntegrityError
+>>>>>>> feat(social auth):add social login functionality
 from rest_framework import status, generics
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
 from social_django.utils import load_strategy, load_backend
-from social_core.exceptions import MissingBackend
-from rest_framework.renderers import BrowsableAPIRenderer
+from social_core.exceptions import MissingBackend, AuthAlreadyAssociated
 from social_core.backends.oauth import BaseOAuth1, BaseOAuth2
 
 from authors.apps.core.permissions import IsAuthorOrReadOnly
 from authors.apps.authentication.backends import JWTAuthentication
-from .renderers import UserJSONRenderer
 from . import models
+from .renderers import UserJSONRenderer
+from .models import User
+from . import serializers
 from .serializers import (
     LoginSerializer, RegistrationSerializer, UserSerializer,
-    ResetSerializerEmail, ResetSerializerPassword, SocialAuthSerialize
+    ResetSerializerEmail, ResetSerializerPassword, SocialAuthSerializer
 )
 from .models import User
 from .utils import send_link
@@ -228,31 +233,45 @@ class SocialAuthenticationView(generics.CreateAPIView):
                 if "access_token_secret" in request.data:
                     token = {
                         'oauth_token': request.data['access_token'],
-                        'oauth_token_secret': 
+                        'oauth_token_secret':
                         request.data['access_token_secret']
                     }
-                    
                 else:
-                    return Response({'error': 
+                    return Response({'error':
                                     'Please enter your secret token'},
                                     status=status.HTTP_400_BAD_REQUEST)
             elif isinstance(backend, BaseOAuth2):
                 token = serializer.data.get('access_token')
-            
         except MissingBackend:
             return Response({
                 'error': 'Please enter a valid social provider'
                 }, status=status.HTTP_400_BAD_REQUEST)
+
         try:
             user = backend.do_auth(token, user=authenticated_user)
-        except BaseException as error:
-            return Response({"error": str(error)})
+        except (AuthAlreadyAssociated, IntegrityError):
+            return Response({
+                "errors": "User is authenticated"},
+                status=status.HTTP_400_BAD_REQUEST)
+        except BaseException:
+            return Response({
+                "errors": "The token has expired"},
+                 status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         if user:
             user.is_active = True
+            username = user.username
+            email = user.email
             user.save()
+
+        date = datetime.now() + timedelta(days=20)
+        payload = {
+            'email': email,
+            'username': username,
+            'exp': int(date.strftime('%s'))
+        }
+        user_token = jwt.encode(
+            payload, settings.SECRET_KEY, algorithm='HS256')
         serializer = UserSerializer(user)
         serialized_details = serializer.data
-        serialized_details["token"] = JWTAuthentication.generate_token(
-            serialized_details["email"], serialized_details["username"])
-       
+        serialized_details["token"] = user_token
         return Response(serialized_details, status.HTTP_200_OK)
