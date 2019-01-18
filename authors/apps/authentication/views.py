@@ -1,13 +1,21 @@
+import os
+import jwt
+from datetime import datetime, timedelta
+from django.conf import settings
+from django.template.loader import render_to_string
+from django.core.mail import send_mail
 from rest_framework import status, generics
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.renderers import BrowsableAPIRenderer
 from .renderers import UserJSONRenderer
-from . import serializers
+from . import models
 from .serializers import (
-    LoginSerializer, RegistrationSerializer, UserSerializer
+    LoginSerializer, RegistrationSerializer, UserSerializer,
+    ResetSerializerEmail, ResetSerializerPassword
 )
+from authors.apps.core.permissions import IsAuthorOrReadOnly
 
 
 class RegistrationAPIView(generics.CreateAPIView):
@@ -72,3 +80,74 @@ class UserRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
         serializer.save()
 
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class ResetPasswordAPIView(generics.CreateAPIView):
+    """Sends password reset link to email"""
+    serializer_class = ResetSerializerEmail
+
+    def post(self, request):
+
+        email = request.data['email']
+        if email == "":
+            return Response({"errors": {    
+                "email": ["An email is required"]}})
+        user = models.User.objects.filter(email=email)
+        if user:
+            token = jwt.encode({"email": email, "iat": datetime.now(),
+                                "exp": datetime.utcnow() + timedelta(minutes=5)},
+                               settings.SECRET_KEY, algorithm='HS256').decode()
+            to_email = [email]
+            DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
+            host_url = os.getenv("PASSWORD_RESET_URL")
+            link = 'http://' + str(host_url) + '/users/passwordresetdone/' + token
+            message = render_to_string(
+                'email_password_reset.html', {
+                    'user': to_email,
+                    'domain': link,
+                    'token': token,
+                    'username': to_email,
+                    'link': link
+                })
+            send_mail('You requested password reset',
+                      'Reset your password', 'DEFAULT_FROM_EMAIL',
+                      [to_email, ], html_message=message, fail_silently=False)
+            message = {
+                "message": "Successfully sent.Check your email",
+            }
+            return Response(message, status=status.HTTP_200_OK)
+
+        else:
+            message = {"errors": {
+                "email": [
+                    "User with this email does not exist."
+                ]}
+            }
+        return Response(message, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UpdatePasswordAPIView(generics.UpdateAPIView):
+    """Allows you to reset you password"""
+    serializer_class = ResetSerializerPassword
+
+    def put(self, request, token, **kwargs):
+        try:
+            password = request.data.get('password')
+            confirm_password = request.data.get('confirm_password')
+            if password != confirm_password:
+                return Response({"Passwords do not match"},
+                                status=status.HTTP_200_OK)
+            serializer = self.serializer_class(data={"password": password,
+                                                     "confirm_password": confirm_password})
+            serializer.is_valid(raise_exception=True)
+            decode_token = jwt.decode(token, settings.SECRET_KEY,
+                                      algorithms='HS256')
+            email = decode_token.get('email')
+            user = models.User.objects.get(email=email)
+            user.set_password(password)
+            user.save()
+            return Response({"message": "Password Successfully Updated"},
+                            status=status.HTTP_200_OK)
+        except jwt.ExpiredSignatureError:
+            return Response({"The link expired"},
+                            status=status.HTTP_400_BAD_REQUEST)

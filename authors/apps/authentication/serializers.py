@@ -1,19 +1,11 @@
 import re
-
 from django.contrib.auth import authenticate
 from rest_framework import serializers
-
 from .models import User
 
 
-class RegistrationSerializer(serializers.ModelSerializer):
-    """Serializers registration requests and creates a new user."""
-
-    # Ensure passwords are at least 8 characters long,contain alphanumerics
-    # special characters and
-    # no longer than 128
-    # characters, and can not be read by the client.
-    password = serializers.RegexField(
+def password_validate():
+    return serializers.RegexField(
         regex='^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[@#$%^&+=*!])',
         max_length=128,
         min_length=8,
@@ -23,8 +15,18 @@ class RegistrationSerializer(serializers.ModelSerializer):
             'min_length': 'Ensure Password field has at least 8 characters',
             'invalid': 'Password should contain a lowercase, uppercase numeric'
             ' and special character'
-        }
-    )
+        })
+
+
+class RegistrationSerializer(serializers.ModelSerializer):
+    """Serializers registration requests and creates a new user."""
+
+    # Ensure passwords are at least 8 characters long,contain alphanumerics
+    # special characters and
+    # no longer than 128
+    # characters, and can not be read by the client.
+
+    password = password_validate()
 
     # Ensure username doesnt have special characters or numbers only
     # Ensure username is greater than six
@@ -119,6 +121,28 @@ class LoginSerializer(serializers.Serializer):
             'token': user.token
 
         }
+
+
+class ResetSerializerEmail(serializers.ModelSerializer):
+    """Get users email"""
+    email = serializers.EmailField()
+
+    def validate_email(self, data):
+        email = data.get('email', None)
+
+    class Meta:
+        model = User
+        fields = ('email',)
+
+
+class ResetSerializerPassword(serializers.ModelSerializer):
+    """Validates Password"""
+    password = password_validate()
+    confirm_password = serializers.CharField()
+
+    class Meta:
+        model = User
+        fields = ('password', 'confirm_password')
 
 
 class UserSerializer(serializers.ModelSerializer):
