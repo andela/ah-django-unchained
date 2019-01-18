@@ -17,12 +17,11 @@ class FollowUnfollowApiView(generics.RetrieveUpdateDestroyAPIView):
 
     def post(self, request, username, format=None):
         """
-        This will check if the user associated with the username passed exists
-        If true, it will check for the user sending the request
-        If it's the same user, then an error message is returned
-        Else the intermediary Friend model will be used to
-        create the user relationship
-        Finally the serialized object of the followed user is returned
+        Checks if the user associated with the username passed exists
+        If true, check for the user sending the request
+        If same user, returned error message
+        Else create the user relationship
+        Finally return the serialized object of the followed user
         """
         try:
             followed = get_user_model().objects.get(username=username)
@@ -45,11 +44,10 @@ class FollowUnfollowApiView(generics.RetrieveUpdateDestroyAPIView):
 
     def delete(self, request, username, format=None):
         """
-        This will check if the user associated with the username passed exists
-        If true, it will check for the user sending the request
-        If it's the same user, then an error message is returned
-        Else the intermediary Friend model will be used to
-        delete the user relationship
+        Check if the user associated with the username passed exists
+        If true, check for the user sending the request
+        If same user, return an error message
+        Else delete the user relationship
         Finally the serialized object of the unfollowed user is returned
         """
         try:
@@ -87,8 +85,8 @@ class FollowersApiView(generics.ListAPIView):
 
     def get(self, request, username, format=None):
         """
-            Get & return the followers from the respective
-            object relationships i.e 'user_from'
+        Get & return the followers from the respective
+        object relationships i.e 'user_from'
         """
         friend_objects = self.get_queryset()
         if friend_objects is not None:
@@ -112,8 +110,8 @@ class FollowingApiView(generics.ListAPIView):
 
     def get(self, request, username, format=None):
         """
-            Get & return the 'followed users' from the
-            respective object relationships i.e 'user_to'
+        Get & return the 'followed users' from the
+        respective object relationships i.e 'user_to'
         """
         friend_objects = self.get_queryset()
         if friend_objects is not None:
