@@ -6,9 +6,8 @@ from rest_framework import generics
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from authors.apps.authentication.serializers import UserSerializer
 from .models import Friend
-from .serializers import CustomUserSerializer
+from .serializers import FollowersFollowingSerializer, FollowUnfollowSerializer
 
 
 class FollowUnfollowApiView(generics.RetrieveUpdateDestroyAPIView):
@@ -36,11 +35,10 @@ class FollowUnfollowApiView(generics.RetrieveUpdateDestroyAPIView):
                 status=status.HTTP_406_NOT_ACCEPTABLE)
         Friend.objects.get_or_create(user_from=follower, user_to=followed)
         user = get_user_model().objects.get(pk=followed.id)
-        serilizer = UserSerializer(user)
+        serilizer = FollowUnfollowSerializer(user)
         user_id = serilizer.data
         if serilizer:
-            return Response(
-                {"user_id": user_id["id"]}, status=status.HTTP_200_OK)
+            return Response(user_id, status=status.HTTP_200_OK)
 
     def delete(self, request, username, format=None):
         """
@@ -63,11 +61,10 @@ class FollowUnfollowApiView(generics.RetrieveUpdateDestroyAPIView):
                 status=status.HTTP_406_NOT_ACCEPTABLE)
         Friend.objects.filter(user_from=follower, user_to=followed).delete()
         user = get_user_model().objects.get(pk=followed.id)
-        serilizer = UserSerializer(user)
+        serilizer = FollowUnfollowSerializer(user)
         user_id = serilizer.data
         if serilizer:
-            return Response(
-                {"user_id": user_id["id"]}, status=status.HTTP_200_OK)
+            return Response(user_id, status=status.HTTP_200_OK)
 
 
 class FollowersApiView(generics.ListAPIView):
@@ -91,7 +88,7 @@ class FollowersApiView(generics.ListAPIView):
         friend_objects = self.get_queryset()
         if friend_objects is not None:
             followers = {u.user_from for u in friend_objects}
-            serializer = CustomUserSerializer(followers, many=True)
+            serializer = FollowersFollowingSerializer(followers, many=True)
             return Response(serializer.data)
 
 
@@ -116,5 +113,8 @@ class FollowingApiView(generics.ListAPIView):
         friend_objects = self.get_queryset()
         if friend_objects is not None:
             users_followed = {u.user_to for u in friend_objects}
-            serializer = CustomUserSerializer(users_followed, many=True)
+            serializer = FollowersFollowingSerializer(
+                users_followed,
+                many=True
+                )
             return Response(serializer.data)

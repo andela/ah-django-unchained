@@ -11,17 +11,22 @@ class TestUserFollow(BaseTestCase):
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
         response = self.client.post(self.friend_url + '/andrew/follow')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["number_of_followers"], 1)
 
     def test_only_authenticated_users_can_follow(self):
         response = self.client.post(self.friend_url + '/andrew/follow')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_unfollow_other_user(self):
+        # test that a user is followed successfully
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
         res1 = self.client.post(self.friend_url + '/andrew/follow')
         self.assertEqual(res1.status_code, status.HTTP_200_OK)
+        self.assertEqual(res1.data["number_of_followers"], 1)
+        # test that a user is unfollowed successfullly
         res2 = self.client.delete(self.friend_url + '/andrew/follow')
         self.assertEqual(res2.status_code, status.HTTP_200_OK)
+        self.assertEqual(res2.data["number_of_followers"], 0)
 
     def test_follow_self(self):
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
