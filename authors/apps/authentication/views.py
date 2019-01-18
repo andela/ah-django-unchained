@@ -90,7 +90,7 @@ class ResetPasswordAPIView(generics.CreateAPIView):
 
         email = request.data['email']
         if email == "":
-            return Response({"errors": {
+            return Response({"errors": {    
                 "email": ["An email is required"]}})
         user = models.User.objects.filter(email=email)
         if user:
@@ -102,7 +102,7 @@ class ResetPasswordAPIView(generics.CreateAPIView):
             host_url = os.getenv("PASSWORD_RESET_URL")
             link = 'http://' + str(host_url) + '/users/passwordresetdone/' + token
             message = render_to_string(
-                'email.html', {
+                'email_template.html', {
                     'user': to_email,
                     'domain': link,
                     'token': token,
