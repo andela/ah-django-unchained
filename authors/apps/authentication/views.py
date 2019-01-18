@@ -1,21 +1,15 @@
-
-import jwt
 import os
 from jwt import ExpiredSignatureError
 from datetime import datetime, timedelta
 from django.conf import settings
 from django.template.loader import render_to_string
-from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import send_mail
 from rest_framework import status, generics
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.renderers import BrowsableAPIRenderer
-
-from authors.apps.authentication.backends import JWTAuthentication
 from .renderers import UserJSONRenderer
-from . import serializers
 from . import models
 from .serializers import (
     LoginSerializer, RegistrationSerializer, UserSerializer, 
@@ -93,8 +87,7 @@ class ResetPasswordAPIView(generics.CreateAPIView):
 
     def post(self, request):
 
-        username = request.data
-        email = username['email']
+        email = request.data['email']
         if email == "":
             return Response({"errors": {
                 "email": ["An email is required"]}})
@@ -104,10 +97,9 @@ class ResetPasswordAPIView(generics.CreateAPIView):
                                 "exp": datetime.utcnow() + timedelta(minutes=5)},
                                settings.SECRET_KEY, algorithm='HS256').decode()
             to_email = [email]
-            subject = "You requested a password Reset"
             DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
             host_url = os.getenv("PASSWORD_RESET_URL")
-            link = 'http://' + str(host_url) + '/users/passwordresetdone/'+ token
+            link = 'http://' + str(host_url) + '/users/passwordresetdone/' + token
             message = render_to_string(
                 'email.html', {
                     'user': to_email,
@@ -127,7 +119,7 @@ class ResetPasswordAPIView(generics.CreateAPIView):
         else:
             message = {"errors": {
                 "email": [
-                    "User with this email doesnot exist."
+                    "User with this email does not exist."
                 ]}
             }
         return Response(message, status=status.HTTP_400_BAD_REQUEST)
@@ -146,8 +138,7 @@ class UpdatePasswordAPIView(generics.UpdateAPIView):
                 return Response({"Passwords do not match"},
                                 status=status.HTTP_200_OK)
             serializer = self.serializer_class(data={"password": password,
-                                                     "confirm_password":
-                                                     confirm_password})
+                                                     "confirm_password": confirm_password})
             serializer.is_valid(raise_exception=True)
             decode_token = jwt.decode(token, settings.SECRET_KEY,
                                       algorithms='HS256')

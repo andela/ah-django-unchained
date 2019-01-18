@@ -5,17 +5,17 @@ from .models import User
 
 
 def password_validate():
-        return serializers.RegexField(
-            regex='^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[@#$%^&+=*!])',
-            max_length=128,
-            min_length=8,
-            write_only=True,
-            error_messages={
-                'required': 'Password field required',
-                'min_length': 'Ensure Password field has at least 8 characters',
-                'invalid': 'Password should contain a lowercase, uppercase numeric'
-                ' and special character'
-            })
+    return serializers.RegexField(
+        regex='^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[@#$%^&+=*!])',
+        max_length=128,
+        min_length=8,
+        write_only=True,
+        error_messages={
+            'required': 'Password field required',
+            'min_length': 'Ensure Password field has at least 8 characters',
+            'invalid': 'Password should contain a lowercase, uppercase numeric'
+            ' and special character'
+        })
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
@@ -25,7 +25,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
     # special characters and
     # no longer than 128
     # characters, and can not be read by the client.
-    
+
     password = password_validate()
 
     # Ensure username doesnt have special characters or numbers only
