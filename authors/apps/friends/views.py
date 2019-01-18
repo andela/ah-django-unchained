@@ -11,7 +11,7 @@ from .models import Friend
 from .serializers import CustomUserSerializer
 
 
-class FollowApiView(generics.CreateAPIView):
+class FollowUnfollowApiView(generics.RetrieveUpdateDestroyAPIView):
     """view for following a user"""
     permission_classes = (IsAuthenticated,)
 
@@ -42,11 +42,6 @@ class FollowApiView(generics.CreateAPIView):
         if serilizer:
             return Response(
                 {"user_id": user_id["id"]}, status=status.HTTP_200_OK)
-
-
-class UnFollowApiView(generics.DestroyAPIView):
-    """view for unfollowing a user"""
-    permission_classes = (IsAuthenticated,)
 
     def delete(self, request, username, format=None):
         """
