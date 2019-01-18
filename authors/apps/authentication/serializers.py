@@ -163,7 +163,9 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('email', 'username', 'password', 'following', 'followers')
+        fields = (
+            'id', 'email', 'username', 'password', 'following', 'followers'
+            )
 
         # The `read_only_fields` option is an alternative for explicitly
         # specifying the field with `read_only=True` like we did for password
@@ -173,10 +175,10 @@ class UserSerializer(serializers.ModelSerializer):
         # `max_length` properties too, but that isn't the case for the token
         # field.
     def get_followers(self, obj):
-       return len(json.loads(json.dumps([u.username for u in obj.followers.all()])))
+        return len(json.loads(json.dumps([u.username for u in obj.followers.all()])))
 
     def get_following(self, obj):
-       return len(json.loads(json.dumps([u.username for u in obj.following.all()])))
+        return len(json.loads(json.dumps([u.username for u in obj.following.all()])))
 
     def update(self, instance, validated_data):
         """Performs an update on a User."""

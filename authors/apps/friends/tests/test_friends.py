@@ -11,8 +11,6 @@ class TestUserFollow(BaseTestCase):
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
         response = self.client.post(self.friend_url + '/andrew/follow')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['email'], 'andrewhinga5@gmail.com')
-        self.assertEqual(response.data['username'], 'andrew')
 
     def test_only_authenticated_users_can_follow(self):
         response = self.client.post(self.friend_url + '/andrew/follow')
@@ -22,10 +20,8 @@ class TestUserFollow(BaseTestCase):
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
         res1 = self.client.post(self.friend_url + '/andrew/follow')
         self.assertEqual(res1.status_code, status.HTTP_200_OK)
-        assert res1.data['username'] == 'andrew'
         res2 = self.client.delete(self.friend_url + '/andrew/unfollow')
         self.assertEqual(res2.status_code, status.HTTP_200_OK)
-        self.assertEqual(res2.data['username'], 'andrew')
 
     def test_follow_self(self):
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)

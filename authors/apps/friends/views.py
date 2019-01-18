@@ -38,8 +38,10 @@ class FollowApiView(generics.CreateAPIView):
         Friend.objects.get_or_create(user_from=follower, user_to=followed)
         user = get_user_model().objects.get(pk=followed.id)
         serilizer = UserSerializer(user)
+        user_id = serilizer.data
         if serilizer:
-            return Response(serilizer.data, status=status.HTTP_200_OK)
+            return Response(
+                {"user_id": user_id["id"]}, status=status.HTTP_200_OK)
 
 
 class UnFollowApiView(generics.DestroyAPIView):
@@ -69,8 +71,10 @@ class UnFollowApiView(generics.DestroyAPIView):
         Friend.objects.filter(user_from=follower, user_to=followed).delete()
         user = get_user_model().objects.get(pk=followed.id)
         serilizer = UserSerializer(user)
+        user_id = serilizer.data
         if serilizer:
-            return Response(serilizer.data, status=status.HTTP_200_OK)
+            return Response(
+                {"user_id": user_id["id"]}, status=status.HTTP_200_OK)
 
 
 class FollowersApiView(generics.ListAPIView):
