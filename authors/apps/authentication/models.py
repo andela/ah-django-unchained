@@ -1,9 +1,6 @@
 import jwt
 from datetime import datetime, timedelta
 from django.conf import settings
-from django.dispatch import receiver
-from django.db.models.signals import post_save
-from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import (
     AbstractBaseUser, BaseUserManager, PermissionsMixin
 )
@@ -133,5 +130,3 @@ class User(AbstractBaseUser, PermissionsMixin):
         }
         token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256').decode('utf-8')
         return token
-
-        
