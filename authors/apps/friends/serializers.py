@@ -24,12 +24,8 @@ class FollowUnfollowSerializer(serializers.ModelSerializer):
             'id', 'username', "number_of_followers", "number_of_following"
             )
 
-    def get_number_of_followers(self, obj):
-        return len(
-            json.loads(json.dumps([u.username for u in obj.followers.all()]))
-            )
+    def get_number_of_followers(self, followers):
+        return followers
 
-    def get_number_of_following(self, obj):
-        return len(
-            json.loads(json.dumps([u.username for u in obj.following.all()]))
-            )
+    def get_number_of_following(self, following):
+        return following
