@@ -44,5 +44,4 @@ class IsMyProfileOrReadOnly(BasePermission):
             return True
 
         # write permission is only allowed to the owner of the object
-        print(obj)
         return obj.user.username == request.user.username
