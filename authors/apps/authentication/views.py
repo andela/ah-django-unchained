@@ -21,7 +21,6 @@ from authors.apps.core.permissions import IsAuthorOrReadOnly
 from authors.apps.authentication.backends import JWTAuthentication
 from . import models
 from .renderers import UserJSONRenderer
-from .models import User
 from . import serializers
 from .serializers import (
     LoginSerializer, RegistrationSerializer, UserSerializer,

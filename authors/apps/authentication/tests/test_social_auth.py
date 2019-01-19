@@ -10,8 +10,8 @@ class SocialAuthTest(APITestCase):
 
     def setUp(self):
         self.social_oauth_url = reverse('authentication:social_auth')
-        self.google_access_token = "ya29.GluWBq4fUvGRqGnt8H_CU4WwSEz8xNyaj8qCj0ooEKPyDMjGJrhVz8B_qgbB7Kstq7ZE5b3PTK4fSkg6xxJbe1NWmQIEhmmmJGGv52DZPpIekcY14vkB3L0ylFVt"
-        self.facebook_access_token = "EAAFKHchEtfYBAHXZCPx4WOjlrbatpx00Wo4aEBNTqpKxAuAbRyiZBZBLrzcYYx0kSpPVikxFUGyniejxUXhPkGvJLRvKEZAIPgfyl27uWOu4DIs4O3vmE26FpQBBtowOrSSluCIsYIYPZA5YRa0rWJQtmCd7B3paAUZA7DlWKlrrKD3ZCAUHemQTwPPZCkWwkbkZD"
+        self.google_access_token = "ya29.GluWBs6tZRl_j9ZYNPelugOza5fcsFnRvC1NrYLhanbqEXpN3pAmTOEMnX-MLvpdHeT1nV6S__-F6FQuOPZ5p_86HPuxk8T5S1kl3z3PDASH-Dx8aJEILEI8G1K4"
+        self.facebook_access_token = "EAAFKHchEtfYBABWLGvrwJZCs9CcRYnkwJGroQn1OHKEt10mp8rkzpMYPA90m5f0llwODHdGV9kpZATBo8dZBditNlwBlhcdZAyuqdvIOqy6TtnGZAEsGOpULsTct9ZC88ZClPfcemTcS7VirUXX7h3D0THReoEfk5PZB3Ep1rtUTYDycosaIHCOwVdeUXmuIEi4ZD"
         self.oauth1_access_token = "2858460258-5giuATgW1FdkZe8uKPY86mueQqlLoiLPoXaxxDt"
         self.oauth1_access_token_secret = "ep3d3fAseeJwKcaGtOXtnZj6pRpuyEtyzOrWXvecbB8V8"
       
