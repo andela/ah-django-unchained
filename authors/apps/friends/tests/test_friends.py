@@ -65,3 +65,30 @@ class TestUserFollow(BaseTestCase):
         response = self.client.get(self.friend_url + '/andrew/following')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 0)
+
+    def test_follow_user_that_i_follow(self):
+        # first test to follow a user
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
+        response = self.client.post(self.friend_url + '/andrew/follow')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["number_of_followers"], 1)
+        # second test to follow the same user
+        res2 = self.client.post(self.friend_url + '/andrew/follow')
+        self.assertEqual(res2.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertEqual(
+            res2.data['message'], 'you already follow this user')
+
+    def test_unfollow_user_i_dont_follow(self):
+        # first test that a user is followed successfully
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
+        res1 = self.client.post(self.friend_url + '/andrew/follow')
+        self.assertEqual(res1.status_code, status.HTTP_200_OK)
+        self.assertEqual(res1.data["number_of_followers"], 1)
+        # second test that a user is unfollowed successfullly
+        res2 = self.client.delete(self.friend_url + '/andrew/follow')
+        self.assertEqual(res2.status_code, status.HTTP_200_OK)
+        self.assertEqual(res2.data["number_of_followers"], 0)
+        # third test that i cannot unfollow a user i don't follow
+        res3 = self.client.delete(self.friend_url + '/andrew/follow')
+        self.assertEqual(res3.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertEqual(res3.data['message'], "you don't follow this user")

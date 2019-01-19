@@ -33,11 +33,17 @@ class FollowUnfollowApiView(generics.RetrieveUpdateDestroyAPIView):
             return Response(
                 {"message": "You cannot follow yourself"},
                 status=status.HTTP_406_NOT_ACCEPTABLE)
+
+        if Friend.objects.filter(user_from=follower, user_to=followed):
+            return Response(
+                {"message": "you already follow this user"},
+                status=status.HTTP_406_NOT_ACCEPTABLE)
+
         Friend.objects.get_or_create(user_from=follower, user_to=followed)
         user = get_user_model().objects.get(pk=followed.id)
-        serilizer = FollowUnfollowSerializer(user)
-        user_id = serilizer.data
-        if serilizer:
+        serializer = FollowUnfollowSerializer(user)
+        user_id = serializer.data
+        if serializer:
             return Response(user_id, status=status.HTTP_200_OK)
 
     def delete(self, request, username, format=None):
@@ -59,11 +65,20 @@ class FollowUnfollowApiView(generics.RetrieveUpdateDestroyAPIView):
             return Response(
                 {"message": "You cannot unfollow yourself"},
                 status=status.HTTP_406_NOT_ACCEPTABLE)
-        Friend.objects.filter(user_from=follower, user_to=followed).delete()
+
+        relationship = Friend.objects.filter(
+            user_from=follower, user_to=followed)
+
+        if not relationship:
+            return Response(
+                {"message": "you don't follow this user"},
+                status=status.HTTP_406_NOT_ACCEPTABLE)
+
+        relationship.delete()
         user = get_user_model().objects.get(pk=followed.id)
-        serilizer = FollowUnfollowSerializer(user)
-        user_id = serilizer.data
-        if serilizer:
+        serializer = FollowUnfollowSerializer(user)
+        user_id = serializer.data
+        if serializer:
             return Response(user_id, status=status.HTTP_200_OK)
 
 
