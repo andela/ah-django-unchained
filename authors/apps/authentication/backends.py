@@ -51,3 +51,4 @@ class JWTAuthentication(BaseAuthentication):
                 status=status.HTTP_403_FORBIDDEN)
 
         return user, token
+        
