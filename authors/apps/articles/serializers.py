@@ -20,13 +20,13 @@ class ArticleSerializer(serializers.ModelSerializer):
                   'created',
                   'modified',
                   'images',
-                  'author']
+                  'author',
+                  'slug']
         read_only_fields = ['created',
                             'modified',
                             'author',
                             'slug',
-                            'images',
-                            'is_dispayed']
+                            'images']
 
     # Inserts the ID of the author of an article into the foreign key row
     def get_author(self,obj):
@@ -50,7 +50,6 @@ class GetArticleSerializer(serializers.ModelSerializer):
                   'slug']
         read_only_fields = ['modified',
                             'author',
-                            'title',
                             'slug']
 
     def get_author(self,obj):
