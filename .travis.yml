@@ -11,6 +11,9 @@ install:
 services: 
   - postgresql
 
+addons:
+  postgresql: "9.6"
+
 before-script:
   - psql -c 'CREATE DATABASE test;' -U postgres
   - python manage.py makemigrations
