@@ -59,4 +59,4 @@ class DeleteArticleSerializer(serializers.ModelSerializer):
     """Serializer for deleting an article"""
     class Meta:
         model = Article
-        fields = ['is_dispayed']
+        fields = ['is_displayed']
