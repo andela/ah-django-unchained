@@ -2,10 +2,11 @@ import json
 import jwt
 import os
 from django.urls import reverse
+from django.core import mail
 from rest_framework.test import APIClient
 from rest_framework.test import APITestCase
 from rest_framework.views import status
-from authors.settings import SECRET_KEY
+from authors.settings import SECRET_KEY,EMAIL_HOST_USER
 
 
 class TestEmailVerification(APITestCase):
@@ -26,16 +27,21 @@ class TestEmailVerification(APITestCase):
                 "password": "H^&lh123d"
             }}
 
-    def test_email_verification(self):
-        """test user email verification"""
-        response = self.client.post(self.signup_url, self.signup_data,
-                                    format="json")
-        self.token = response.data['token']
-        """Test if unverified user can login"""
-        response = self.client.post(self.login_url,
-                                    self.login_data,
-                                    format='json')
 
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(json.loads(response.content), {'errors': {'error': [
-                         'Please verify your account by clicking on the link sent to your email.']}})
+    def test_send_verification_email(self):
+        # Send message.
+        self.assertEqual(len(mail.outbox),0)
+        mail.send_mail(
+            'Authors Haven Verification Link', 'Here is the message.',
+            EMAIL_HOST_USER, ['daveyhash@gmail.com'],
+            fail_silently=False,
+        )
+
+        # Test that one message has been sent.
+        self.assertEqual(len(mail.outbox), 1)
+
+        # Verify that the subject of the first message is correct.
+        self.assertEqual(mail.outbox[0].subject, 'Authors Haven Verification Link')
+
+
+

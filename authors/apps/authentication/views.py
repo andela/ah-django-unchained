@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from django.conf import settings
 from django.template.loader import render_to_string
 from django.core.mail import send_mail
+from django.template.loader import render_to_string
 from rest_framework import status, generics
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -16,6 +17,8 @@ from .serializers import (
     ResetSerializerEmail, ResetSerializerPassword
 )
 from .models import User
+from .utils import send_link
+
 
 class RegistrationAPIView(generics.CreateAPIView):
     # Allow any user (authenticated or not) to hit this endpoint.
@@ -31,31 +34,51 @@ class RegistrationAPIView(generics.CreateAPIView):
         # your own work later on. Get familiar with it.
         serializer = self.serializer_class(data=user)
         serializer.is_valid(raise_exception=True)
-        serializer.save()        
-
-        # Email verification email configuration via
-        # gmail API
-        email = serializer.data.get('email', None)
-        payload = {'email':  email}
-        token = jwt.encode(payload,SECRET_KEY, algorithm='HS256').decode()
-        from_email, to_email =EMAIL_HOST_USER , [email]
-        subject = "Authors Haven Verification Link"
-        site_url = get_current_site(request).domain
-        link_url = "http://" + site_url + \
-            '/api/users/verify/{}/'.format(token)
-        body = "Hi {},\n Please click on this link to verify your email: "\
-                .format(serializer.data['username']) + link_url
-        send_mail(subject, body, from_email, to_email, fail_silently=False)   
+        email = serializer.validated_data.get('email', None)
+        send_link(self, email)
+        serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-class VerifyAPIView(generics.ListCreateAPIView):
-    def get_queryset(self):
-        token = jwt.decode(
-            self.kwargs["token"],SECRET_KEY, algorithm='HS256')
-        queryset = User.objects.filter(email=token['email'])
-        User.objects.filter(email=token['email']).update(is_verified=True)
-        return queryset
+
+class VerifyAPIView(generics.CreateAPIView):
     serializer_class = UserSerializer
+
+    def get(self, request, token):
+        try:
+            email = jwt.decode(token, settings.SECRET_KEY)['email']
+            user = User.objects.get(email=email)
+            if user.is_verified:
+                message = {
+                    "message": "Your account is already verified.",
+                }
+                return Response(message, status=status.HTTP_403_FORBIDDEN)
+            user.is_verified = True
+            user.save()
+            message = {
+                "message": "Your account has been successfully verified.",
+            }
+            return Response(message, status=status.HTTP_200_OK)
+        except jwt.ExpiredSignatureError:
+            message = {"errors": {
+                "email": [
+                    "Verification link has expired."
+                ]}
+            }
+        return Response(message, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ResendVerifyAPIView(generics.ListCreateAPIView):
+    serializer_class = UserSerializer
+
+    def get(self, request):
+        token = request.META.get('HTTP_AUTHORIZATION', '').split(' ')[1]
+        payload = jwt.decode(token, settings.SECRET_KEY)
+        email = payload['email']
+        send_link(self, email)
+        message = {
+            "message": "Verification link sent successfully. Please check your email.",
+        }
+        return Response(message, status=status.HTTP_200_OK)
 
 
 class LoginAPIView(generics.CreateAPIView):
