@@ -14,16 +14,6 @@ class FollowUnfollowApiView(generics.RetrieveUpdateDestroyAPIView):
     """view for following a user"""
     permission_classes = (IsAuthenticated,)
 
-    def get_number_of_followers(self, user):
-        number_of_followers = Friend.objects.select_related(
-            'user_to').filter(user_to=user.id).count()
-        return number_of_followers
-
-    def get_number_of_following(self, user):
-        number_of_following = Friend.objects.select_related(
-            'user_from').filter(user_from=user.id).count()
-        return number_of_following
-
     def post(self, request, username, format=None):
         """
         Checks if the user associated with the username passed exists
@@ -44,22 +34,15 @@ class FollowUnfollowApiView(generics.RetrieveUpdateDestroyAPIView):
                 {"message": "You cannot follow yourself"},
                 status=status.HTTP_406_NOT_ACCEPTABLE)
 
-        is_following = Friend.objects.get_or_create(
+        user_followed, created_now = Friend.objects.get_or_create(
             user_from=follower, user_to=followed)
-        if is_following[1] is False:
+        if created_now is False:
             return Response(
                 {"message": "you already follow this user"},
                 status=status.HTTP_406_NOT_ACCEPTABLE)
 
-        number_of_followers = self.get_number_of_followers(followed)
-        number_of_following = self.get_number_of_following(followed)
-
         serializer = FollowUnfollowSerializer(followed)
         user_details = serializer.data
-        user_details.update({
-            'number_of_followers': number_of_followers,
-            'number_of_following': number_of_following})
-
         return Response(user_details, status=status.HTTP_200_OK)
 
     def delete(self, request, username, format=None):
@@ -91,16 +74,8 @@ class FollowUnfollowApiView(generics.RetrieveUpdateDestroyAPIView):
                 status=status.HTTP_406_NOT_ACCEPTABLE)
 
         relationship.delete()
-
-        number_of_followers = self.get_number_of_followers(followed)
-        number_of_following = self.get_number_of_following(followed)
-
         serializer = FollowUnfollowSerializer(followed)
         user_details = serializer.data
-        user_details.update({
-            'number_of_followers': number_of_followers,
-            'number_of_following': number_of_following})
-
         return Response(user_details, status=status.HTTP_200_OK)
 
 
@@ -115,7 +90,7 @@ class FollowersApiView(generics.ListAPIView):
         user = get_object_or_404(
             get_user_model(), username=self.kwargs['username'])
         return Friend.objects.select_related(
-            'user_to').filter(user_to=user.id).all()
+            'user_from').filter(user_to=user.id).all()
 
     def get(self, request, username, format=None):
         """
@@ -140,7 +115,7 @@ class FollowingApiView(generics.ListAPIView):
         user = get_object_or_404(
             get_user_model(), username=self.kwargs['username'])
         return Friend.objects.select_related(
-            'user_from', ).filter(user_from=user.id).all()
+            'user_to', ).filter(user_from=user.id).all()
 
     def get(self, request, username, format=None):
         """

@@ -1,4 +1,3 @@
-import json
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
@@ -24,8 +23,8 @@ class FollowUnfollowSerializer(serializers.ModelSerializer):
             'id', 'username', "number_of_followers", "number_of_following"
             )
 
-    def get_number_of_followers(self, followers):
-        return followers
+    def get_number_of_followers(self, obj):
+        return obj.followers.count()
 
-    def get_number_of_following(self, following):
-        return following
+    def get_number_of_following(self, obj):
+        return obj.following.count()
