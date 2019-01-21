@@ -13,6 +13,7 @@ class ProfileView(generics.RetrieveUpdateAPIView):
     permission_classes = (IsMyProfileOrReadOnly,)
     lookup_field = 'slug'
 
+
 class GetProfileView(generics.ListAPIView):
     """
     class view to view user profile
