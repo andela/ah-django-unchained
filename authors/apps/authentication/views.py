@@ -2,7 +2,6 @@ import os
 import jwt
 from datetime import datetime, timedelta
 from django.conf import settings
-from django.template.loader import render_to_string
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from rest_framework import status, generics
@@ -35,7 +34,7 @@ class RegistrationAPIView(generics.CreateAPIView):
         serializer = self.serializer_class(data=user)
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data.get('email', None)
-        send_link(self, email)
+        send_link(email)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -58,10 +57,10 @@ class VerifyAPIView(generics.CreateAPIView):
                 "message": "Your account has been successfully verified.",
             }
             return Response(message, status=status.HTTP_200_OK)
-        except jwt.ExpiredSignatureError:
+        except Exception:
             message = {"errors": {
                 "email": [
-                    "Verification link has expired."
+                    "Verification link is invalid."
                 ]}
             }
         return Response(message, status=status.HTTP_400_BAD_REQUEST)
@@ -74,7 +73,7 @@ class ResendVerifyAPIView(generics.ListCreateAPIView):
         token = request.META.get('HTTP_AUTHORIZATION', '').split(' ')[1]
         payload = jwt.decode(token, settings.SECRET_KEY)
         email = payload['email']
-        send_link(self, email)
+        send_link(email)
         message = {
             "message": "Verification link sent successfully. Please check your email.",
         }
@@ -195,3 +194,4 @@ class UpdatePasswordAPIView(generics.UpdateAPIView):
         except jwt.ExpiredSignatureError:
             return Response({"The link expired"},
                             status=status.HTTP_400_BAD_REQUEST)
+                            

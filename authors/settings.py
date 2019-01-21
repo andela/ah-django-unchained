@@ -26,14 +26,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-#gmail account configuration settings
-EMAIL_BACKEND = 'django.core.mail.bac   kends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-
 # Application definition
 
 INSTALLED_APPS = [

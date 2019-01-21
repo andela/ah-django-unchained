@@ -128,5 +128,5 @@ class User(AbstractBaseUser, PermissionsMixin):
             'email': self.email,
             'exp': int(date.strftime('%s')),
         }
-        token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
-        return token.decode()
+        token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256').decode('utf-8')
+        return token
