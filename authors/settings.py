@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'authors.apps.authentication',
     'authors.apps.core',
     'authors.apps.profiles',
+    'authors.apps.friends',
 
     # Enables API to be documented using Swagger
     'rest_framework_swagger',

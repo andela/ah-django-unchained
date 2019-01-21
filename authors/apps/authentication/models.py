@@ -127,4 +127,4 @@ class User(AbstractBaseUser, PermissionsMixin):
             'exp': int(date.strftime('%s')),
         }
         token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
-        return token
+        return token.decode()

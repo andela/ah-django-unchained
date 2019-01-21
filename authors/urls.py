@@ -26,6 +26,7 @@ urlpatterns = [
 
     path('api/', include('authors.apps.authentication.urls',
                          namespace='authentication')),
+    path('api/', include('authors.apps.friends.urls')),
 
     # Set the API documentation at the root of the site
     path('', schema_view)
