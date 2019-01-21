@@ -1,24 +1,20 @@
 import os
 import jwt
 from datetime import datetime, timedelta
-
-from django.conf import settings
-from django.core.mail import send_mail
-<<<<<<< HEAD
-from django.template.loader import render_to_string
-=======
-from django.db import IntegrityError
->>>>>>> feat(social auth):add social login functionality
-from rest_framework import status, generics
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework.response import Response
-from rest_framework.views import APIView
 from social_django.utils import load_strategy, load_backend
 from social_core.exceptions import MissingBackend, AuthAlreadyAssociated
 from social_core.backends.oauth import BaseOAuth1, BaseOAuth2
 
-from authors.apps.core.permissions import IsAuthorOrReadOnly
-from authors.apps.authentication.backends import JWTAuthentication
+from django.conf import settings
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.db import IntegrityError
+from rest_framework import status, generics
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+
 from . import models
 from .renderers import UserJSONRenderer
 from . import serializers
@@ -254,13 +250,12 @@ class SocialAuthenticationView(generics.CreateAPIView):
                 status=status.HTTP_400_BAD_REQUEST)
         except BaseException:
             return Response({
-                "errors": "The token has expired"},
+                "errors": "Invalid token"},
                  status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         if user:
             user.is_active = True
             username = user.username
             email = user.email
-            user.save()
 
         date = datetime.now() + timedelta(days=20)
         payload = {
