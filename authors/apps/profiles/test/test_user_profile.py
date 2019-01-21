@@ -1,3 +1,4 @@
+import json
 from django.urls import reverse
 from rest_framework.views import status
 from rest_framework.test import APITestCase, APIClient
@@ -17,7 +18,19 @@ class LoginTestCase(APITestCase):
         self.profile_data = {
             "first_name": "kwame",
             "last_name": "asiago",
-            "gender": "M",
+            "gender": "F",
+            "bio": "my bio"
+        }
+        self.empty_first_name = {
+            "first_name": "",
+            "last_name": "asiago",
+            "gender": "F",
+            "bio": "my bio"
+        }
+        self.invalid_gender = {
+            "first_name": "kwame",
+            "last_name": "asiago",
+            "gender": "G",
             "bio": "my bio"
         }
 
@@ -30,8 +43,8 @@ class LoginTestCase(APITestCase):
 
         # get user profile
         profile = self.client.get(
-            reverse('profiles:get-profile', kwargs={'slug': 'johndoe'}), format='json')
-        self.assertEqual(register.status_code, status.HTTP_201_CREATED)
+            reverse('profiles:put-profile', kwargs={'username': 'johndoe'}), format='json')
+        self.assertEqual(profile.status_code, status.HTTP_200_OK)
 
     def test_updating_profile(self):
         """Test post profile upon registrations"""
@@ -42,6 +55,39 @@ class LoginTestCase(APITestCase):
         token = register.data['token']
 
         # update profile
-        profile = self.client.put(reverse('profiles:post-profile', kwargs={'slug': 'johndoe'}), self.profile_data,
+        profile = self.client.put(reverse('profiles:put-profile', kwargs={'username': 'johndoe'}), self.profile_data,
                                   format='json', HTTP_AUTHORIZATION='token {}'.format(token))
         self.assertEqual(profile.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            profile.data, {'response': 'profile has been updated successfully '})
+
+    def test_updating_empty_first_name(self):
+        """Test post profile upon registrations"""
+        # sign up a user and get token
+        register = self.client.post(
+            self.signup_url, self.signup_data, format='json')
+        self.assertEqual(register.status_code, status.HTTP_201_CREATED)
+        token = register.data['token']
+
+        # update profile
+        profile = self.client.put(reverse('profiles:put-profile', kwargs={'username': 'johndoe'}), self.empty_first_name,
+                                  format='json', HTTP_AUTHORIZATION='token {}'.format(token))
+        self.assertEqual(profile.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual({'errors': {'first_name': [
+                         'This field may not be blank.']}}, json.loads(profile.content))
+
+    def test_updating_invalid_gender(self):
+        """Test post profile upon registrations"""
+        # sign up a user and get token
+        register = self.client.post(
+            self.signup_url, self.signup_data, format='json')
+        self.assertEqual(register.status_code, status.HTTP_201_CREATED)
+        token = register.data['token']
+
+        # update profile
+        profile = self.client.put(reverse('profiles:put-profile', kwargs={'username': 'johndoe'}), self.invalid_gender,
+                                  format='json', HTTP_AUTHORIZATION='token {}'.format(token))
+        self.assertEqual(profile.status_code, status.HTTP_400_BAD_REQUEST)
+        data = {'errors': {'gender': ['Please enter M if you are male, F if you are female or '
+                                      + 'N if you do not want to disclose ']}}
+        self.assertEqual(data, json.loads(profile.content))

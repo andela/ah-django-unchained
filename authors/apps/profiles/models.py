@@ -15,24 +15,22 @@ class UserProfile(models.Model):
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     # A char field to hold bio data
-    bio = models.TextField(max_length=200, default='')
+    bio = models.TextField(max_length=200, default='empty')
 
     # A choice field to hold multiple choice
-    gender_choices = (('M', 'MALE'), ('F', 'FEMALE'))
+    gender_choices = (('M', 'MALE'), ('F', 'FEMALE'),
+                      ('N', 'I PREFER NOT TO SAY'))
     gender = models.CharField(
-        max_length=10, choices=gender_choices, default='M')
+        max_length=10, choices=gender_choices, default='N')
 
     # cloudinary field
-    profile_image = CloudinaryField('image', null=True, default='', blank=True)
+    profile_image = CloudinaryField('image', blank=True)
 
     # A char field for the First name
-    first_name = models.CharField(max_length=100, default='')
+    first_name = models.CharField(max_length=100)
 
     # A char field for the user Last name
-    last_name = models.CharField(max_length=100, default='')
-
-    # create a slug for the user name
-    slug = models.SlugField(null=True, blank=True)
+    last_name = models.CharField(max_length=100)
 
     updated_at = models.DateField(auto_now=True)
 
