@@ -1,4 +1,5 @@
 import json
+import os
 from django.urls import reverse
 from rest_framework.views import status
 from rest_framework.test import APITestCase, APIClient
@@ -10,10 +11,10 @@ class SocialAuthTest(APITestCase):
 
     def setUp(self):
         self.social_oauth_url = reverse('authentication:social_auth')
-        self.google_access_token = "ya29.GluXBun21tX5j8lWx7SLmEiZW3M2YMgGDF9CvK4QE9BQPzSXflkvrez_40azqmt0ft0zo5Yed7mg5mrfWpr9FVhN6xcsk6G11DBxClpMtDBt75lgrhrj2MZC1Vo4"
-        self.facebook_access_token = "EAAFKHchEtfYBAGJLNcPRLgzjbY2jAIyv7fisZAIXWxB9ZB2iO3BRWfVk0wK9E6fnJtOVBWZBXoLsMwG6uwt33s1Vs5haoECVgXy5dXEWehSPUYsr2R2IhObbAT9l0mUASAhViL7PEN4fbPlqbdPsDadzVZAdrEMZC6CREkU8twZCtdxdBZBXH6cwOuWb0Gp9isZD"
-        self.oauth1_access_token = "2858460258-5giuATgW1FdkZe8uKPY86mueQqlLoiLPoXaxxDt"
-        self.oauth1_access_token_secret = "ep3d3fAseeJwKcaGtOXtnZj6pRpuyEtyzOrWXvecbB8V8"
+        self.google_access_token = os.getenv('GOOGLE_TOKEN')
+        self.facebook_access_token = os.getenv('FACEBOOK_TOKEN')
+        self.oauth1_access_token = os.getenv('TWITTER_TOKEN')
+        self.oauth1_access_token_secret = os.getenv('TWITTER_SECRET_TOKEN')
       
         self.invalid_provider = {
             "provider": "google-oauth21",

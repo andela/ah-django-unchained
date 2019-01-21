@@ -250,7 +250,7 @@ class SocialAuthenticationView(generics.CreateAPIView):
             user = backend.do_auth(token, user=authenticated_user)
         except (AuthAlreadyAssociated, IntegrityError):
             return Response({
-                "errors": "User is authenticated"},
+                "errors": "You are already logged in with another account"},
                 status=status.HTTP_400_BAD_REQUEST)
         except BaseException:
             return Response({
