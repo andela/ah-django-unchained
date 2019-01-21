@@ -44,5 +44,4 @@ class LoginTestCase(APITestCase):
         # update profile
         profile = self.client.put(reverse('profiles:post-profile', kwargs={'slug': 'johndoe'}), self.profile_data,
                                   format='json', HTTP_AUTHORIZATION='token {}'.format(token))
-        self.profile_data['profile_image'] = None
         self.assertEqual(profile.status_code, status.HTTP_200_OK)
