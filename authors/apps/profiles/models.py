@@ -30,10 +30,13 @@ class UserProfile(models.Model):
 
     # A char field for the user Last name
     last_name = models.CharField(max_length=100, default='')
-    objects = UserManager()
 
     # create a slug for the user name
     slug = models.SlugField(null=True, blank=True)
+
+    updated_at = models.DateField(auto_now=True)
+
+    objects = UserManager()
 
 # method to create a new profile
 

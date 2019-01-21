@@ -15,14 +15,13 @@ class LoginTestCase(APITestCase):
                 "password": "@Qwerty12345"
             }}
         self.profile_data = {
-            "first_name": "",
-            "last_name": "",
+            "first_name": "kwame",
+            "last_name": "asiago",
             "gender": "M",
-            "bio": "",
-            "profile_image": None
+            "bio": "my bio"
         }
 
-    def test_get_profile(self):
+    def test_get_user_profile(self):
         """Test get profile upon registrations"""
         # register user
         register = self.client.post(
@@ -32,15 +31,10 @@ class LoginTestCase(APITestCase):
         # get user profile
         profile = self.client.get(
             reverse('profiles:get-profile', kwargs={'slug': 'johndoe'}), format='json')
-        self.assertEqual(self.profile_data, profile.data)
+        self.assertEqual(register.status_code, status.HTTP_201_CREATED)
 
-    def test_post_profile(self):
+    def test_updating_profile(self):
         """Test post profile upon registrations"""
-        # override self.profile_data
-        self.profile_data['first_name'], self.profile_data['last_name'] = 'kwame', 'asiago'
-        self.profile_data['bio'] = 'some bio'
-        del self.profile_data['profile_image']
-
         # sign up a user and get token
         register = self.client.post(
             self.signup_url, self.signup_data, format='json')
@@ -51,4 +45,4 @@ class LoginTestCase(APITestCase):
         profile = self.client.put(reverse('profiles:post-profile', kwargs={'slug': 'johndoe'}), self.profile_data,
                                   format='json', HTTP_AUTHORIZATION='token {}'.format(token))
         self.profile_data['profile_image'] = None
-        self.assertEqual(self.profile_data, profile.data)
+        self.assertEqual(profile.status_code, status.HTTP_200_OK)
