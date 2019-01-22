@@ -194,5 +194,6 @@ class CreateArticles(APITestCase):
         response = self.client.get(reverse('articles:articles-retrieveupdate',
                                    kwargs={'slug': 'a-new-story'}),
                                    format='json')
+        print(response.data)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-        self.assertEqual('Not found', response.data['detail'])
+        self.assertEqual('Not found.', response.data['detail'])
