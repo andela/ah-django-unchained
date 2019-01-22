@@ -169,6 +169,8 @@ class CreateArticles(APITestCase):
                                    self.delete_article,
                                    format='json',
                                    HTTP_AUTHORIZATION='token {}'.format(token))
+        self.assertEqual(self.delete_article['is_deleted'],
+                         response.data['is_deleted'])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_unauthorized_delete_article(self):
@@ -194,6 +196,5 @@ class CreateArticles(APITestCase):
         response = self.client.get(reverse('articles:articles-retrieveupdate',
                                    kwargs={'slug': 'a-new-story'}),
                                    format='json')
-        print(response.data)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual('Not found.', response.data['detail'])
