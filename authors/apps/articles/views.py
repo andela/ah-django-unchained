@@ -2,14 +2,15 @@ import random
 
 from django.template.defaultfilters import slugify
 from rest_framework import status
+from django.core import serializers
 from rest_framework.response import Response
 from rest_framework.generics import (ListCreateAPIView,
                                      RetrieveUpdateAPIView, UpdateAPIView)
 from rest_framework.permissions import (IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.renderers import JSONRenderer
-from authors.apps.core.permissions import IsAuthorOrReadOnly
 
+from authors.apps.core.permissions import IsAuthorOrReadOnly
 from . import serializers
 from .serializers import (ArticleSerializer,
                           GetArticleSerializer, DeleteArticleSerializer)
@@ -19,7 +20,7 @@ from .models import Article
 class ArticleAPIView(ListCreateAPIView):
     """Creates articles and retrieves all articles"""
     permission_classes = (IsAuthenticatedOrReadOnly,)
-    # Only fetch those articles whose 'is_deleted' field is True
+    # Only fetch those articles whose 'is_deleted' field is False
     queryset = Article.objects.filter(is_deleted=False)
     serializer_class = ArticleSerializer
 
@@ -52,6 +53,6 @@ class ArticleDetailsView(RetrieveUpdateAPIView):
 
 class DeleteArticle(UpdateAPIView):
     permission_classes = (IsAuthorOrReadOnly,)
-    queryset = Article.objects.all()
+    queryset = Article.objects.filter(is_deleted=False)
     serializer_class = DeleteArticleSerializer
     lookup_field = 'slug'
