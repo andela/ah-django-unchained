@@ -92,5 +92,6 @@ class LoginTestCase(APITestCase):
             format='json',
             HTTP_AUTHORIZATION='token {}'.format(token))
         self.assertEqual(profile.status_code, status.HTTP_400_BAD_REQUEST)
-        data = {'errors': {'gender': ['Please enter M if you are male, F if you are female or N if you do not want to disclose ']}}
+        msg = 'Please enter M if you are male, F if you are female or N if you do not want to disclose '
+        data = {'errors': {'gender': [msg]}}
         self.assertEqual(data, json.loads(profile.content))
