@@ -70,18 +70,18 @@ class CreateArticles(APITestCase):
                          HTTP_AUTHORIZATION='token {}'.format(token))
         response = self.client.get(self.article_listcreate, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn(self.create_article_data['title'],
-                      response.data[0]['title'])
-        self.assertIn(self.create_article_data2['title'],
-                      response.data[1]['title'])
-        self.assertIn(self.create_article_data['body'],
-                      response.data[0]['body'])
-        self.assertIn(self.create_article_data2['body'],
-                      response.data[1]['body'])
-        self.assertIn(self.create_article_data['description'],
-                      response.data[0]['description'])
-        self.assertIn(self.create_article_data2['description'],
-                      response.data[1]['description'])
+        self.assertEqual(self.create_article_data['title'],
+                         response.data[0]['title'])
+        self.assertEqual(self.create_article_data2['title'],
+                         response.data[1]['title'])
+        self.assertEqual(self.create_article_data['body'],
+                         response.data[0]['body'])
+        self.assertEqual(self.create_article_data2['body'],
+                         response.data[1]['body'])
+        self.assertEqual(self.create_article_data['description'],
+                         response.data[0]['description'])
+        self.assertEqual(self.create_article_data2['description'],
+                         response.data[1]['description'])
 
     def test_add_articles(self):
         """Test to add an article"""
@@ -92,12 +92,12 @@ class CreateArticles(APITestCase):
                                     format='json',
                                     HTTP_AUTHORIZATION='token {}'.format(token))
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertIn(self.create_article_data['title'],
-                      response.data['title'])
-        self.assertIn(self.create_article_data['body'],
-                      response.data['body'])
-        self.assertIn(self.create_article_data['description'],
-                      response.data['description'])
+        self.assertEqual(self.create_article_data['title'],
+                         response.data['title'])
+        self.assertEqual(self.create_article_data['body'],
+                         response.data['body'])
+        self.assertEqual(self.create_article_data['description'],
+                         response.data['description'])
 
     def test_get_single_article(self):
         """Test to get a single article"""
@@ -111,12 +111,12 @@ class CreateArticles(APITestCase):
                                    kwargs={'slug': 'a-new-story'}),
                                    format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn(self.create_article_data['title'],
-                      response.data['title'])
-        self.assertIn(self.create_article_data['body'],
-                      response.data['body'])
-        self.assertIn(self.create_article_data['description'],
-                      response.data['description'])
+        self.assertEqual(self.create_article_data['title'],
+                         response.data['title'])
+        self.assertEqual(self.create_article_data['body'],
+                         response.data['body'])
+        self.assertEqual(self.create_article_data['description'],
+                         response.data['description'])
 
     def test_unauthorized_article_update(self):
         """Test to update an article created by another user"""
@@ -149,12 +149,12 @@ class CreateArticles(APITestCase):
                                    format='json',
                                    HTTP_AUTHORIZATION='token {}'.format(token))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn(self.create_article_data2['title'],
-                      response.data['title'])
-        self.assertIn(self.create_article_data2['body'],
-                      response.data['body'])
-        self.assertIn(self.create_article_data2['description'],
-                      response.data['description'])
+        self.assertEqual(self.create_article_data2['title'],
+                         response.data['title'])
+        self.assertEqual(self.create_article_data2['body'],
+                         response.data['body'])
+        self.assertEqual(self.create_article_data2['description'],
+                         response.data['description'])
 
     def test_to_delete_article(self):
         """Test to delete an article"""
@@ -186,13 +186,13 @@ class CreateArticles(APITestCase):
                                    format='json',
                                    HTTP_AUTHORIZATION='token {}'.format(token2))
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertIn('You are not allowed to edit or delete this object',
-                      response.data['detail'])
+        self.assertEqual('You are not allowed to edit or delete this object',
+                         response.data['detail'])
 
     def test_to_fetch_non_exisiting_article(self):
         """Test to fetch an article that does not exist"""
         response = self.client.get(reverse('articles:articles-retrieveupdate',
                                    kwargs={'slug': 'a-new-story'}),
                                    format='json')
-        self.assertEquals(response.status_code, status.HTTP_404_NOT_FOUND)
-        self.assertIn('Not found', response.data['detail'])
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual('Not found', response.data['detail'])
