@@ -55,8 +55,8 @@ class LoginTestCase(APITestCase):
         token = register.data['token']
 
         # update profile
-        profile = self.client.put(reverse('profiles:put-profile', kwargs={'username': 'johndoe'}), self.profile_data,
-                                  format='json', HTTP_AUTHORIZATION='token {}'.format(token))
+        profile = self.client.put(reverse('profiles:put-profile', kwargs={'username': 'johndoe'}),
+                                  self.profile_data, format='json', HTTP_AUTHORIZATION='token {}'.format(token))
         self.assertEqual(profile.status_code, status.HTTP_200_OK)
         self.assertEqual(
             profile.data, {'response': 'profile has been updated successfully '})
@@ -70,8 +70,8 @@ class LoginTestCase(APITestCase):
         token = register.data['token']
 
         # update profile
-        profile = self.client.put(reverse('profiles:put-profile', kwargs={'username': 'johndoe'}), self.empty_first_name,
-                                  format='json', HTTP_AUTHORIZATION='token {}'.format(token))
+        profile = self.client.put(reverse('profiles:put-profile', kwargs={'username': 'johndoe'}),
+                                  self.empty_first_name, format='json', HTTP_AUTHORIZATION='token {}'.format(token))
         self.assertEqual(profile.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual({'errors': {'first_name': [
                          'This field may not be blank.']}}, json.loads(profile.content))
@@ -85,8 +85,8 @@ class LoginTestCase(APITestCase):
         token = register.data['token']
 
         # update profile
-        profile = self.client.put(reverse('profiles:put-profile', kwargs={'username': 'johndoe'}), self.invalid_gender,
-                                  format='json', HTTP_AUTHORIZATION='token {}'.format(token))
+        profile = self.client.put(reverse('profiles:put-profile', kwargs={'username': 'johndoe'}),
+                                  self.invalid_gender, format='json', HTTP_AUTHORIZATION='token {}'.format(token))
         self.assertEqual(profile.status_code, status.HTTP_400_BAD_REQUEST)
         data = {'errors': {'gender': ['Please enter M if you are male, F if you are female or '
                                       + 'N if you do not want to disclose ']}}
