@@ -1,7 +1,5 @@
 import jwt
-
 from datetime import datetime, timedelta
-
 from django.conf import settings
 from django.contrib.auth.models import (
     AbstractBaseUser, BaseUserManager, PermissionsMixin
@@ -68,6 +66,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     # but we can still analyze the data.
     is_active = models.BooleanField(default=True)
 
+    # when a user is registered their account is not yet verified hence we 
+    #offer a way for the user to verify their account 
+    is_verified = models.BooleanField(default=False)
+
     # The `is_staff` flag is expected by Django to determine who can and cannot
     # log into the Django admin site. For most users, this flag will always be
     # falsed.
@@ -126,5 +128,5 @@ class User(AbstractBaseUser, PermissionsMixin):
             'email': self.email,
             'exp': int(date.strftime('%s')),
         }
-        token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
-        return token.decode()
+        token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256').decode('utf-8')
+        return token
