@@ -2,7 +2,6 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 from .serializers import UserProfileSerializer
 from .models import UserProfile
-from authors.apps.core.permissions import IsMyProfileOrReadOnly
 
 
 class ProfileView(generics.RetrieveUpdateAPIView):
@@ -11,12 +10,13 @@ class ProfileView(generics.RetrieveUpdateAPIView):
     '''
     serializer_class = UserProfileSerializer
     queryset = UserProfile.objects.all()
-    permission_classes = (IsMyProfileOrReadOnly,)
 
     def update(self, request, username, *args, **kwargs):
         try:
             user_instance = UserProfile.objects.select_related(
                 'user').get(user__username=username)
+            if user_instance.user.username != request.user.username:
+                return Response({'response':'You are not allowed to edit or delete this object'})
         except:
             return Response({'response': 'Username {} not found'.format(username)}, status.HTTP_404_NOT_FOUND)
         serializer = self.serializer_class(data=request.data)
