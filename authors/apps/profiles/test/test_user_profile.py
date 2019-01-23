@@ -27,7 +27,7 @@ class LoginTestCase(APITestCase):
             "gender": "F",
             "bio": "my bio"
         }
-        
+
         self.invalid_gender = {
             "first_name": "kwame",
             "last_name": "asiago",
@@ -46,7 +46,6 @@ class LoginTestCase(APITestCase):
             self.signup_url, self.data_jane, format='json')
         self.assertEqual(register.status_code, status.HTTP_201_CREATED)
         return register.data['token']
-
 
     def test_get_user_profile(self):
         """Test get profile upon registrations"""
@@ -101,7 +100,6 @@ class LoginTestCase(APITestCase):
         # self.assertEqual(profile.status_code, status.HTTP_400_BAD_REQUEST)
         data = {'error': 'You are not allowed to edit or delete this object'}
         self.assertEqual(data, json.loads(profile.content))
-
 
     def test_non_existing_user(self):
         """Test updating an user that does not exist"""
