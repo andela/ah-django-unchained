@@ -27,12 +27,7 @@ class LoginTestCase(APITestCase):
             "gender": "F",
             "bio": "my bio"
         }
-        self.empty_first_name = {
-            "first_name": "",
-            "last_name": "asiago",
-            "gender": "F",
-            "bio": "my bio"
-        }
+        
         self.invalid_gender = {
             "first_name": "kwame",
             "last_name": "asiago",
@@ -74,23 +69,6 @@ class LoginTestCase(APITestCase):
         self.assertEqual(profile.status_code, status.HTTP_201_CREATED)
         self.assertEqual(
             profile.data, {'message': 'profile has been updated successfully '})
-
-    def test_updating_empty_first_name(self):
-        """Test submiting an empty first name"""
-        token = self.get_token()
-        # update profile
-        profile = self.client.put(
-            reverse(
-                'profiles:put-profile',
-                kwargs={'username': 'johndoe'}
-                ),
-            self.empty_first_name, format='json',
-            HTTP_AUTHORIZATION='token {}'.format(token))
-        self.assertEqual(profile.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(
-            {'errors': {'first_name': [
-                         'This field may not be blank.']}},
-            json.loads(profile.content))
 
     def test_updating_invalid_gender(self):
         """Test updating an invalid gender"""
