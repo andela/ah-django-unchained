@@ -15,7 +15,7 @@ class UserProfile(models.Model):
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     # A char field to hold bio data
-    bio = models.TextField(max_length=200, default='empty')
+    bio = models.TextField(max_length=200, blank=True)
 
     # A choice field to hold multiple choice
     gender_choices = (('M', 'MALE'), ('F', 'FEMALE'),
