@@ -71,9 +71,9 @@ class LoginTestCase(APITestCase):
         # update profile
         profile = self.client.put(reverse('profiles:put-profile', kwargs={'username': 'johndoe'}),
                                   self.profile_data, format='json', HTTP_AUTHORIZATION='token {}'.format(token))
-        self.assertEqual(profile.status_code, status.HTTP_200_OK)
+        self.assertEqual(profile.status_code, status.HTTP_201_CREATED)
         self.assertEqual(
-            profile.data, {'response': 'profile has been updated successfully '})
+            profile.data, {'message': 'profile has been updated successfully '})
 
     def test_updating_empty_first_name(self):
         """Test submiting an empty first name"""

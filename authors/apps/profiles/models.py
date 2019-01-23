@@ -9,7 +9,7 @@ class UserProfile(models.Model):
     """
     This class contains  models relating to user profile. 
     It has a one to one relationship with User model class.
-    An intance of this class is created during user registration by calling 
+    An instance of this class is created during user registration by calling 
     the create profile in the post_save function
     """
 
