@@ -3,13 +3,16 @@ import re
 from rest_framework import serializers
 from .models import Article
 
-
-class ArticleSerializer(serializers.ModelSerializer):
+from taggit_serializer.serializers import (TagListSerializerField,
+                                           TaggitSerializer)
+                                           
+class ArticleSerializer(TaggitSerializer, serializers.ModelSerializer):
     """Serializers for creating and retrieving all articles"""
     # Field in the database corresponding to the User model
     author = serializers.SerializerMethodField()
     # Uploads an image to the Cloudinary servers
     images = serializers.ImageField(default=None)
+    tagList = TagListSerializerField()
 
     class Meta:
         model = Article
@@ -21,7 +24,8 @@ class ArticleSerializer(serializers.ModelSerializer):
                   'modified',
                   'images',
                   'author',
-                  'slug']
+                  'slug',
+                  'tagList']
         read_only_fields = ['created',
                             'modified',
                             'author',
@@ -39,6 +43,7 @@ class GetArticleSerializer(serializers.ModelSerializer):
     author = serializers.SerializerMethodField()
     # Uploads an image to the Cloudinary servers
     images = serializers.ImageField(default=None)
+    tagList = TagListSerializerField()
 
     class Meta:
         model = Article
@@ -48,7 +53,8 @@ class GetArticleSerializer(serializers.ModelSerializer):
                   'modified',
                   'images',
                   'author',
-                  'slug']
+                  'slug',
+                  'tagList']
         read_only_fields = ['modified',
                             'author',
                             'slug']
