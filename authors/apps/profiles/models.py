@@ -13,7 +13,9 @@ class UserProfile(models.Model):
     the create profile in the post_save function
     """
 
+    # create one to on relatioship with User model
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+
     # A char field to hold bio data
     bio = models.TextField(max_length=200, blank=True)
 
@@ -32,14 +34,14 @@ class UserProfile(models.Model):
     # A char field for the user Last name
     last_name = models.CharField(max_length=100)
 
+    # A char field for updated at
     updated_at = models.DateField(auto_now=True)
 
     objects = UserManager()
 
-# method to create a new profile
-
 
 def create_profile(sender, **kwargs):
+    # method to create a new profile
     if kwargs['created']:
         user_profile = UserProfile.objects.create(user=kwargs['instance'])
         return user_profile
