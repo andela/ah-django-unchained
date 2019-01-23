@@ -29,6 +29,6 @@ class UserProfileSerializer(serializers.ModelSerializer):
         gender = data.get('gender', None)
         if first_name is None:
             raise serializers.ValidationError('first name was not provided')
-        if first_name is None:
+        if last_name is None:
             raise serializers.ValidationError('last name was not provided')
         return data
