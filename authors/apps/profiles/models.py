@@ -47,12 +47,3 @@ def create_profile(sender, **kwargs):
 
 post_save.connect(create_profile, sender=User)
 
-# method to set the slug
-
-
-def create_slug_receiver(sender, instance, **kwargs):
-    slug = slugify(instance.user.username)
-    instance.slug = slug
-
-
-pre_save.connect(create_slug_receiver, sender=UserProfile)
