@@ -56,7 +56,7 @@ class LoginTestCase(APITestCase):
                                           kwargs={'username': self.data_john['user']['username']}),
                                   self.profile_data, format='json', HTTP_AUTHORIZATION='token {}'.format(token))
         self.assertEqual(profile.status_code, status.HTTP_200_OK)
-        self.assertIn('message', json.loads(profile.content))
+        self.assertIn('profile', json.loads(profile.content))
 
     def test_updating_invalid_gender(self):
         """Test updating an invalid gender"""
