@@ -24,7 +24,7 @@ class ProfileView(generics.RetrieveUpdateAPIView):
             instance=user_instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response({'message': serializer.data}, status.HTTP_200_OK)
+        return Response({'profile': serializer.data}, status.HTTP_200_OK)
 
     def retrieve(self, request, username, *args, **kwargs):
         try:
