@@ -17,7 +17,6 @@ from rest_framework.views import APIView
 
 from . import models
 from .renderers import UserJSONRenderer
-from . import serializers
 from .serializers import (
     LoginSerializer, RegistrationSerializer, UserSerializer,
     ResetSerializerEmail, ResetSerializerPassword, SocialAuthSerializer
