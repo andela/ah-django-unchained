@@ -1,14 +1,15 @@
 import random
 
 from django.template.defaultfilters import slugify
-from rest_framework import status
+from django.core.exceptions import ObjectDoesNotExist
 from django.core import serializers
+from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.generics import (ListCreateAPIView,
                                      RetrieveUpdateAPIView, UpdateAPIView)
 from rest_framework.permissions import (IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
-from rest_framework.renderers import JSONRenderer
+from rest_framework.exceptions import NotFound
 
 from authors.apps.core.permissions import IsAuthorOrReadOnly
 from . import serializers
@@ -56,3 +57,77 @@ class DeleteArticle(UpdateAPIView):
     queryset = Article.objects.filter(is_deleted=False)
     serializer_class = DeleteArticleSerializer
     lookup_field = 'slug'
+
+
+class LikeArticleApiView(ListCreateAPIView):
+    """Like an article."""
+    permission_classes = (IsAuthenticatedOrReadOnly, )
+    serializer_class = ArticleSerializer
+
+    def put(self, request, slug):
+        try:
+            # get an article with the specified slug
+            # and return a message if the article does not exist
+            single_article_instance = Article.objects.get(slug=slug)
+        except ObjectDoesNotExist:
+            raise NotFound("An article with this slug does not exist")
+
+        # check if the article has been disliked by the current user
+        # if the current user has disliked it, then the dislike status
+        # is set to null
+        if single_article_instance in Article.objects.filter(
+                                        dislikes=request.user):
+            single_article_instance.dislikes.remove(request.user)
+
+        # if the current user had previously liked this article,
+        # then the article is unliked
+        if single_article_instance in Article.objects.filter(
+                                        likes=request.user):
+            single_article_instance.likes.remove(request.user)
+
+        # updating the article's like status to 1 for the
+        # current user
+        else:
+            single_article_instance.likes.add(request.user)
+
+        serializer = self.serializer_class(single_article_instance,
+                                           context={'request': request},
+                                           partial=True)
+        return Response(serializer.data, status.HTTP_200_OK)
+
+
+class DislikeArticleApiView(ListCreateAPIView):
+    """Dislike an Article."""
+    permission_classes = (IsAuthenticatedOrReadOnly,)
+    serializer_class = ArticleSerializer
+
+    def put(self, request, slug):
+        try:
+            # get an article that matches the specified slug
+            # and return a message if the article does not exist
+            single_article_instance = Article.objects.get(slug=slug)
+        except ObjectDoesNotExist:
+            raise NotFound("An article with this slug does not exist")
+
+        # check if the article has been liked by the current user
+        # if the current user has liked then the like status
+        # is set to null
+        if single_article_instance in Article.objects.filter(
+                                        likes=request.user):
+            single_article_instance.likes.remove(request.user)
+
+        # if the current user had previously disliked this article,
+        # then the dislike status of article is set to none
+        if single_article_instance in Article.objects.filter(
+                                        dislikes=request.user):
+            single_article_instance.dislikes.remove(request.user)
+
+        # updating the article's dislike status to 1 for the
+        # current user
+        else:
+            single_article_instance.dislikes.add(request.user)
+
+        serializer = self.serializer_class(single_article_instance,
+                                           context={'request': request},
+                                           partial=True)
+        return Response(serializer.data, status.HTTP_200_OK)

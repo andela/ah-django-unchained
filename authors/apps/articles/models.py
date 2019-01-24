@@ -19,3 +19,5 @@ class Article(models.Model):
     is_published = models.BooleanField(default=False)
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     tagList = TaggableManager()
+    likes = models.ManyToManyField(User, related_name='likes', blank=True)
+    dislikes = models.ManyToManyField(User, related_name='dislike', blank=True)
