@@ -76,19 +76,19 @@ class LikeArticleApiView(ListCreateAPIView):
         # if the current user has disliked it, then the dislike status
         # is set to null
         if single_article_instance in Article.objects.filter(
-                                        dislikes=request.user):
-            single_article_instance.dislikes.remove(request.user)
+                                        user_id_dislikes=request.user):
+            single_article_instance.user_id_dislikes.remove(request.user)
 
         # if the current user had previously liked this article,
         # then the article is unliked
         if single_article_instance in Article.objects.filter(
-                                        likes=request.user):
-            single_article_instance.likes.remove(request.user)
+                                        user_id_likes=request.user):
+            single_article_instance.user_id_likes.remove(request.user)
 
         # updating the article's like status to 1 for the
         # current user
         else:
-            single_article_instance.likes.add(request.user)
+            single_article_instance.user_id_likes.add(request.user)
 
         serializer = self.serializer_class(single_article_instance,
                                            context={'request': request},
@@ -113,19 +113,19 @@ class DislikeArticleApiView(ListCreateAPIView):
         # if the current user has liked then the like status
         # is set to null
         if single_article_instance in Article.objects.filter(
-                                        likes=request.user):
-            single_article_instance.likes.remove(request.user)
+                                        user_id_likes=request.user):
+            single_article_instance.user_id_likes.remove(request.user)
 
         # if the current user had previously disliked this article,
         # then the dislike status of article is set to none
         if single_article_instance in Article.objects.filter(
-                                        dislikes=request.user):
-            single_article_instance.dislikes.remove(request.user)
+                                        user_id_dislikes=request.user):
+            single_article_instance.user_id_dislikes.remove(request.user)
 
         # updating the article's dislike status to 1 for the
         # current user
         else:
-            single_article_instance.dislikes.add(request.user)
+            single_article_instance.user_id_dislikes.add(request.user)
 
         serializer = self.serializer_class(single_article_instance,
                                            context={'request': request},

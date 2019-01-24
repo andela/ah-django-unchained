@@ -8,13 +8,13 @@ class LikeDislikeTest(LikeDislike):
     def test_like_article(self):
         """Test like an article."""
         response = self.like_article()
-        self.assertEqual(response.data['all_likes'], 1)
+        self.assertEqual(response.data['likes_count'], 1)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_dislike_article(self):
         """Test dislike an article."""
         response = self.dislike_article()
-        self.assertEqual(response.data['all_dislikes'], 1)
+        self.assertEqual(response.data['dislikes_count'], 1)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_like_already_liked_article(self):
@@ -29,7 +29,7 @@ class LikeDislikeTest(LikeDislike):
             reverse('articles:likes', kwargs={'slug': slug}),
             format='json',
             HTTP_AUTHORIZATION='token {}'.format(token))
-        self.assertEqual(response.data['all_likes'], 0)
+        self.assertEqual(response.data['likes_count'], 0)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_like_an_article_that_is_disliked(self):
@@ -44,8 +44,8 @@ class LikeDislikeTest(LikeDislike):
             reverse('articles:likes', kwargs={'slug': slug}),
             format='json',
             HTTP_AUTHORIZATION='token {}'.format(token))
-        self.assertEqual(response.data['all_likes'], 1)
-        self.assertEqual(response.data['all_dislikes'], 0)
+        self.assertEqual(response.data['likes_count'], 1)
+        self.assertEqual(response.data['dislikes_count'], 0)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_dislike_article_already_liked(self):
@@ -61,8 +61,8 @@ class LikeDislikeTest(LikeDislike):
             format='json',
             HTTP_AUTHORIZATION='token {}'.format(token))
 
-        self.assertEqual(response.data['all_likes'], 0)
-        self.assertEqual(response.data['all_dislikes'], 1)
+        self.assertEqual(response.data['likes_count'], 0)
+        self.assertEqual(response.data['dislikes_count'], 1)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_dislike_article_already_disliked(self):
@@ -77,8 +77,8 @@ class LikeDislikeTest(LikeDislike):
             reverse('articles:dislikes', kwargs={'slug': slug}),
             format='json',
             HTTP_AUTHORIZATION='token {}'.format(token))
-        self.assertEqual(response.data['all_likes'], 0)
-        self.assertEqual(response.data['all_dislikes'], 0)
+        self.assertEqual(response.data['likes_count'], 0)
+        self.assertEqual(response.data['dislikes_count'], 0)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_rejects_like_unexisting_article(self):
