@@ -18,6 +18,8 @@ class ArticleSerializer(TaggitSerializer, serializers.ModelSerializer):
     user_id_dislikes = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     likes_count = serializers.SerializerMethodField()
     dislikes_count = serializers.SerializerMethodField()
+    # Field to favourite an article
+    favorite = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
 
     class Meta:
         model = Article
@@ -34,7 +36,8 @@ class ArticleSerializer(TaggitSerializer, serializers.ModelSerializer):
                   'user_id_likes',
                   'user_id_dislikes',
                   'likes_count',
-                  'dislikes_count']
+                  'dislikes_count',
+                  'favorite']
         read_only_fields = ['created',
                             'modified',
                             'author',
@@ -71,7 +74,8 @@ class GetArticleSerializer(serializers.ModelSerializer):
                   'images',
                   'author',
                   'slug',
-                  'tagList']
+                  'tagList',
+                  'favorite']
         read_only_fields = ['modified',
                             'author',
                             'slug']
