@@ -11,6 +11,8 @@ class CreateArticles(APITestCase):
         self.login_url = reverse('authentication:auth-login')
         self.signup_url = reverse('authentication:auth-register')
         self.article_listcreate = reverse('articles:articles-listcreate')
+        self.article_delete = reverse('articles:articles-favorite',
+                                      kwargs={'slug': 'a-new-story'})
         self.signup_data = {
             "user": {
                 "username": "kennyg",
@@ -206,3 +208,35 @@ class CreateArticles(APITestCase):
                                    format='json')
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual('Not found.', response.data['detail'])
+
+    def test_favorite_article(self):
+        """Test to favorite an article"""
+        token = self.signup_user_one()
+        del self.create_article_data['images']
+        self.client.post(self.article_listcreate,
+                         self.create_article_data,
+                         format='json',
+                         HTTP_AUTHORIZATION='token {}'.format(token))
+        response = self.client.put(self.article_delete,
+                                   format='json',
+                                   HTTP_AUTHORIZATION='token {}'.format(token))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['favorite'], True)
+
+    def test_unfavorite_a_favorited_article(self):
+        """Test to unfavorite an article that had previously been favorited"""
+        token = self.signup_user_one()
+        del self.create_article_data['images']
+        self.client.post(self.article_listcreate,
+                         self.create_article_data,
+                         format='json',
+                         HTTP_AUTHORIZATION='token {}'.format(token))
+        self.client.put(reverse('articles:articles-favorite',
+                        kwargs={'slug': 'a-new-story'}),
+                        format='json',
+                        HTTP_AUTHORIZATION='token {}'.format(token))
+        response = self.client.put(self.article_delete,
+                                   format='json',
+                                   HTTP_AUTHORIZATION='token {}'.format(token))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['favorite'], False)
