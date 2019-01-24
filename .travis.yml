@@ -12,10 +12,7 @@ services:
   - postgresql
 
 addons:
-  postgresql: '9.4'
-  apt:
-    packages:
-      - postgresql-server-dev-9.4
+  postgresql: '9.6'
 
 before-script:
   - psql -c 'CREATE DATABASE test;' -U postgres
