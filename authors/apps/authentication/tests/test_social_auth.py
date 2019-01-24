@@ -6,7 +6,7 @@ from rest_framework.test import APITestCase, APIClient
 
 
 class SocialAuthTest(APITestCase):
-    """Test social authentication funcionality functionality"""
+    """Test social authentication funcionality."""
     client = APIClient
 
     def setUp(self):
@@ -47,12 +47,16 @@ class SocialAuthTest(APITestCase):
         """Test login with google"""
         response = self.client.post(
             self.social_oauth_url, self.google_provider, format='json')
+        self.assertIn('email', response.data)
+        self.assertIn('token', response.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
     
     def test_login_with_facebook(self):
         """Test login with facebook."""
         response = self.client.post(
             self.social_oauth_url, self.facebook_provider, format='json')
+        self.assertIn('email', response.data)
+        self.assertIn('token', response.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
     
     def test_login_with_twitter(self):
@@ -75,9 +79,9 @@ class SocialAuthTest(APITestCase):
 
     def test_rejects_login_missing_provider_name(self):
         """Test missing provider."""
-        response = self.client.post(self.social_oauth_url,
-                                    data={"access_token": 
-                                     self.google_access_token}, format='json')
+        response = self.client.post(
+            self.social_oauth_url,
+            data={"access_token": self.google_access_token}, format='json')
         self.assertEqual(json.loads(response.content), {"errors": {"provider":
                          ["This field is required."]}})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
