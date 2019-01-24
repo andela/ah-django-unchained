@@ -29,10 +29,10 @@ class UserProfile(models.Model):
     profile_image = CloudinaryField('image', blank=True)
 
     # A char field for the First name
-    first_name = models.CharField(max_length=100)
+    first_name = models.CharField(max_length=100, blank=True)
 
     # A char field for the user Last name
-    last_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100, blank=True)
 
     # A char field for updated at
     updated_at = models.DateField(auto_now=True)
