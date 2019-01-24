@@ -35,83 +35,72 @@ class LoginTestCase(APITestCase):
             "bio": "my bio"
         }
 
-    def get_token(self):
+    def register_user(self, user):
         register = self.client.post(
-            self.signup_url, self.data_john, format='json')
-        self.assertEqual(register.status_code, status.HTTP_201_CREATED)
-        return register.data['token']
-
-    def get_token_jane(self):
-        register = self.client.post(
-            self.signup_url, self.data_jane, format='json')
-        self.assertEqual(register.status_code, status.HTTP_201_CREATED)
+            self.signup_url, user, format='json')
         return register.data['token']
 
     def test_get_user_profile(self):
         """Test get profile upon registrations"""
-        # register user
-        register = self.client.post(
-            self.signup_url, self.data_john, format='json')
-        self.assertEqual(register.status_code, status.HTTP_201_CREATED)
-
+        self.register_user(self.data_john)
         # get user profile
         profile = self.client.get(
-            reverse('profiles:put-profile', kwargs={'username': 'johndoe'}), format='json')
+            reverse('profiles:put-profile', kwargs={'username': self.data_john['user']['username']}), format='json')
         self.assertEqual(profile.status_code, status.HTTP_200_OK)
 
     def test_updating_profile(self):
         """Test updating profile upon registrations"""
-        token = self.get_token()
+        token = self.register_user(self.data_john)
         # update profile
-        profile = self.client.put(reverse('profiles:put-profile', kwargs={'username': 'johndoe'}),
+        profile = self.client.put(reverse('profiles:put-profile',
+                                          kwargs={'username': self.data_john['user']['username']}),
                                   self.profile_data, format='json', HTTP_AUTHORIZATION='token {}'.format(token))
-        self.assertEqual(profile.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(profile.status_code, status.HTTP_200_OK)
         self.assertEqual(
-            profile.data, {'message': 'profile has been updated successfully '})
+            profile.data, {'message': 'Profile has been updated successfully'})
 
     def test_updating_invalid_gender(self):
         """Test updating an invalid gender"""
-        token = self.get_token()
+        token = self.register_user(self.data_john)
         # update profile
         profile = self.client.put(
             reverse(
                 'profiles:put-profile',
-                kwargs={'username': 'johndoe'}),
+                kwargs={'username': self.data_john['user']['username']}),
             self.invalid_gender,
             format='json',
             HTTP_AUTHORIZATION='token {}'.format(token))
         self.assertEqual(profile.status_code, status.HTTP_400_BAD_REQUEST)
-        msg = 'Please enter M if you are male, F if you are female or N if you do not want to disclose '
+        msg = 'Please enter M if you are male, F if you are female or N if you do not want to disclose'
         data = {'errors': {'gender': [msg]}}
         self.assertEqual(data, json.loads(profile.content))
 
     def test_updating_invalid_user(self):
-        """Test updating with other peaople user porofile"""
-        self.get_token_jane()
-        token = self.get_token()
-        # update profile
+        """Test updating with other peaople user profile"""
+        self.register_user(self.data_jane)
+        token = self.register_user(self.data_john)
         profile = self.client.put(
             reverse(
                 'profiles:put-profile',
-                kwargs={'username': 'janedoe'}),
+                kwargs={'username': self.data_jane['user']['username']}),
             self.invalid_gender,
             format='json',
             HTTP_AUTHORIZATION='token {}'.format(token))
-        # self.assertEqual(profile.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(profile.status_code, status.HTTP_403_FORBIDDEN)
         data = {'error': 'You are not allowed to edit or delete this object'}
         self.assertEqual(data, json.loads(profile.content))
 
     def test_non_existing_user(self):
         """Test updating an user that does not exist"""
-        token = self.get_token()
+        token = self.register_user(self.data_jane)
         # update profile
         profile = self.client.put(
             reverse(
                 'profiles:put-profile',
-                kwargs={'username': 'someone'}),
-            self.invalid_gender,
+                kwargs={'username': 'noneExist'}),
+            self.profile_data,
             format='json',
             HTTP_AUTHORIZATION='token {}'.format(token))
-        # self.assertEqual(profile.status_code, status.HTTP_400_BAD_REQUEST)
-        data = {'error': 'Username someone not found'}
+        self.assertEqual(profile.status_code, status.HTTP_404_NOT_FOUND)
+        data = {'error': 'Username noneExist not found'}
         self.assertEqual(data, json.loads(profile.content))

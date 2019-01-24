@@ -23,7 +23,7 @@ class ProfileView(generics.RetrieveUpdateAPIView):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.update(instance=user_instance, validated_data=request.data)
-        return Response({'message': 'profile has been updated successfully '},status.HTTP_201_CREATED)
+        return Response({'message': 'Profile has been updated successfully'},status.HTTP_200_OK)
 
     def retrieve(self, request, username, *args, **kwargs):
         try:
