@@ -385,6 +385,8 @@ class ReadTime(RetrieveAPIView):
             return Response({'error': 'article was not found'}, status.HTTP_404_NOT_FOUND)
         serializer = self.serializer_class(article_instance)
         words = serializer.data['body'].split()
+        """ The average reading time for a user is between 250 and 300 words per minute.
+        I picked 279 as an estimate readtime """
         read = len(words) / 279
         if read < 1:
             read = 'Less than a minute read'
