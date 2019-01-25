@@ -22,4 +22,4 @@ class Article(models.Model):
     user_id_likes = models.ManyToManyField(
         User, related_name='likes', blank=True)
     user_id_dislikes = models.ManyToManyField(
-        User, related_name='dislike', blank=True)
+        User, related_name='dislikes', blank=True)
