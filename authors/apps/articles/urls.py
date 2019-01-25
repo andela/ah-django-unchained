@@ -5,7 +5,8 @@ from .views import (ArticleAPIView, ArticleDetailsView,
                     DislikeArticleApiView, PostRatingsAPIView,
                     FavoriteArticle, AverageRatingsAPIView,
                     CreateComment, CommentDetailsView,
-                    CommentDelete, CommentsRetrieveUpdateDestroy
+                    CommentDelete, CommentsRetrieveUpdateDestroy,
+                    ReadTime
                     )
 
 app_name = "articles"
@@ -39,4 +40,7 @@ urlpatterns = [
          CommentDelete.as_view(), name="delete_comments"),
     path('articles/<slug>/comments/',
          CreateComment.as_view(), name="create_comments"),
+    path('articles/read/<slug:slug>/',
+         ReadTime.as_view(),
+         name="articles-read"),
 ]
