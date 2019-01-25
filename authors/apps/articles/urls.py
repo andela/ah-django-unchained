@@ -11,6 +11,8 @@ urlpatterns = [
     path('articles/delete/<slug:slug>/',
          DeleteArticle.as_view(),
          name="articles-delete"),
-    path('<slug>/like/', LikeArticleApiView.as_view(), name='likes'),
-    path('<slug>/dislike/', DislikeArticleApiView.as_view(), name='dislikes')
+    path('articles/<slug>/like/',
+         LikeArticleApiView.as_view(), name='likes'),
+    path('articles/<slug>/dislike/',
+         DislikeArticleApiView.as_view(), name='dislikes')
 ]
