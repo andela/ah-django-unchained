@@ -40,7 +40,7 @@ class ArticleRating(models.Model):
 
 class Comment(models.Model):
     """This is the Article model that is used to handle CRUD on articles"""
-
+    """self creates a hierarchical kind of structure, parent, child"""
     parent = models.ForeignKey('self', null=True, blank=False, on_delete=models.CASCADE, related_name='threads')
     author = models.ForeignKey(User, related_name='author', on_delete=models.CASCADE)
     article = models.ForeignKey(Article, on_delete=models.CASCADE, null=True,
