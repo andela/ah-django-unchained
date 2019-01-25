@@ -43,11 +43,17 @@ INSTALLED_APPS = [
     'taggit',
     'taggit_serializer',
 
+    
     'authors.apps.authentication',
     'authors.apps.core',
     'authors.apps.profiles',
     'authors.apps.friends',
     'authors.apps.articles',
+    'oauth2_provider',
+    'social_django',
+    'rest_framework_social_oauth2',
+   
+    
 
     # Enables API to be documented using Swagger
     'rest_framework_swagger',
@@ -154,7 +160,40 @@ REST_FRAMEWORK = {
         'authors.apps.authentication.backends.JWTAuthentication',
     ),
 }
+AUTHENTICATION_BACKENDS = (
+    'social_core.backends.google.GoogleOAuth2',
+    'social_core.backends.twitter.TwitterOAuth',
+    'social_core.backends.facebook.FacebookOAuth2',
+    'django.contrib.auth.backends.ModelBackend',
+)
 
+SOCIAL_AUTH_FACEBOOK_KEY = os.getenv('FACEBOOK_APP_ID')
+SOCIAL_AUTH_FACEBOOK_SECRET = os.getenv('FACEBOOK_APP_SECRET')
+SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
+SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
+    'fields': 'id, name, email'
+}
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.getenv('OAUTH2_KEY')
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.getenv('OAUTH2_SECRET')
+SOCIAL_AUTH_GOOGLE_OAUTH_SCOPE = ['email', 'username', 'password']
+
+SOCIAL_AUTH_TWITTER_KEY = os.getenv('TWITTER_KEY')
+SOCIAL_AUTH_TWITTER_SECRET = os.getenv('TWITTER_SECRET')
+SOCIAL_AUTH_TWITTER_SCOPE = ['email']
+
+SOCIAL_AUTH_PIPELINE = (
+    'social_core.pipeline.social_auth.social_details',
+    'social_core.pipeline.social_auth.social_uid',
+    'social_core.pipeline.social_auth.auth_allowed',
+    'social_core.pipeline.social_auth.social_user',
+    'social_core.pipeline.user.get_username',
+    'social_core.pipeline.social_auth.associate_by_email',
+    'social_core.pipeline.user.create_user',
+    'social_core.pipeline.social_auth.associate_user',
+    'social_core.pipeline.social_auth.load_extra_data',
+    'social_core.pipeline.user.user_details',
+)
 django_heroku.settings(locals())
 
 # Set the settings for Swagger documentation

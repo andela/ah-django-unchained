@@ -12,11 +12,11 @@ services:
   - postgresql
 
 addons:
-  postgresql: "9.6"
+  postgresql: '9.6'
 
 before-script:
   - psql -c 'CREATE DATABASE test;' -U postgres
-  - python manage.py makemigrations
+  - python manage.py makemigrations 
   - python manage.py migrate
 
 script:
