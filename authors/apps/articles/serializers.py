@@ -1,7 +1,8 @@
 import re
 
 from rest_framework import serializers
-from .models import Article
+from authors.apps.authentication.serializers import UserSerializer
+from .models import Article, Comment
 
 from taggit_serializer.serializers import (TagListSerializerField,
                                            TaggitSerializer)
@@ -79,6 +80,7 @@ class GetArticleSerializer(serializers.ModelSerializer):
         read_only_fields = ['modified',
                             'author',
                             'slug']
+    """Get logged in user ID"""
 
     def get_author(self, obj):
         return obj.author.id
@@ -94,3 +96,47 @@ class DeleteArticleSerializer(serializers.ModelSerializer):
 class RatingSerializer(serializers.Serializer):
     """validate rating article"""
     rate = serializers.IntegerField(required=True)
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    """Serializer for creating a Comment"""
+    author = serializers.SerializerMethodField()
+    body = serializers.CharField()
+
+    def get_author(self, obj):
+        author = UserSerializer(obj.author)
+
+        return author.data
+
+    def format_date(self, date):
+        return date.strftime('%d %b %Y %H:%M:%S')
+
+    def to_representation(self, instance):
+        threads = [
+            {
+                'id': thread.id,
+                'body': thread.body,
+                'createdAt': self.format_date(thread.createdAt),
+                'updatedAt': self.format_date(thread.updatedAt)
+            }for thread in instance.threads.all()
+        ]
+        thread_comment = super(CommentSerializer, self).to_representation(instance)
+        thread_comment['createdAt'] = self.format_date(instance.createdAt)
+        thread_comment['updatedAt'] = self.format_date(instance.updatedAt)
+        thread_comment['article'] = instance.article.title
+        thread_comment['threads'] = threads
+        del thread_comment['parent']
+
+        return thread_comment
+
+    class Meta:
+        model = Comment
+        fields = ('id', 'body', 'createdAt', 'updatedAt',
+                  'author', 'parent', 'article', 'is_deleted')
+
+
+class DeleteCommentSerializer(serializers.ModelSerializer):
+    """Serializer for deleting an article"""
+    class Meta:
+        model = Comment
+        fields = ['is_deleted', 'parent']
