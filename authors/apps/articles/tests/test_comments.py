@@ -36,7 +36,9 @@ class CommentsTestCase(APITestCase):
             "title": "my story",
             "body": "This is my story",
             "description": "Here is my story",
-            "images": None
+            "images": None,
+            "tagList": ["dragons", "training"]
+
         }
 
     def register(self):
