@@ -187,6 +187,3 @@ class CommentsTestCase(APITestCase):
         self.assertEqual(json.loads(response.content), {'detail': 'Not found.'})
 
 
-{
-    "detail": "Authentication credentials were not provided."
-}
