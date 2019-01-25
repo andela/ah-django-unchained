@@ -1,9 +1,10 @@
+import jwt
+
 from django.conf import settings
 from django.http import HttpResponse
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.authentication import get_authorization_header
 from rest_framework import status, exceptions
-import jwt
 from .models import User
 
 
@@ -50,3 +51,4 @@ class JWTAuthentication(BaseAuthentication):
                 status=status.HTTP_403_FORBIDDEN)
 
         return user, token
+        
