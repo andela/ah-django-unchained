@@ -18,6 +18,7 @@ from rest_framework.generics import (ListCreateAPIView,
                                      RetrieveUpdateDestroyAPIView,
                                      RetrieveUpdateAPIView,
                                      UpdateAPIView, CreateAPIView)
+
 from rest_framework.permissions import (IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.exceptions import NotFound, ValidationError
@@ -302,6 +303,7 @@ def set_favorite_status(data, user):
 
 
 class CommentDelete(UpdateAPIView):
+
     """This class Deletes Comments created by the a particular user"""
     permission_classes = (IsAuthorOrReadOnly,)
     queryset = Comment.objects.filter(is_deleted=False)
@@ -324,11 +326,7 @@ class CreateComment(generics.ListCreateAPIView):
     permission_classes = (IsAuthenticated, )
 
     def post(self, request, slug, *args, **kwargs):
-        article = Article.objects.filter(slug=slug)
-        print(article)
-        for i in article:
-            new_slug = i.id
-            print(new_slug)
+        article = Article.objects.filter(slug=slug, is_deleted=False).first()
         serializer_context = {
             'request': request,
             'author': request.user,
@@ -337,7 +335,7 @@ class CreateComment(generics.ListCreateAPIView):
         print((request.data))
         serializer = CommentSerializer(data=request.data, context=serializer_context)
         if serializer.is_valid():
-            serializer.save(author=request.user, article_id=new_slug)
+            serializer.save(author=request.user, article_id=article.id)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -345,7 +343,7 @@ class CreateComment(generics.ListCreateAPIView):
 class CommentsRetrieveUpdateDestroy(RetrieveUpdateDestroyAPIView, CreateAPIView):
     serializer_class = CommentSerializer
     permission_classes = (IsAuthenticated,)
-    queryset = Comment.objects.all()
+    queryset = Comment.objects.filter(is_deleted=False)
     lookup_field = 'id'
 
     def create(self, request, slug, id):
@@ -354,10 +352,15 @@ class CommentsRetrieveUpdateDestroy(RetrieveUpdateDestroyAPIView, CreateAPIView)
         context = super(CommentsRetrieveUpdateDestroy,
                         self).get_serializer_context()
 
+        comment = Comment.objects.filter(id=id, is_deleted=True).first()
+        if comment:
+            message = {'error': 'Comment has been deleted'}
+            return Response(message, status=status.HTTP_404_NOT_FOUND)
         article = Article.objects.filter(slug=slug).first()
         if isinstance(article, dict):
             return Response(article, status=status.HTTP_404_NOT_FOUND)
         parent = article.comments.filter(id=id).first().pk
+
         if not parent:
             message = {'error': 'Comment not found.'}
             return Response(message, status=status.HTTP_404_NOT_FOUND)

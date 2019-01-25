@@ -2,6 +2,8 @@ import re
 
 from rest_framework import serializers
 from authors.apps.authentication.serializers import UserSerializer
+from authors.apps.profiles.serializers import UserProfileSerializer
+from authors.apps.profiles.models import UserProfile
 from .models import Article, Comment
 
 from taggit_serializer.serializers import (TagListSerializerField,
@@ -103,9 +105,9 @@ class CommentSerializer(serializers.ModelSerializer):
     author = serializers.SerializerMethodField()
     body = serializers.CharField()
 
-    def get_author(self, obj):
-        author = UserSerializer(obj.author)
-
+    def get_author(self, comment):
+        # import pdb; pdb.set_trace()
+        author = UserProfileSerializer(comment.author.profile)
         return author.data
 
     def format_date(self, date):
@@ -116,6 +118,8 @@ class CommentSerializer(serializers.ModelSerializer):
             {
                 'id': thread.id,
                 'body': thread.body,
+                'author': UserProfileSerializer(
+                    instance=UserProfile.objects.get(user=thread.author)).data,
                 'createdAt': self.format_date(thread.createdAt),
                 'updatedAt': self.format_date(thread.updatedAt)
             }for thread in instance.threads.all()

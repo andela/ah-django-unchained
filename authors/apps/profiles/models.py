@@ -14,7 +14,10 @@ class UserProfile(models.Model):
     """
 
     # create one to on relatioship with User model
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User,
+                                on_delete=models.CASCADE,
+                                related_name="profile"
+                                )
 
     # A char field to hold bio data
     bio = models.TextField(max_length=200, blank=True)
