@@ -5,7 +5,8 @@ from .models import Article
 
 from taggit_serializer.serializers import (TagListSerializerField,
                                            TaggitSerializer)
-                                           
+
+
 class ArticleSerializer(TaggitSerializer, serializers.ModelSerializer):
     """Serializers for creating and retrieving all articles"""
     # Field in the database corresponding to the User model
@@ -13,6 +14,10 @@ class ArticleSerializer(TaggitSerializer, serializers.ModelSerializer):
     # Uploads an image to the Cloudinary servers
     images = serializers.ImageField(default=None)
     tagList = TagListSerializerField()
+    user_id_likes = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    user_id_dislikes = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    likes_count = serializers.SerializerMethodField()
+    dislikes_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Article
@@ -25,7 +30,11 @@ class ArticleSerializer(TaggitSerializer, serializers.ModelSerializer):
                   'images',
                   'author',
                   'slug',
-                  'tagList']
+                  'tagList',
+                  'user_id_likes',
+                  'user_id_dislikes',
+                  'likes_count',
+                  'dislikes_count']
         read_only_fields = ['created',
                             'modified',
                             'author',
@@ -35,6 +44,14 @@ class ArticleSerializer(TaggitSerializer, serializers.ModelSerializer):
     # Inserts the ID of the author of an article into the foreign key row
     def get_author(self, obj):
         return obj.author.id
+
+    # insert total likes
+    def get_likes_count(self, obj):
+        return obj.user_id_likes.count()
+
+    # insert total dislikes
+    def get_dislikes_count(self, obj):
+        return obj.user_id_dislikes.count()
 
 
 class GetArticleSerializer(serializers.ModelSerializer):

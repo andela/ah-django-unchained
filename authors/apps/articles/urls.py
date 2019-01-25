@@ -1,7 +1,7 @@
 from django.urls import path
 
-from .views import ArticleAPIView, ArticleDetailsView, DeleteArticle
-
+from .views import (ArticleAPIView, ArticleDetailsView,
+                    DeleteArticle, LikeArticleApiView, DislikeArticleApiView)
 app_name = "articles"
 urlpatterns = [
     path('articles/', ArticleAPIView.as_view(), name="articles-listcreate"),
@@ -11,4 +11,8 @@ urlpatterns = [
     path('articles/delete/<slug:slug>/',
          DeleteArticle.as_view(),
          name="articles-delete"),
+    path('articles/<slug>/like/',
+         LikeArticleApiView.as_view(), name='likes'),
+    path('articles/<slug>/dislike/',
+         DislikeArticleApiView.as_view(), name='dislikes')
 ]
