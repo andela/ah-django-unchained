@@ -20,7 +20,7 @@ class LikeDislikeTest(LikeDislike):
     def test_like_already_liked_article(self):
         """Test like already liked article."""
         slug = self.create_new_article()
-        token = self.signup_user_two()
+        token = self.signup_user_one(self.user_signup_data2)
         self.client.put(
             reverse('articles:likes', kwargs={'slug': slug}),
             format='json',
@@ -35,7 +35,7 @@ class LikeDislikeTest(LikeDislike):
     def test_like_an_article_that_is_disliked(self):
         """Test like an article that has already been disliked."""
         slug = self.create_new_article()
-        token = self.signup_user_two()
+        token = self.signup_user_one(self.user_signup_data2)
         self.client.put(
             reverse('articles:dislikes', kwargs={'slug': slug}),
             format='json',
@@ -51,7 +51,7 @@ class LikeDislikeTest(LikeDislike):
     def test_dislike_article_already_liked(self):
         """Test dislike article that has already been liked."""
         slug = self.create_new_article()
-        token = self.signup_user_two()
+        token = self.signup_user_one(self.user_signup_data2)
         self.client.put(
             reverse('articles:likes', kwargs={'slug': slug}),
             format='json',
@@ -68,7 +68,7 @@ class LikeDislikeTest(LikeDislike):
     def test_dislike_article_already_disliked(self):
         """Test dislike article that has already been disliked."""
         slug = self.create_new_article()
-        token = self.signup_user_two()
+        token = self.signup_user_one(self.user_signup_data2)
         self.client.put(
             reverse('articles:dislikes', kwargs={'slug': slug}),
             format='json',
@@ -84,7 +84,7 @@ class LikeDislikeTest(LikeDislike):
     def test_rejects_like_unexisting_article(self):
         """Test rejects liking unexisting article."""
         slug = "myslug"
-        token = self.signup_user_two()
+        token = self.signup_user_one(self.user_signup_data2)
         response = self.client.put(
             reverse('articles:likes', kwargs={'slug': slug}),
             format='json',

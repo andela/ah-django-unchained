@@ -27,25 +27,17 @@ class LikeDislike(APITestCase):
             "description": "Here is my story"
         }
 
-    def signup_user_one(self):
-        """Register new user who will create an article."""
+    def signup_user_one(self, user_details):
+        """Register a new user."""
         response = self.client.post(self.signup_url,
-                                    self.user_signup_data,
-                                    format='json')
-        token = response.data['token']
-        return token
-        
-    def signup_user_two(self):
-        """Register new user who will like or dislike an article."""
-        response = self.client.post(self.signup_url,
-                                    self.user_signup_data2,
+                                    user_details,
                                     format='json')
         token = response.data['token']
         return token
 
     def create_new_article(self):
         """Create an article."""
-        token = self.signup_user_one()
+        token = self.signup_user_one(self.user_signup_data)
         response = self.client.post(
             self.create_article_url,
             self.create_article_data,
@@ -57,7 +49,7 @@ class LikeDislike(APITestCase):
     def like_article(self):
         """Method for liking an article."""
         slug = self.create_new_article()
-        token = self.signup_user_two()
+        token = self.signup_user_one(self.user_signup_data2)
         result = self.client.put(
             reverse('articles:likes', kwargs={'slug': slug}),
             format='json',
@@ -67,7 +59,7 @@ class LikeDislike(APITestCase):
     def dislike_article(self):
         """Method for disliking an article."""
         slug = self.create_new_article()
-        token = self.signup_user_two()
+        token = self.signup_user_one(self.user_signup_data2)
         result = self.client.put(
             reverse('articles:dislikes', kwargs={'slug': slug}),
             format='json',
