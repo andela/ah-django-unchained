@@ -1,7 +1,4 @@
-import re
-
 from rest_framework import serializers
-from authors.apps.authentication.serializers import UserSerializer
 from authors.apps.profiles.serializers import UserProfileSerializer
 from authors.apps.profiles.models import UserProfile
 from .models import Article, Comment

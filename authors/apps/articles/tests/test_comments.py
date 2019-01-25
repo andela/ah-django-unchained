@@ -73,11 +73,13 @@ class CommentsTestCase(APITestCase):
                                     self.new_comment,
                                     format='json',
                                     HTTP_AUTHORIZATION='token {}'.format(token))
+        id = response.data['id']
         response = self.client.put(reverse("articles:get-comments",
-                                   kwargs={'slug': 'my-story', 'id': 4}),
+                                   kwargs={'slug': 'my-story', "id": id}),
                                    self.update_comment,
                                    format='json',
                                    HTTP_AUTHORIZATION='token {}'.format(token))
+        # print(response.data['id'])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['body'], self.update_comment['body'])
 
@@ -90,7 +92,7 @@ class CommentsTestCase(APITestCase):
                                     format='json',
                                     HTTP_AUTHORIZATION='token {}'.format(token))
         """Test Create a Comment"""
-        response = self.client.post(reverse('articles:createcomments', kwargs={'slug': 'my-story'}),
+        response = self.client.post(reverse('articles:createcomments',kwargs={'slug': 'my-story'}),
                                     self.new_comment,
                                     format='json',
                                     HTTP_AUTHORIZATION='token {}'.format(token))
@@ -103,6 +105,33 @@ class CommentsTestCase(APITestCase):
                                            kwargs={'slug': 'my-story'}), format='json',
                                            HTTP_AUTHORIZATION='token {}'.format(token))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_unauthorized_get_all_comments(self):
+        """Test get all comments"""
+        token = self.register()
+        del self.create_article_data['images']
+        response = self.client.post(self.article_listcreate,
+                                    self.create_article_data,
+                                    format='json',
+                                    HTTP_AUTHORIZATION='token {}'.format(token))
+        """Test Create a Comment"""
+        response = self.client.post(reverse('articles:createcomments',
+                                    kwargs={'slug': 'my-story'}),
+                                    self.new_comment,
+                                    format='json',
+                                    HTTP_AUTHORIZATION='token {}'.format(token))
+        response = self.client.post(reverse('articles:createcomments',
+                                    kwargs={'slug': 'my-story'}),
+                                    self.new_comment,
+                                    format='json',
+                                    HTTP_AUTHORIZATION='token {}'.format(token))
+        response = self.client.get(reverse('articles:createcomments',
+                                           kwargs={'slug': 'my-story'}),
+                                            format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.data,{
+    "detail": "Authentication credentials were not provided."
+})
 
     def test_create_comment_on_article(self):
         "Register User"
@@ -154,3 +183,8 @@ class CommentsTestCase(APITestCase):
                                     )
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual(json.loads(response.content), {'detail': 'Not found.'})
+
+
+{
+    "detail": "Authentication credentials were not provided."
+}
