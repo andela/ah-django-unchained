@@ -27,13 +27,15 @@ class CreateArticles(APITestCase):
             "title": "A new story",
             "body": "This is my story",
             "description": "Here is my story",
-            "images": None
+            "images": None,
+            "tagList": ["dragons", "training"]
         }
         self.create_article_data2 = {
             "title": "The beginning",
             "body": "This begins now",
             "description": "Here is my story",
-            "images": None
+            "images": None,
+            "tagList": ["dragons", "training"]
         }
         self.delete_article = {
             "is_deleted": True
@@ -82,7 +84,9 @@ class CreateArticles(APITestCase):
                          response.data[0]['description'])
         self.assertEqual(self.create_article_data2['description'],
                          response.data[1]['description'])
-
+        self.assertIn(self.create_article_data2['tagList'][0],
+                                response.data[0]['tagList'])
+                                
     def test_add_articles(self):
         """Test to add an article"""
         token = self.signup_user_one()
@@ -98,6 +102,8 @@ class CreateArticles(APITestCase):
                          response.data['body'])
         self.assertEqual(self.create_article_data['description'],
                          response.data['description'])
+        self.assertIn(self.create_article_data2['tagList'][0],
+                                response.data['tagList'])
 
     def test_get_single_article(self):
         """Test to get a single article"""
@@ -117,6 +123,8 @@ class CreateArticles(APITestCase):
                          response.data['body'])
         self.assertEqual(self.create_article_data['description'],
                          response.data['description'])
+        self.assertIn(self.create_article_data2['tagList'][0],
+                                response.data['tagList'])
 
     def test_unauthorized_article_update(self):
         """Test to update an article created by another user"""

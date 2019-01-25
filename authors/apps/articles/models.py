@@ -1,8 +1,8 @@
 from django.db import models
 from authors.apps.authentication.models import User
 
+from taggit.managers import TaggableManager
 from cloudinary.models import CloudinaryField
-
 
 class Article(models.Model):
     """
@@ -18,3 +18,4 @@ class Article(models.Model):
     is_deleted = models.BooleanField(default=False)
     is_published = models.BooleanField(default=False)
     author = models.ForeignKey(User, on_delete=models.CASCADE)
+    tagList = TaggableManager()
