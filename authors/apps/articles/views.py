@@ -2,20 +2,24 @@ import random
 
 from django.template.defaultfilters import slugify
 from django.core.exceptions import ObjectDoesNotExist
+from rest_framework import status
 from django.core import serializers
 from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.generics import (ListCreateAPIView,
+from rest_framework.generics import (CreateAPIView, ListCreateAPIView,
                                      RetrieveUpdateAPIView, UpdateAPIView)
+from rest_framework.views import APIView
 from rest_framework.permissions import (IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
+from rest_framework.renderers import JSONRenderer
 from rest_framework.exceptions import NotFound
 
 from authors.apps.core.permissions import IsAuthorOrReadOnly
 from . import serializers
 from .serializers import (ArticleSerializer,
-                          GetArticleSerializer, DeleteArticleSerializer)
-from .models import Article
+                          GetArticleSerializer, DeleteArticleSerializer,
+                          RatingSerializer)
+from .models import Article, ArticleRating
 
 
 class ArticleAPIView(ListCreateAPIView):
@@ -131,3 +135,85 @@ class DislikeArticleApiView(ListCreateAPIView):
                                            context={'request': request},
                                            partial=True)
         return Response(serializer.data, status.HTTP_200_OK)
+
+
+class AverageRatingsAPIView(APIView):
+    """
+    Class for viewing article ratings
+    """
+
+    serializer_class = RatingSerializer
+
+    def get(self, request, slug):
+        """method for viewing average ratings"""
+        rate_article = None
+        rate = 0
+
+        try:
+            article = Article.objects.get(slug=slug)
+        except ObjectDoesNotExist:
+            raise NotFound('article not found')
+
+        art_id = article.id
+
+        try:
+            rate_articles = ArticleRating.objects.filter(article_id=art_id)
+        except Exception as e:
+            raise serializers.ValidationError(str(e))
+
+        for rate_article in rate_articles:
+            rate += rate_article.rate
+        rate_value = 0
+        if rate:
+            rate_value = rate / len(rate_articles)
+        return Response(
+            data={"ratings": round(rate_value, 1)}, status=status.HTTP_200_OK)
+
+
+class PostRatingsAPIView(CreateAPIView):
+    """
+    Class for rating an article
+    """
+    permission_classes = (IsAuthenticated,)
+    serializer_class = RatingSerializer
+
+    def post(self, request, slug):
+        """method for posting a rating"""
+        data = request.data
+        serializer = self.serializer_class(data=data)
+        serializer.validate(data=data)
+        serializer.is_valid(raise_exception=True)
+
+        try:
+            article = Article.objects.get(slug=slug)
+        except ObjectDoesNotExist:
+            raise NotFound('article not found')
+
+        author = article.author.id
+        if author == request.user.id:
+            return Response(
+                {"response": "You are not allowed to rate your own article"},
+                status=status.HTTP_400_BAD_REQUEST)
+
+        user = request.user
+        article_ratings = None
+        response = Response(
+                {"response": "article successfully rated"},
+                status=status.HTTP_200_OK
+                )
+
+        # update the rating if there's one
+        try:
+            article_ratings = ArticleRating.objects.get(
+                user=user, article=article
+                )
+            article_ratings.rate = data['rate']
+            article_ratings.save()
+            return response
+        # create new rating if none exists
+        except Exception:
+            article_ratings = ArticleRating(
+                user=user, article=article, rate=data['rate']
+                )
+            article_ratings.save()
+            return response

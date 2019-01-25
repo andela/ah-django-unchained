@@ -23,3 +23,15 @@ class Article(models.Model):
         User, related_name='likes', blank=True)
     user_id_dislikes = models.ManyToManyField(
         User, related_name='dislikes', blank=True)
+
+
+class ArticleRating(models.Model):
+    """
+    This is a model to handle article ratings
+    """
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    article = models.ForeignKey(Article, on_delete=models.CASCADE)
+    rate = models.IntegerField(default=0)
+
+    def __str__(self):
+        return self.rate
