@@ -1,6 +1,6 @@
 from django.urls import reverse
 from rest_framework import status
-from authors.apps.articles.tests.base_test import LikeDislike
+from authors.apps.articles.tests.like_dislike_base_test import LikeDislike
 
 
 class LikeDislikeTest(LikeDislike):
