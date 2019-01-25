@@ -24,7 +24,9 @@ class LikeDislike(APITestCase):
         self.create_article_data = {
             "title": "A new story",
             "body": "This is my story",
-            "description": "Here is my story"
+            "description": "Here is my story",
+            "tagList": ["dragons", "training"],
+
         }
 
     def signup_user_one(self, user_details):
