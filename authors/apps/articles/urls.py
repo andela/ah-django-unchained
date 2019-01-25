@@ -9,6 +9,7 @@ from .views import (ArticleAPIView, ArticleDetailsView,
                     ReadTime
                     )
 
+                    
 app_name = "articles"
 urlpatterns = [
     path('articles/', ArticleAPIView.as_view(), name="articles-listcreate"),
@@ -41,6 +42,8 @@ urlpatterns = [
     path('articles/<slug>/comments/',
          CreateComment.as_view(), name="create_comments"),
     path('articles/read/<slug:slug>/',
+         name="articles_view_ratings")
+    path('articles/read/<slug>/',
          ReadTime.as_view(),
          name="articles-read"),
 ]

@@ -47,21 +47,24 @@ class CreateArticles(APITestCase):
             "title": "small",
             "body": small_story,
             "description": "Here is my story",
-            "images": None
+            "images": None,
+            "tagList": ["dragons", "training"]
         }
 
         self.medium_body = {
             "title": "medium",
             "body": medium_story,
             "description": "Here is my story",
-            "images": None
+            "images": None,
+            "tagList": ["dragons", "training"]
         }
 
         self.huge_body = {
             "title": "huge",
             "body": huge_story,
             "description": "Here is my story",
-            "images": None
+            "images": None,
+            "tagList": ["dragons", "training"]
         }
 
     def signup_user_one(self):
