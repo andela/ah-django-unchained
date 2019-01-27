@@ -287,7 +287,7 @@ class CreateArticles(APITestCase):
         self.post_article_articles(self.small_body)
         read_url = reverse('articles:articles-read', kwargs={'slug': 'small'})
         response = self.client.get(read_url, format='json')
-        data = {'read_time': 'Less than a minute read minute read'}
+        data = {'read_time': 'Less than a minute read'}
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(json.loads(response.content), data)
 
@@ -296,7 +296,7 @@ class CreateArticles(APITestCase):
         self.post_article_articles(self.medium_body)
         read_url = reverse('articles:articles-read', kwargs={'slug': 'medium'})
         response = self.client.get(read_url, format='json')
-        data = {'read_time': '3 minute read'}
+        data = {'read_time': 3}
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(json.loads(response.content), data)
 
@@ -305,7 +305,7 @@ class CreateArticles(APITestCase):
         self.post_article_articles(self.huge_body)
         read_url = reverse('articles:articles-read', kwargs={'slug': 'huge'})
         response = self.client.get(read_url, format='json')
-        data = {'read_time': '7 minute read'}
+        data = {'read_time': 7}
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(json.loads(response.content), data)
 >>>>>>> feat (read-time) Get read time for articles

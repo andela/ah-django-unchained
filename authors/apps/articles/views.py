@@ -392,5 +392,5 @@ class ReadTime(RetrieveAPIView):
             read = 'Less than a minute read'
         else:
             read = round(read)
-        return Response({'read_time': '{} minute read'.format(read)}, status.HTTP_200_OK)
+        return Response({'read_time': read}, status.HTTP_200_OK)
 
