@@ -1,7 +1,7 @@
 import re
 
 from rest_framework import serializers
-from .models import Article, ArticleRating
+from .models import Article
 
 from taggit_serializer.serializers import (TagListSerializerField,
                                            TaggitSerializer)
@@ -90,11 +90,3 @@ class DeleteArticleSerializer(serializers.ModelSerializer):
 class RatingSerializer(serializers.Serializer):
     """validate rating article"""
     rate = serializers.IntegerField(required=True)
-
-    def validate(self, data):
-        rate = data['rate']
-        if not int(rate) > 0 or not int(rate) <= 5:
-            raise serializers.ValidationError(
-                'Give a rating between 1 to 5 inclusive'
-                )
-        return data

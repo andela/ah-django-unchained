@@ -24,5 +24,5 @@ urlpatterns = [path('articles/', ArticleAPIView.as_view(), name="articles-listcr
          name="rate_article"),
     path('articles/rate/<slug>/',
          AverageRatingsAPIView.as_view(),
-         name="articles-view_ratings")
+         name="articles_view_ratings")
 ]

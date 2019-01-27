@@ -2,7 +2,6 @@ import random
 
 from django.template.defaultfilters import slugify
 from django.core.exceptions import ObjectDoesNotExist
-from rest_framework import status
 from django.core import serializers
 from rest_framework import status
 from rest_framework.response import Response
@@ -15,7 +14,6 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework.exceptions import NotFound
 
 from authors.apps.core.permissions import IsAuthorOrReadOnly
-from . import serializers
 from .serializers import (ArticleSerializer,
                           GetArticleSerializer, DeleteArticleSerializer,
                           RatingSerializer)
@@ -146,7 +144,6 @@ class AverageRatingsAPIView(APIView):
 
     def get(self, request, slug):
         """method for viewing average ratings"""
-        rate_article = None
         rate = 0
 
         try:
@@ -154,18 +151,13 @@ class AverageRatingsAPIView(APIView):
         except ObjectDoesNotExist:
             raise NotFound('article not found')
 
-        art_id = article.id
-
-        try:
-            rate_articles = ArticleRating.objects.filter(article_id=art_id)
-        except Exception as e:
-            raise serializers.ValidationError(str(e))
+        rate_articles = ArticleRating.objects.filter(article=article)
 
         for rate_article in rate_articles:
             rate += rate_article.rate
         rate_value = 0
         if rate:
-            rate_value = rate / len(rate_articles)
+            rate_value = rate / rate_articles.count()
         return Response(
             data={"ratings": round(rate_value, 1)}, status=status.HTTP_200_OK)
 
@@ -181,24 +173,31 @@ class PostRatingsAPIView(CreateAPIView):
         """method for posting a rating"""
         data = request.data
         serializer = self.serializer_class(data=data)
-        serializer.validate(data=data)
         serializer.is_valid(raise_exception=True)
+
+        if not int(data['rate']) > 0 or not int(data['rate']) <= 5:
+            return Response(
+                {"message": "Give a rating between 1 to 5 inclusive"},
+                status=status.HTTP_400_BAD_REQUEST
+                )
 
         try:
             article = Article.objects.get(slug=slug)
         except ObjectDoesNotExist:
-            raise NotFound('article not found')
+            raise NotFound('Article not found')
 
         author = article.author.id
         if author == request.user.id:
             return Response(
-                {"response": "You are not allowed to rate your own article"},
+                {"error": "You are not allowed to rate your own article"},
                 status=status.HTTP_400_BAD_REQUEST)
 
         user = request.user
-        article_ratings = None
         response = Response(
-                {"response": "article successfully rated"},
+                {
+                    "message": "Article successfully rated",
+                    "rating": serializer.data
+                },
                 status=status.HTTP_200_OK
                 )
 

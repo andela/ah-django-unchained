@@ -2,7 +2,6 @@ import json
 from django.urls import reverse
 from rest_framework.test import APIClient, APITestCase
 from rest_framework import status
-from authors.apps.articles.models import Article
 from authors.apps.authentication.models import User
 
 
@@ -63,8 +62,9 @@ class TestArticleRatings(APITestCase):
             "/api/articles/{}/rate/".format(slug), data=data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(
-            response.data['response'], 'article successfully rated'
+            response.data['message'], 'Article successfully rated'
             )
+        self.assertEqual(response.data["rating"]["rate"], 4)
 
     def test_rate_with_number_outside_range(self):
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
@@ -73,8 +73,8 @@ class TestArticleRatings(APITestCase):
         response = self.client.post(
             "/api/articles/{}/rate/".format(slug), data=data,)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn(
-            'Give a rating between 1 to 5 inclusive', response.data['errors'])
+        self.assertEqual(
+            'Give a rating between 1 to 5 inclusive', response.data['message'])
 
     def test_rate_non_existing_article(self):
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
@@ -83,7 +83,7 @@ class TestArticleRatings(APITestCase):
         response = self.client.post(
             "/api/articles/{}/rate/".format(slug), data=data)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-        self.assertIn('article not found', response.data['detail'])
+        self.assertIn('Article not found', response.data['detail'])
 
     def test_rating_by_unauthenticated_user(self):
         slug = self.slug
@@ -100,7 +100,7 @@ class TestArticleRatings(APITestCase):
             "/api/articles/{}/rate/".format(slug), data=data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(
-            response.data["response"],
+            response.data["error"],
             "You are not allowed to rate your own article"
             )
 
