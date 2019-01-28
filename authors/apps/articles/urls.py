@@ -27,9 +27,6 @@ urlpatterns = [
     path('articles/rate/<slug>/',
          AverageRatingsAPIView.as_view(),
          name="articles_view_ratings"),
-    path('articles/<slug>/favorite',
-         FavoriteArticle.as_view(),
-         name="articles-favorite")
 
     path('articles/<slug>/comments/<int:id>/',
          CommentDetailsView.as_view(), name="get_comments"),
