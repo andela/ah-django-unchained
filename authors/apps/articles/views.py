@@ -388,9 +388,5 @@ class ReadTime(RetrieveAPIView):
         """ The average reading time for a user is between 250 and 300 words per minute.
         I picked 279 as an estimate readtime """
         read = len(words) / 279
-        if read < 1:
-            read = 'Less than a minute read'
-        else:
-            read = round(read)
-        return Response({'read_time': read}, status.HTTP_200_OK)
+        return Response({'read_time': round(read)}, status.HTTP_200_OK)
 

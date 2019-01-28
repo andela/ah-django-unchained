@@ -287,7 +287,7 @@ class CreateArticles(APITestCase):
         self.post_article_articles(self.small_body)
         read_url = reverse('articles:articles-read', kwargs={'slug': 'small'})
         response = self.client.get(read_url, format='json')
-        data = {'read_time': 'Less than a minute read'}
+        data = {'read_time': 0}
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(json.loads(response.content), data)
 
