@@ -47,3 +47,4 @@ urlpatterns = [
          ReadTime.as_view(),
          name="articles-read"),
 ]
+
