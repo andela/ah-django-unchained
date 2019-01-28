@@ -169,20 +169,13 @@ class CommentsTestCase(APITestCase):
         """Create a comment for an article that doesn't exist"""
         token = self.register()
         del self.create_article_data['images']
-<<<<<<< HEAD
         response = self.client.post(self.article_listcreate,
                                     self.create_article_data,
                                     format='json',
                                     HTTP_AUTHORIZATION='token {}'.format(token)
                                     )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-=======
-        # response = self.client.post(self.article_listcreate,
-        #                             self.create_article_data,
-        #                             format='json',
-        #                             HTTP_AUTHORIZATION='token {}'.format(token))
-        # self.assertEqual(response.status_code, status.HTTP_201_CREATED)
->>>>>>> - Change path from <slug:slug> to <slug>
+
         """Create Comment for article that doesn't exist"""
         response = self.client.post(reverse('articles:create_comments',
                                     kwargs={'slug': 'my-story1'}),

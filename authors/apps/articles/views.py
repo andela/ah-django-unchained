@@ -352,7 +352,6 @@ class CommentsRetrieveUpdateDestroy(RetrieveUpdateDestroyAPIView, CreateAPIView)
                         self).get_serializer_context()
 
         comment = Comment.objects.filter(id=id, is_deleted=True).first()
-        print(comment)
         if comment:
             message = {'error': 'Comment has been deleted'}
             return Response(message, status=status.HTTP_404_NOT_FOUND)
