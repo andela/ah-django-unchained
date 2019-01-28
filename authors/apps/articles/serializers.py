@@ -85,3 +85,8 @@ class DeleteArticleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Article
         fields = ['is_deleted']
+
+
+class RatingSerializer(serializers.Serializer):
+    """validate rating article"""
+    rate = serializers.IntegerField(required=True)
