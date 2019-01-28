@@ -14,8 +14,10 @@ class ArticleSerializer(TaggitSerializer, serializers.ModelSerializer):
     # Uploads an image to the Cloudinary servers
     images = serializers.ImageField(default=None)
     tagList = TagListSerializerField()
-    user_id_likes = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
-    user_id_dislikes = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    user_id_likes = serializers.PrimaryKeyRelatedField(
+        many=True, read_only=True)
+    user_id_dislikes = serializers.PrimaryKeyRelatedField(
+        many=True, read_only=True)
     likes_count = serializers.SerializerMethodField()
     dislikes_count = serializers.SerializerMethodField()
     # Field to favourite an article
@@ -120,7 +122,8 @@ class CommentSerializer(serializers.ModelSerializer):
                 'updatedAt': self.format_date(thread.updatedAt)
             }for thread in instance.threads.all()
         ]
-        thread_comment = super(CommentSerializer, self).to_representation(instance)
+        thread_comment = super(
+            CommentSerializer, self).to_representation(instance)
         thread_comment['createdAt'] = self.format_date(instance.createdAt)
         thread_comment['updatedAt'] = self.format_date(instance.updatedAt)
         thread_comment['article'] = instance.article.title
@@ -140,3 +143,4 @@ class DeleteCommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = ['is_deleted', 'parent']
+

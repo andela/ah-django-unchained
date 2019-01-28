@@ -17,7 +17,8 @@ class Article(models.Model):
     slug = models.SlugField(max_length=50, blank=False, unique=True)
     is_deleted = models.BooleanField(default=False)
     is_published = models.BooleanField(default=False)
-    favorite = models.ManyToManyField(User, related_name='favorite', default=False)
+    favorite = models.ManyToManyField(
+        User, related_name='favorite', default=False)
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     tagList = TaggableManager()
     user_id_likes = models.ManyToManyField(
@@ -27,6 +28,7 @@ class Article(models.Model):
 
     class Meta:
         ordering = ['-created']
+
 
 class ArticleRating(models.Model):
     """
@@ -42,8 +44,10 @@ class ArticleRating(models.Model):
 
 class Comment(models.Model):
     """This is the Article model that is used to handle CRUD on articles"""
-    parent = models.ForeignKey('self', null=True, blank=False, on_delete=models.CASCADE, related_name='threads')
-    author = models.ForeignKey(User, related_name='author', on_delete=models.CASCADE)
+    parent = models.ForeignKey(
+        'self', null=True, blank=False, on_delete=models.CASCADE, related_name='threads')
+    author = models.ForeignKey(
+        User, related_name='author', on_delete=models.CASCADE)
     article = models.ForeignKey(Article, on_delete=models.CASCADE, null=True,
                                 related_name='comments')
     body = models.TextField(blank=False)
