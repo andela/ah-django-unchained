@@ -3,7 +3,7 @@ from django.urls import path
 from .views import (ArticleAPIView, ArticleDetailsView,
                     DeleteArticle, LikeArticleApiView,
                     DislikeArticleApiView, PostRatingsAPIView,
-                    AverageRatingsAPIView, FaveArticle
+                    AverageRatingsAPIView, FavoriteArticle
                     )
 
 
@@ -27,6 +27,6 @@ urlpatterns = [
          AverageRatingsAPIView.as_view(),
          name="articles_view_ratings"),
     path('articles/<slug>/favorite',
-          FaveArticle.as_view(),
+          FavoriteArticle.as_view(),
           name="articles-favorite")
 ]
