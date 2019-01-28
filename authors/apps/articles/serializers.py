@@ -103,7 +103,6 @@ class CommentSerializer(serializers.ModelSerializer):
     body = serializers.CharField()
 
     def get_author(self, comment):
-        # import pdb; pdb.set_trace()
         author = UserProfileSerializer(comment.author.profile)
         return author.data
 

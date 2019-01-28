@@ -332,7 +332,6 @@ class CreateComment(generics.ListCreateAPIView):
             'author': request.user,
             'article': get_object_or_404(Article, slug=self.kwargs["slug"])
         }
-        print((request.data))
         serializer = CommentSerializer(data=request.data, context=serializer_context)
         if serializer.is_valid():
             serializer.save(author=request.user, article_id=article.id)
@@ -353,13 +352,14 @@ class CommentsRetrieveUpdateDestroy(RetrieveUpdateDestroyAPIView, CreateAPIView)
                         self).get_serializer_context()
 
         comment = Comment.objects.filter(id=id, is_deleted=True).first()
+        print(comment)
         if comment:
             message = {'error': 'Comment has been deleted'}
             return Response(message, status=status.HTTP_404_NOT_FOUND)
-        article = Article.objects.filter(slug=slug).first()
+        article = Article.objects.get(slug=slug)
         if isinstance(article, dict):
             return Response(article, status=status.HTTP_404_NOT_FOUND)
-        parent = article.comments.filter(id=id).first().pk
+        parent = article.comments.get(id=id).pk
 
         if not parent:
             message = {'error': 'Comment not found.'}
