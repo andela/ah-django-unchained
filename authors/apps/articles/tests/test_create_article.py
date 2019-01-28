@@ -1,3 +1,4 @@
+import json
 from django.urls import reverse
 from rest_framework.views import status
 from rest_framework.test import APITestCase, APIClient
@@ -223,7 +224,6 @@ class CreateArticles(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual('Not found.', response.data['detail'])
 
-<<<<<<< HEAD
     def test_favorite_article(self):
         """Test to favorite an article"""
         token = self.signup_user_one()
@@ -281,7 +281,6 @@ class CreateArticles(APITestCase):
                                       HTTP_AUTHORIZATION='token {}'.format(token))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['message'], 'Article already unfavorited.')
-=======
     def test_read_time_small_article(self):
         """Tests the read time for a small article"""
         self.post_article_articles(self.small_body)
@@ -308,4 +307,3 @@ class CreateArticles(APITestCase):
         data = {'read_time': 7}
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(json.loads(response.content), data)
->>>>>>> feat (read-time) Get read time for articles
