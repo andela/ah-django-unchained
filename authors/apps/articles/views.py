@@ -4,22 +4,25 @@ from django.template.defaultfilters import slugify
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404
 from django.core import serializers
-from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.generics import (ListCreateAPIView, CreateAPIView,
-                                     RetrieveUpdateAPIView, UpdateAPIView,
+from rest_framework.renderers import JSONRenderer
+from rest_framework.generics import (ListCreateAPIView,
+                                     RetrieveUpdateDestroyAPIView,
+                                     RetrieveUpdateAPIView,
+                                     UpdateAPIView, CreateAPIView,
                                      DestroyAPIView)
+
 from rest_framework.permissions import (IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
-from rest_framework.renderers import JSONRenderer
-from rest_framework.exceptions import NotFound
-
+from rest_framework.exceptions import NotFound, ValidationError
+from rest_framework import status
 from authors.apps.core.permissions import IsAuthorOrReadOnly
 from .serializers import (ArticleSerializer,
                           GetArticleSerializer, DeleteArticleSerializer,
-                          RatingSerializer)
-from .models import Article, ArticleRating
+                          RatingSerializer, CommentSerializer,
+                          DeleteCommentSerializer)
+from .models import (Article, ArticleRating, Comment)
 
 
 class ArticleAPIView(ListCreateAPIView):
@@ -290,3 +293,79 @@ def set_favorite_status(data, user):
         serialized_details = data.data
         serialized_details['favorite'] = True
         return Response(serialized_details)
+
+
+class CommentDelete(UpdateAPIView):
+
+    """This class Deletes Comments created by the a particular user"""
+    permission_classes = (IsAuthorOrReadOnly,)
+    queryset = Comment.objects.filter(is_deleted=False)
+    serializer_class = DeleteCommentSerializer
+    lookup_field = 'id'
+
+
+class CommentDetailsView(RetrieveUpdateAPIView):
+    """This class handles the http GET and PUT requests."""
+    permission_classes = (IsAuthorOrReadOnly,)
+    queryset = Comment.objects.filter(is_deleted=False)
+    serializer_class = CommentSerializer
+    lookup_field = 'id'
+
+
+class CreateComment(ListCreateAPIView):
+    """This class Creates comments."""
+    serializer_class = CommentSerializer
+    queryset = Comment.objects.filter(is_deleted=False)
+    permission_classes = (IsAuthenticated, )
+
+    def post(self, request, slug, *args, **kwargs):
+        article = Article.objects.filter(slug=slug, is_deleted=False).first()
+        serializer_context = {
+            'request': request,
+            'author': request.user,
+            'article': get_object_or_404(Article, slug=self.kwargs["slug"])
+        }
+        serializer = CommentSerializer(data=request.data, context=serializer_context)
+        if serializer.is_valid():
+            serializer.save(author=request.user, article_id=article.id)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CommentsRetrieveUpdateDestroy(RetrieveUpdateDestroyAPIView, CreateAPIView):
+    serializer_class = CommentSerializer
+    permission_classes = (IsAuthenticated,)
+    queryset = Comment.objects.filter(is_deleted=False)
+    lookup_field = 'id'
+
+    def create(self, request, slug, id):
+        """Method for creating a child comment on parent comment."""
+
+        context = super(CommentsRetrieveUpdateDestroy,
+                        self).get_serializer_context()
+
+        comment = Comment.objects.filter(id=id, is_deleted=True).first()
+        if comment:
+            message = {'error': 'Comment has been deleted'}
+            return Response(message, status=status.HTTP_404_NOT_FOUND)
+        article = Article.objects.get(slug=slug)
+        if isinstance(article, dict):
+            return Response(article, status=status.HTTP_404_NOT_FOUND)
+        parent = article.comments.get(id=id).pk
+
+        if not parent:
+            message = {'error': 'Comment not found.'}
+            return Response(message, status=status.HTTP_404_NOT_FOUND)
+        body = request.data.get('body', {})
+
+        data = {
+            'body': body,
+            'parent': parent,
+            'article': article.pk,
+        }
+
+        serializer = self.serializer_class(
+            data=data, context=context)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(author=self.request.user, article_id=article.pk)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)

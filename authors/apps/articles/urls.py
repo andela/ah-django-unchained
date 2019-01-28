@@ -3,9 +3,10 @@ from django.urls import path
 from .views import (ArticleAPIView, ArticleDetailsView,
                     DeleteArticle, LikeArticleApiView,
                     DislikeArticleApiView, PostRatingsAPIView,
-                    AverageRatingsAPIView, FavoriteArticle
+                    FavoriteArticle, AverageRatingsAPIView,
+                    CreateComment, CommentDetailsView,
+                    CommentDelete, CommentsRetrieveUpdateDestroy
                     )
-
 
 app_name = "articles"
 urlpatterns = [
@@ -27,6 +28,15 @@ urlpatterns = [
          AverageRatingsAPIView.as_view(),
          name="articles_view_ratings"),
     path('articles/<slug>/favorite',
-          FavoriteArticle.as_view(),
-          name="articles-favorite")
+         FavoriteArticle.as_view(),
+         name="articles-favorite"),
+
+    path('articles/<slug>/comments/<int:id>/',
+         CommentDetailsView.as_view(), name="get_comments"),
+    path('articles/<slug>/comments/add/<int:id>/',
+         CommentsRetrieveUpdateDestroy.as_view(), name="create_thread_comments"),
+    path('articles/<slug>/comments/delete/<int:id>/',
+         CommentDelete.as_view(), name="delete_comments"),
+    path('articles/<slug>/comments/',
+         CreateComment.as_view(), name="create_comments"),
 ]
