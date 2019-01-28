@@ -11,7 +11,6 @@ class CommentsTestCase(APITestCase):
         self.signup_url = reverse('authentication:auth-register')
         self.article_listcreate = reverse('articles:articles-listcreate')
         self.comments_url_nonexistant_article = '/api/articles/mystory/comments/'
-        self.get_comment_url = '/api/articles/my-story/comments/1/'
         self.signup_data = {
                         "user": {
                             "username": "maggie123",
@@ -23,6 +22,10 @@ class CommentsTestCase(APITestCase):
                         "email": "margaret1.chege@andela.com",
                         "password": "Pass@123"
                     }}
+        self.reply_to_comment = {"comment": {
+            "body": "Woow! Great work"
+            }}
+
         self.new_comment = {
             "body": "Good Work"
             }
@@ -69,12 +72,14 @@ class CommentsTestCase(APITestCase):
         response = self.client.post(self.article_listcreate,
                                     self.create_article_data,
                                     format='json',
-                                    HTTP_AUTHORIZATION='token {}'.format(token))
+                                    HTTP_AUTHORIZATION='token {}'.format(token)
+                                    )
         response = self.client.post(reverse('articles:create_comments',
                                     kwargs={'slug': 'my-story'}),
                                     self.new_comment,
                                     format='json',
-                                    HTTP_AUTHORIZATION='token {}'.format(token))
+                                    HTTP_AUTHORIZATION='token {}'.format(token)
+                                    )
         id = response.data['id']
         response = self.client.put(reverse("articles:get_comments",
                                    kwargs={'slug': 'my-story', "id": id}),
@@ -84,53 +89,49 @@ class CommentsTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['body'], self.update_comment['body'])
 
-    def test_get_all_comments(self):
-        """Test get all comments"""
+    def test_reply_to_comment(self):
+        """Test Update Comment"""
+
         token = self.register()
+        """Create an article"""
         del self.create_article_data['images']
         response = self.client.post(self.article_listcreate,
                                     self.create_article_data,
                                     format='json',
-                                    HTTP_AUTHORIZATION='token {}'.format(token))
-        """Test Create a Comment"""
-        response = self.client.post(reverse('articles:create_comments', kwargs={'slug': 'my-story'}),
-                                    self.new_comment,
-                                    format='json',
-                                    HTTP_AUTHORIZATION='token {}'.format(token))
+                                    HTTP_AUTHORIZATION='token {}'.format(token)
+                                    )
+        """Create comment"""
         response = self.client.post(reverse('articles:create_comments',
                                     kwargs={'slug': 'my-story'}),
                                     self.new_comment,
                                     format='json',
-                                    HTTP_AUTHORIZATION='token {}'.format(token))
+                                    HTTP_AUTHORIZATION='token {}'.format(token)
+                                    )
+        id = response.data['id']
+        response = self.client.post(reverse('articles:create_thread_comments',
+                                    kwargs={'slug': 'my-story', 'id': id}),
+                                    self.reply_to_comment,
+                                    format='json',
+                                    HTTP_AUTHORIZATION='token {}'.format(token)
+                                    )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_get_all_comments(self):
+        token = self.register()
+        """Test get all comments"""
         response = self.client.get(reverse('articles:create_comments',
-                                           kwargs={'slug': 'my-story'}), format='json',
+                                           kwargs={'slug': 'my-story'}),
+                                           format='json',
                                            HTTP_AUTHORIZATION='token {}'.format(token))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_unauthorized_get_all_comments(self):
         """Test get all comments"""
-        token = self.register()
-        del self.create_article_data['images']
-        response = self.client.post(self.article_listcreate,
-                                    self.create_article_data,
-                                    format='json',
-                                    HTTP_AUTHORIZATION='token {}'.format(token))
-        """Test Create a Comment"""
-        response = self.client.post(reverse('articles:create_comments',
-                                    kwargs={'slug': 'my-story'}),
-                                    self.new_comment,
-                                    format='json',
-                                    HTTP_AUTHORIZATION='token {}'.format(token))
-        response = self.client.post(reverse('articles:create_comments',
-                                    kwargs={'slug': 'my-story'}),
-                                    self.new_comment,
-                                    format='json',
-                                    HTTP_AUTHORIZATION='token {}'.format(token))
         response = self.client.get(reverse('articles:create_comments',
                                            kwargs={'slug': 'my-story'}),
-                                            format='json')
+                                   format='json')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertEqual(response.data,{
+        self.assertEqual(response.data, {
     "detail": "Authentication credentials were not provided."})
 
     def test_create_comment_on_article(self):
@@ -168,15 +169,6 @@ class CommentsTestCase(APITestCase):
     def test_create_comment_nonexistent_article(self):
         """Create a comment for an article that doesn't exist"""
         token = self.register()
-        del self.create_article_data['images']
-        response = self.client.post(self.article_listcreate,
-                                    self.create_article_data,
-                                    format='json',
-                                    HTTP_AUTHORIZATION='token {}'.format(token)
-                                    )
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-
-        """Create Comment for article that doesn't exist"""
         response = self.client.post(reverse('articles:create_comments',
                                     kwargs={'slug': 'my-story1'}),
                                     self.new_comment,
