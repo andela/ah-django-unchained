@@ -7,10 +7,8 @@ from rest_framework.test import APITestCase, APIClient
 class CommentsTestCase(APITestCase):
     def setUp(self):
         self.client = APIClient()
-        self.login_url = reverse('authentication:auth-login')
         self.signup_url = reverse('authentication:auth-register')
         self.article_listcreate = reverse('articles:articles-listcreate')
-        self.comments_url_nonexistant_article = '/api/articles/mystory/comments/'
         self.signup_data = {
                         "user": {
                             "username": "maggie123",
@@ -18,10 +16,6 @@ class CommentsTestCase(APITestCase):
                             "password": "Pass@123"
                         }
                         }
-        self.login_data = {"user": {
-                        "email": "margaret1.chege@andela.com",
-                        "password": "Pass@123"
-                    }}
         self.reply_to_comment = {"comment": {
             "body": "Woow! Great work"
             }}

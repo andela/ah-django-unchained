@@ -6,14 +6,8 @@ from django.shortcuts import get_object_or_404
 from django.core import serializers
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.generics import (ListCreateAPIView, CreateAPIView,
-                                     RetrieveUpdateAPIView, UpdateAPIView,
-                                     DestroyAPIView)
-from rest_framework.permissions import (IsAuthenticated,
-                                        IsAuthenticatedOrReadOnly)
 from rest_framework.renderers import JSONRenderer
 from rest_framework.exceptions import NotFound
-
 from rest_framework.generics import (ListCreateAPIView,
                                      RetrieveUpdateDestroyAPIView,
                                      RetrieveUpdateAPIView,

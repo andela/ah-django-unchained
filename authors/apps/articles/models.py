@@ -40,9 +40,9 @@ class ArticleRating(models.Model):
 
 class Comment(models.Model):
     """This is the Article model that is used to handle CRUD on articles"""
-    parent = models.ForeignKey('self', null=True, blank=False, on_delete=models.CASCADE, related_name='threads')
+    parent = models.ForeignKey('self', blank=False, on_delete=models.CASCADE, related_name='threads')
     author = models.ForeignKey(User, related_name='author', on_delete=models.CASCADE)
-    article = models.ForeignKey(Article, on_delete=models.CASCADE, null=True,
+    article = models.ForeignKey(Article, on_delete=models.CASCADE,
                                 related_name='comments')
     body = models.TextField(blank=False)
     createdAt = models.DateTimeField(auto_now_add=True)
