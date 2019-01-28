@@ -210,7 +210,7 @@ class PostRatingsAPIView(CreateAPIView):
             article_ratings.save()
             return response
         # create new rating if none exists
-        except ObjectDoesNotExist:
+        except ArticleRating.DoesNotExist:
             article_ratings = ArticleRating(
                 user=user, article=article, rate=data['rate']
                 )
