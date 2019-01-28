@@ -1,8 +1,12 @@
 import random
-
+import os
+import jwt
 from django.template.defaultfilters import slugify
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404
+from django.core import serializers
+from django.conf import settings
+from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.generics import (ListCreateAPIView,
@@ -22,6 +26,9 @@ from .serializers import (ArticleSerializer,
 from .models import (Article, ArticleRating, Comment)
 from .pagination import CustomPagination
 
+                          RatingSerializer)
+from .models import Article, ArticleRating
+from ..authentication.utils import send_link
 
 class ArticleAPIView(ListCreateAPIView):
     """Creates articles and retrieves all articles"""
@@ -371,6 +378,8 @@ class CommentsRetrieveUpdateDestroy(RetrieveUpdateDestroyAPIView,
         serializer.is_valid(raise_exception=True)
         serializer.save(author=self.request.user, article_id=article.pk)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        
 class ReadTime(RetrieveAPIView):
     """
     class to  get the minutes it take to read an article
@@ -390,3 +399,18 @@ class ReadTime(RetrieveAPIView):
         read = len(words) / 279
         return Response({'read_time': round(read)}, status.HTTP_200_OK)
 
+        
+class ShareArticleViaEmailApiView(CreateAPIView):
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request, slug):
+        token = request.META.get('HTTP_AUTHORIZATION', '').split(' ')[1]
+        email = jwt.decode(token, settings.SECRET_KEY)['email']
+        template = 'email_share_article.html'
+        url = os.getenv('APP_BASE_URL') + '/api/articles/{}'.format(slug)
+        subject = "Article from Authors Haven"
+        send_link(email,subject, template, url)
+        message = {
+            "message": "Article link sent successfully. Please check your email.",
+        }
+        return Response(message, status=status.HTTP_200_OK)

@@ -6,7 +6,7 @@ from .views import (ArticleAPIView, ArticleDetailsView,
                     FavoriteArticle, AverageRatingsAPIView,
                     CreateComment, CommentDetailsView,
                     CommentDelete, CommentsRetrieveUpdateDestroy,
-                    ReadTime
+                    ReadTime, ShareArticleViaEmailApiView,
                     )
 
 
@@ -32,7 +32,6 @@ urlpatterns = [
     path('articles/<slug>/favorite',
          FavoriteArticle.as_view(),
          name="articles-favorite"),
-
     path('articles/<slug>/comments/<int:id>/',
          CommentDetailsView.as_view(), name="get_comments"),
     path('articles/<slug>/comments/add/<int:id>/',
