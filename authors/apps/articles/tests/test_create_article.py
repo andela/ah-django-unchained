@@ -58,20 +58,20 @@ class CreateArticles(APITestCase):
                                     format='json')
         token = register.data['token']
         return token
+    
+    def create_article(self, article, token):
+        del article['images']
+        response = self.client.post(self.article_listcreate,
+                         article,
+                         format='json',
+                         HTTP_AUTHORIZATION='token {}'.format(token))
+        return response
 
     def test_fetch_all_articles(self):
         """Tests to fetch all articles"""
         token = self.signup_user_one()
-        del self.create_article_data['images']
-        self.client.post(self.article_listcreate,
-                         self.create_article_data,
-                         format='json',
-                         HTTP_AUTHORIZATION='token {}'.format(token))
-        del self.create_article_data2['images']
-        self.client.post(self.article_listcreate,
-                         self.create_article_data2,
-                         format='json',
-                         HTTP_AUTHORIZATION='token {}'.format(token))
+        self.create_article(self.create_article_data, token)
+        self.create_article(self.create_article_data2, token)
         response = self.client.get(self.article_listcreate, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(self.create_article_data['title'],
@@ -110,11 +110,7 @@ class CreateArticles(APITestCase):
     def test_get_single_article(self):
         """Test to get a single article"""
         token = self.signup_user_one()
-        del self.create_article_data['images']
-        self.client.post(self.article_listcreate,
-                         self.create_article_data,
-                         format='json',
-                         HTTP_AUTHORIZATION='token {}'.format(token))
+        self.create_article(self.create_article_data, token)
         response = self.client.get(reverse('articles:articles-retrieveupdate',
                                    kwargs={'slug': 'a-new-story'}),
                                    format='json')
@@ -131,11 +127,7 @@ class CreateArticles(APITestCase):
     def test_unauthorized_article_update(self):
         """Test to update an article created by another user"""
         token = self.signup_user_one()
-        del self.create_article_data['images']
-        self.client.post(self.article_listcreate,
-                         self.create_article_data,
-                         format='json',
-                         HTTP_AUTHORIZATION='token {}'.format(token))
+        self.create_article(self.create_article_data, token)
         token2 = self.signup_user_two()
         response = self.client.put(reverse('articles:articles-retrieveupdate',
                                    kwargs={'slug': 'a-new-story'}),
@@ -147,11 +139,7 @@ class CreateArticles(APITestCase):
     def test_authorized_article_update(self):
         """Test to legitimately update an article created by a user"""
         token = self.signup_user_one()
-        del self.create_article_data['images']
-        self.client.post(self.article_listcreate,
-                         self.create_article_data,
-                         format='json',
-                         HTTP_AUTHORIZATION='token {}'.format(token))
+        self.create_article(self.create_article_data, token)
         del self.create_article_data2['images']
         response = self.client.put(reverse('articles:articles-retrieveupdate',
                                    kwargs={'slug': 'a-new-story'}),
@@ -169,11 +157,7 @@ class CreateArticles(APITestCase):
     def test_to_delete_article(self):
         """Test to delete an article"""
         token = self.signup_user_one()
-        del self.create_article_data['images']
-        self.client.post(self.article_listcreate,
-                         self.create_article_data,
-                         format='json',
-                         HTTP_AUTHORIZATION='token {}'.format(token))
+        self.create_article(self.create_article_data, token)
         response = self.client.put(reverse('articles:articles-delete',
                                    kwargs={'slug': 'a-new-story'}),
                                    self.delete_article,
@@ -186,11 +170,7 @@ class CreateArticles(APITestCase):
     def test_unauthorized_delete_article(self):
         """Test to delete someone else's article"""
         token = self.signup_user_one()
-        del self.create_article_data['images']
-        self.client.post(self.article_listcreate,
-                         self.create_article_data,
-                         format='json',
-                         HTTP_AUTHORIZATION='token {}'.format(token))
+        self.create_article(self.create_article_data, token)
         token2 = self.signup_user_two()
         response = self.client.put(reverse('articles:articles-delete',
                                    kwargs={'slug': 'a-new-story'}),
@@ -212,11 +192,7 @@ class CreateArticles(APITestCase):
     def test_favorite_article(self):
         """Test to favorite an article"""
         token = self.signup_user_one()
-        del self.create_article_data['images']
-        self.client.post(self.article_listcreate,
-                         self.create_article_data,
-                         format='json',
-                         HTTP_AUTHORIZATION='token {}'.format(token))
+        self.create_article(self.create_article_data, token)
         response = self.client.post(self.article_favorite,
                                     format='json',
                                     HTTP_AUTHORIZATION='token {}'.format(token))
@@ -226,14 +202,12 @@ class CreateArticles(APITestCase):
     def test_unfavorite_a_favorited_article(self):
         """Test to unfavorite an article that had previously been favorited"""
         token = self.signup_user_one()
-        del self.create_article_data['images']
-        self.client.post(self.article_listcreate,
-                         self.create_article_data,
+        self.create_article(self.create_article_data, token)
+        response = self.client.post(self.article_favorite,
                          format='json',
                          HTTP_AUTHORIZATION='token {}'.format(token))
-        self.client.post(self.article_favorite,
-                         format='json',
-                         HTTP_AUTHORIZATION='token {}'.format(token))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['favorite'], True)
         response = self.client.delete(self.article_favorite,
                                       format='json',
                                       HTTP_AUTHORIZATION='token {}'.format(token))
@@ -243,14 +217,12 @@ class CreateArticles(APITestCase):
     def test_to_favorite_a_favorited_article(self):
         """Test to favorite a favorited article"""
         token = self.signup_user_one()
-        del self.create_article_data['images']
-        self.client.post(self.article_listcreate,
-                         self.create_article_data,
+        self.create_article(self.create_article_data, token)
+        response = self.client.post(self.article_favorite,
                          format='json',
                          HTTP_AUTHORIZATION='token {}'.format(token))
-        self.client.post(self.article_favorite,
-                         format='json',
-                         HTTP_AUTHORIZATION='token {}'.format(token))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['favorite'], True)
         response = self.client.post(self.article_favorite,
                                     format='json',
                                     HTTP_AUTHORIZATION='token {}'.format(token))
@@ -260,17 +232,15 @@ class CreateArticles(APITestCase):
     def test_to_unfavorite_a_unfavorited_article(self):
         """Test to unfavorite an unfavorited article"""
         token = self.signup_user_one()
-        del self.create_article_data['images']
-        self.client.post(self.article_listcreate,
-                         self.create_article_data,
-                         format='json',
-                         HTTP_AUTHORIZATION='token {}'.format(token))
+        self.create_article(self.create_article_data, token)
         self.client.post(self.article_favorite,
                          format='json',
                          HTTP_AUTHORIZATION='token {}'.format(token))
-        self.client.delete(self.article_favorite,
+        response = self.client.delete(self.article_favorite,
                            format='json',
                            HTTP_AUTHORIZATION='token {}'.format(token))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['favorite'], False)
         response = self.client.delete(self.article_favorite,
                                       format='json',
                                       HTTP_AUTHORIZATION='token {}'.format(token))
