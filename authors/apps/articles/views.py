@@ -7,7 +7,6 @@ from django.core import serializers
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.renderers import JSONRenderer
-from rest_framework.exceptions import NotFound
 from rest_framework.generics import (ListCreateAPIView,
                                      RetrieveUpdateDestroyAPIView,
                                      RetrieveUpdateAPIView,
@@ -17,8 +16,7 @@ from rest_framework.generics import (ListCreateAPIView,
 from rest_framework.permissions import (IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.exceptions import NotFound, ValidationError
-from rest_framework.renderers import JSONRenderer
-from rest_framework import status, generics
+from rest_framework import status
 from authors.apps.core.permissions import IsAuthorOrReadOnly
 from .serializers import (ArticleSerializer,
                           GetArticleSerializer, DeleteArticleSerializer,
@@ -314,7 +312,7 @@ class CommentDetailsView(RetrieveUpdateAPIView):
     lookup_field = 'id'
 
 
-class CreateComment(generics.ListCreateAPIView):
+class CreateComment(ListCreateAPIView):
     """This class Creates comments."""
     serializer_class = CommentSerializer
     queryset = Comment.objects.filter(is_deleted=False)
