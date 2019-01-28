@@ -6,9 +6,10 @@ from django.shortcuts import get_object_or_404
 from django.core import serializers
 from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.generics import (CreateAPIView, ListCreateAPIView,
-                                     RetrieveUpdateAPIView, UpdateAPIView)
 from rest_framework.views import APIView
+from rest_framework.generics import (ListCreateAPIView, CreateAPIView,
+                                     RetrieveUpdateAPIView, UpdateAPIView,
+                                     DestroyAPIView)
 from rest_framework.permissions import (IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.renderers import JSONRenderer
@@ -225,11 +226,12 @@ class PostRatingsAPIView(CreateAPIView):
             return response
 
 
-class FaveArticle(ListCreateAPIView):
+class FavoriteArticle(CreateAPIView, DestroyAPIView):
     """Favorite an Article."""
     permission_classes = (IsAuthenticated,)
     serializer_class = ArticleSerializer
-    def put(self, request, slug):
+
+    def post(self, request, slug):
         try:
             # get an article that matches the slug specified
             # and return a message if the article does not exist
@@ -238,19 +240,40 @@ class FaveArticle(ListCreateAPIView):
             raise NotFound("This article does not exist")
 
         # check if the article has been favorited by the current user
-        # if it is favorited we unfavorite it
-        if article in Article.objects.filter(
-                                        favorite=request.user):
-            article.favorite.remove(request.user)
+        # if it is favorited we return a message saying it is
+        if article in Article.objects.filter(favorite=request.user):
+            message = {'message': 'Article already favorited.'}
+            return Response(message)
 
         # If it is not favorited we favorite the article
-        else:
-            article.favorite.add(request.user)
+        article.favorite.add(request.user)
 
         serializer = self.serializer_class(article,
                                            context={'request': request},
                                            partial=True)
+
         return set_favorite_status(serializer, self.request.user.id)
+
+    def delete(self, request, slug):
+        try:
+            # get an article that matches the slug specified
+            # and return a message if the article does not exist
+            article = Article.objects.get(slug=slug)
+        except ObjectDoesNotExist:
+            raise NotFound("This article does not exist")
+
+        # check if the article has been favorited by the current user
+        # if it is we unfavorited it
+        if article in Article.objects.filter(favorite=request.user):
+            article.favorite.remove(request.user)
+            serializer = self.serializer_class(article,
+                                               context={'request': request},
+                                               partial=True)
+
+            return set_favorite_status(serializer, self.request.user.id)
+
+        # If it is unfavorited we return a message saying it is unfavorited
+        return Response({'message': 'Article already unfavorited.'})
 
 
 def set_favorite_status(data, user):
