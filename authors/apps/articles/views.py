@@ -356,7 +356,7 @@ class CommentsRetrieveUpdateDestroy(RetrieveUpdateDestroyAPIView, CreateAPIView)
         if not parent:
             message = {'error': 'Comment not found.'}
             return Response(message, status=status.HTTP_404_NOT_FOUND)
-        body = request.data.get('comment', {}).get('body', {})
+        body = request.data.get('body', {})
 
         data = {
             'body': body,

@@ -16,9 +16,9 @@ class CommentsTestCase(APITestCase):
                             "password": "Pass@123"
                         }
                         }
-        self.reply_to_comment = {"comment": {
+        self.reply_to_comment = {
             "body": "Woow! Great work"
-            }}
+            }
 
         self.new_comment = {
             "body": "Good Work"
@@ -72,7 +72,7 @@ class CommentsTestCase(APITestCase):
         self.assertEqual(response.data['body'], self.update_comment['body'])
 
     def test_reply_to_comment(self):
-        """Test Update Comment"""
+        """Test Reply to Comment"""
 
         token = self.register()
         """Create an article"""
@@ -99,7 +99,8 @@ class CommentsTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_single_comment(self):
-        
+        """Test get a single comment"""
+
         token = self.register()
         """Create an article"""
         del self.create_article_data['images']
@@ -116,7 +117,7 @@ class CommentsTestCase(APITestCase):
                                     HTTP_AUTHORIZATION='token {}'.format(token)
                                     )
         id = response.data['id']
-        """Test get all comments"""
+        """Test single comment"""
         response = self.client.get(reverse('articles:get_comments',
                                            kwargs={'slug': 'my-story', "id": id}),
                                    format='json',
@@ -159,7 +160,7 @@ class CommentsTestCase(APITestCase):
                                     HTTP_AUTHORIZATION='token {}'.format(token)
                                     )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        """Create a comment"""
+        """Test create a comment"""
         response = self.client.post(reverse('articles:create_comments',
                                     kwargs={'slug': 'my-story'}),
                                     self.new_comment,
