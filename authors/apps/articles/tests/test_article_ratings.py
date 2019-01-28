@@ -60,11 +60,11 @@ class TestArticleRatings(APITestCase):
         data = {"rate": 4}
         response = self.client.post(
             "/api/articles/{}/rate/".format(slug), data=data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(
             response.data['message'], 'Article successfully rated'
             )
-        self.assertEqual(response.data["rating"]["rate"], 4)
+        self.assertEqual(response.data['rating'], 4)
 
     def test_rate_with_number_outside_range(self):
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
@@ -112,7 +112,7 @@ class TestArticleRatings(APITestCase):
         data1 = {"rate": 4}
         res1 = self.client.post(
             "/api/articles/{}/rate/".format(slug), data=data1, format='json')
-        self.assertEqual(res1.status_code, status.HTTP_200_OK)
+        self.assertEqual(res1.status_code, status.HTTP_201_CREATED)
 
         # assert that the rating is 4
         res2 = self.client.get(
@@ -124,7 +124,7 @@ class TestArticleRatings(APITestCase):
         data2 = {"rate": 3}
         res3 = self.client.post(
             "/api/articles/{}/rate/".format(slug), data=data2, format='json')
-        self.assertEqual(res3.status_code, status.HTTP_200_OK)
+        self.assertEqual(res3.status_code, status.HTTP_201_CREATED)
 
         # assert that the new rating is 3
         res4 = self.client.get(
@@ -145,7 +145,7 @@ class TestArticleRatings(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1)
         res2 = self.client.post(
             "/api/articles/{}/rate/".format(slug), data=data, format='json')
-        self.assertEqual(res2.status_code, status.HTTP_200_OK)
+        self.assertEqual(res2.status_code, status.HTTP_201_CREATED)
 
         # assert that the new rating is 4
         res3 = self.client.get(

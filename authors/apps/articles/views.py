@@ -196,9 +196,9 @@ class PostRatingsAPIView(CreateAPIView):
         response = Response(
                 {
                     "message": "Article successfully rated",
-                    "rating": serializer.data
+                    "rating": serializer.data['rate']
                 },
-                status=status.HTTP_200_OK
+                status=status.HTTP_201_CREATED
                 )
 
         # update the rating if there's one
@@ -210,7 +210,7 @@ class PostRatingsAPIView(CreateAPIView):
             article_ratings.save()
             return response
         # create new rating if none exists
-        except Exception:
+        except ObjectDoesNotExist:
             article_ratings = ArticleRating(
                 user=user, article=article, rate=data['rate']
                 )
