@@ -3,16 +3,17 @@ from django.urls import path
 from .views import (ArticleAPIView, ArticleDetailsView,
                     DeleteArticle, LikeArticleApiView,
                     DislikeArticleApiView, PostRatingsAPIView,
-                    AverageRatingsAPIView
+                    AverageRatingsAPIView, FavoriteArticle
                     )
 
 
 app_name = "articles"
-urlpatterns = [path('articles/', ArticleAPIView.as_view(), name="articles-listcreate"),
+urlpatterns = [
+    path('articles/', ArticleAPIView.as_view(), name="articles-listcreate"),
     path('articles/<slug:slug>/',
          ArticleDetailsView.as_view(),
          name="articles-retrieveupdate"),
-    path('articles/delete/<slug:slug>/',
+    path('articles/delete/<slug>/',
          DeleteArticle.as_view(),
          name="articles-delete"),
     path('articles/<slug>/like/',
@@ -24,5 +25,8 @@ urlpatterns = [path('articles/', ArticleAPIView.as_view(), name="articles-listcr
          name="rate_article"),
     path('articles/rate/<slug>/',
          AverageRatingsAPIView.as_view(),
-         name="articles_view_ratings")
+         name="articles_view_ratings"),
+    path('articles/<slug>/favorite',
+          FavoriteArticle.as_view(),
+          name="articles-favorite")
 ]

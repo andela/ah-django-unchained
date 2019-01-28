@@ -2,12 +2,14 @@ import random
 
 from django.template.defaultfilters import slugify
 from django.core.exceptions import ObjectDoesNotExist
+from django.shortcuts import get_object_or_404
 from django.core import serializers
 from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.generics import (CreateAPIView, ListCreateAPIView,
-                                     RetrieveUpdateAPIView, UpdateAPIView)
 from rest_framework.views import APIView
+from rest_framework.generics import (ListCreateAPIView, CreateAPIView,
+                                     RetrieveUpdateAPIView, UpdateAPIView,
+                                     DestroyAPIView)
 from rest_framework.permissions import (IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.renderers import JSONRenderer
@@ -52,6 +54,12 @@ class ArticleDetailsView(RetrieveUpdateAPIView):
     queryset = Article.objects.filter(is_deleted=False)
     serializer_class = GetArticleSerializer
     lookup_field = 'slug'
+
+    def get(self, request, slug, *args, **kwargs):
+        """Retrieve a single article"""
+        article = get_object_or_404(Article, slug=self.kwargs["slug"])
+        serializer = self.serializer_class(article)
+        return set_favorite_status(serializer, self.request.user.id)
 
 
 class DeleteArticle(UpdateAPIView):
@@ -216,3 +224,69 @@ class PostRatingsAPIView(CreateAPIView):
                 )
             article_ratings.save()
             return response
+
+
+class FavoriteArticle(CreateAPIView, DestroyAPIView):
+    """Favorite an Article."""
+    permission_classes = (IsAuthenticated,)
+    serializer_class = ArticleSerializer
+
+    def post(self, request, slug):
+        try:
+            # get an article that matches the slug specified
+            # and return a message if the article does not exist
+            article = Article.objects.get(slug=slug)
+        except ObjectDoesNotExist:
+            raise NotFound("This article does not exist")
+
+        # check if the article has been favorited by the current user
+        # if it is favorited we return a message saying it is
+        if article in Article.objects.filter(favorite=request.user):
+            message = {'message': 'Article already favorited.'}
+            return Response(message)
+
+        # If it is not favorited we favorite the article
+        article.favorite.add(request.user)
+
+        serializer = self.serializer_class(article,
+                                           context={'request': request},
+                                           partial=True)
+
+        return set_favorite_status(serializer, self.request.user.id)
+
+    def delete(self, request, slug):
+        try:
+            # get an article that matches the slug specified
+            # and return a message if the article does not exist
+            article = Article.objects.get(slug=slug)
+        except ObjectDoesNotExist:
+            raise NotFound("This article does not exist")
+
+        # check if the article has been favorited by the current user
+        # if it is we unfavorited it
+        if article in Article.objects.filter(favorite=request.user):
+            article.favorite.remove(request.user)
+            serializer = self.serializer_class(article,
+                                               context={'request': request},
+                                               partial=True)
+
+            return set_favorite_status(serializer, self.request.user.id)
+
+        # If it is unfavorited we return a message saying it is unfavorited
+        return Response({'message': 'Article already unfavorited.'})
+
+
+def set_favorite_status(data, user):
+        """Set the favorite value to either True or False"""
+        # Check if the user has favorited the article
+        value = [value for value in data.data['favorite'] if
+                 user in data.data['favorite']]
+        # Article has not been favorited, set favorite to False
+        if not value:
+            serialized_details = data.data
+            serialized_details['favorite'] = False
+            return Response(serialized_details, status.HTTP_200_OK)
+        # Article has not been favorited, set favorite to True
+        serialized_details = data.data
+        serialized_details['favorite'] = True
+        return Response(serialized_details)
