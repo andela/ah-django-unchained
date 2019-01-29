@@ -1,8 +1,6 @@
-import json
 from django.urls import reverse
 from rest_framework.views import status
 from rest_framework.test import APITestCase, APIClient
-from authors.apps.articles.models import Article
 
 
 class CreateArticles(APITestCase):
@@ -18,13 +16,13 @@ class CreateArticles(APITestCase):
                 "username": "kennyg",
                 "email": "ken@me.com",
                 "password": "Kennyisme1!"
-                }}
+            }}
         self.signup_data2 = {
             "user": {
                 "username": "kwammea",
                 "email": "kwame@me.com",
                 "password": "Kwameisme1!"
-                }}
+            }}
         self.create_article_data = {
             "title": "A new story",
             "body": "This is my story",
@@ -58,13 +56,13 @@ class CreateArticles(APITestCase):
                                     format='json')
         token = register.data['token']
         return token
-    
+
     def create_article(self, article, token):
         del article['images']
         response = self.client.post(self.article_listcreate,
-                         article,
-                         format='json',
-                         HTTP_AUTHORIZATION='token {}'.format(token))
+                                    article,
+                                    format='json',
+                                    HTTP_AUTHORIZATION='token {}'.format(token))
         return response
 
     def test_fetch_all_articles(self):
@@ -74,21 +72,22 @@ class CreateArticles(APITestCase):
         self.create_article(self.create_article_data2, token)
         response = self.client.get(self.article_listcreate, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(self.create_article_data['title'],
-                         response.data[0]['title'])
-        self.assertEqual(self.create_article_data2['title'],
-                         response.data[1]['title'])
+        self.assertIn('count', response.data)
+        self.assertIn('next', response.data)
+        self.assertIn('previous', response.data)
+        self.assertEqual(self.create_article_data['title'], response.data['results'][0]['title'])
+        self.assertEqual(self.create_article_data2['title'], response.data['results'][1]['title'])
         self.assertEqual(self.create_article_data['body'],
-                         response.data[0]['body'])
+                         response.data['results'][0]['body'])
         self.assertEqual(self.create_article_data2['body'],
-                         response.data[1]['body'])
+                         response.data['results'][1]['body'])
         self.assertEqual(self.create_article_data['description'],
-                         response.data[0]['description'])
+                         response.data['results'][0]['description'])
         self.assertEqual(self.create_article_data2['description'],
-                         response.data[1]['description'])
+                         response.data['results'][1]['description'])
         self.assertIn(self.create_article_data2['tagList'][0],
-                                response.data[0]['tagList'])
-                                
+                      response.data['results'][1]['tagList'])
+
     def test_add_articles(self):
         """Test to add an article"""
         token = self.signup_user_one()
@@ -105,14 +104,14 @@ class CreateArticles(APITestCase):
         self.assertEqual(self.create_article_data['description'],
                          response.data['description'])
         self.assertIn(self.create_article_data2['tagList'][0],
-                                response.data['tagList'])
+                      response.data['tagList'])
 
     def test_get_single_article(self):
         """Test to get a single article"""
         token = self.signup_user_one()
         self.create_article(self.create_article_data, token)
         response = self.client.get(reverse('articles:articles-retrieveupdate',
-                                   kwargs={'slug': 'a-new-story'}),
+                                           kwargs={'slug': 'a-new-story'}),
                                    format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(self.create_article_data['title'],
@@ -122,7 +121,7 @@ class CreateArticles(APITestCase):
         self.assertEqual(self.create_article_data['description'],
                          response.data['description'])
         self.assertIn(self.create_article_data2['tagList'][0],
-                                response.data['tagList'])
+                      response.data['tagList'])
 
     def test_unauthorized_article_update(self):
         """Test to update an article created by another user"""
@@ -130,7 +129,7 @@ class CreateArticles(APITestCase):
         self.create_article(self.create_article_data, token)
         token2 = self.signup_user_two()
         response = self.client.put(reverse('articles:articles-retrieveupdate',
-                                   kwargs={'slug': 'a-new-story'}),
+                                           kwargs={'slug': 'a-new-story'}),
                                    self.create_article_data2,
                                    format='json',
                                    HTTP_AUTHORIZATION='token {}'.format(token2))
@@ -142,7 +141,7 @@ class CreateArticles(APITestCase):
         self.create_article(self.create_article_data, token)
         del self.create_article_data2['images']
         response = self.client.put(reverse('articles:articles-retrieveupdate',
-                                   kwargs={'slug': 'a-new-story'}),
+                                           kwargs={'slug': 'a-new-story'}),
                                    self.create_article_data2,
                                    format='json',
                                    HTTP_AUTHORIZATION='token {}'.format(token))
@@ -159,7 +158,7 @@ class CreateArticles(APITestCase):
         token = self.signup_user_one()
         self.create_article(self.create_article_data, token)
         response = self.client.put(reverse('articles:articles-delete',
-                                   kwargs={'slug': 'a-new-story'}),
+                                           kwargs={'slug': 'a-new-story'}),
                                    self.delete_article,
                                    format='json',
                                    HTTP_AUTHORIZATION='token {}'.format(token))
@@ -173,7 +172,7 @@ class CreateArticles(APITestCase):
         self.create_article(self.create_article_data, token)
         token2 = self.signup_user_two()
         response = self.client.put(reverse('articles:articles-delete',
-                                   kwargs={'slug': 'a-new-story'}),
+                                           kwargs={'slug': 'a-new-story'}),
                                    self.delete_article,
                                    format='json',
                                    HTTP_AUTHORIZATION='token {}'.format(token2))
@@ -184,7 +183,7 @@ class CreateArticles(APITestCase):
     def test_to_fetch_non_exisiting_article(self):
         """Test to fetch an article that does not exist"""
         response = self.client.get(reverse('articles:articles-retrieveupdate',
-                                   kwargs={'slug': 'a-new-story'}),
+                                           kwargs={'slug': 'a-new-story'}),
                                    format='json')
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual('Not found.', response.data['detail'])
@@ -204,8 +203,8 @@ class CreateArticles(APITestCase):
         token = self.signup_user_one()
         self.create_article(self.create_article_data, token)
         response = self.client.post(self.article_favorite,
-                         format='json',
-                         HTTP_AUTHORIZATION='token {}'.format(token))
+                                    format='json',
+                                    HTTP_AUTHORIZATION='token {}'.format(token))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['favorite'], True)
         response = self.client.delete(self.article_favorite,
@@ -219,8 +218,8 @@ class CreateArticles(APITestCase):
         token = self.signup_user_one()
         self.create_article(self.create_article_data, token)
         response = self.client.post(self.article_favorite,
-                         format='json',
-                         HTTP_AUTHORIZATION='token {}'.format(token))
+                                    format='json',
+                                    HTTP_AUTHORIZATION='token {}'.format(token))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['favorite'], True)
         response = self.client.post(self.article_favorite,
@@ -237,8 +236,8 @@ class CreateArticles(APITestCase):
                          format='json',
                          HTTP_AUTHORIZATION='token {}'.format(token))
         response = self.client.delete(self.article_favorite,
-                           format='json',
-                           HTTP_AUTHORIZATION='token {}'.format(token))
+                                      format='json',
+                                      HTTP_AUTHORIZATION='token {}'.format(token))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['favorite'], False)
         response = self.client.delete(self.article_favorite,
