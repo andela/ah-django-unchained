@@ -159,6 +159,13 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'authors.apps.authentication.backends.JWTAuthentication',
     ),
+    # Enable pagination configuration
+
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    # This indicates the default page size.
+    'PAGE_SIZE': 100,
+
+
 }
 AUTHENTICATION_BACKENDS = (
     'social_core.backends.google.GoogleOAuth2',

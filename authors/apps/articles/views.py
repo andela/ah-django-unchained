@@ -3,10 +3,8 @@ import random
 from django.template.defaultfilters import slugify
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404
-from django.core import serializers
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.renderers import JSONRenderer
 from rest_framework.generics import (ListCreateAPIView,
                                      RetrieveUpdateDestroyAPIView,
                                      RetrieveUpdateAPIView,
@@ -15,7 +13,7 @@ from rest_framework.generics import (ListCreateAPIView,
 
 from rest_framework.permissions import (IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
-from rest_framework.exceptions import NotFound, ValidationError
+from rest_framework.exceptions import NotFound
 from rest_framework import status
 from authors.apps.core.permissions import IsAuthorOrReadOnly
 from .serializers import (ArticleSerializer,
@@ -23,10 +21,13 @@ from .serializers import (ArticleSerializer,
                           RatingSerializer, CommentSerializer,
                           DeleteCommentSerializer)
 from .models import (Article, ArticleRating, Comment)
+from .pagination import CustomPagination
 
 
 class ArticleAPIView(ListCreateAPIView):
     """Creates articles and retrieves all articles"""
+
+    pagination_class = CustomPagination
     permission_classes = (IsAuthenticatedOrReadOnly,)
     # Only fetch those articles whose 'is_deleted' field is False
     queryset = Article.objects.filter(is_deleted=False)
@@ -74,7 +75,7 @@ class DeleteArticle(UpdateAPIView):
 
 class LikeArticleApiView(ListCreateAPIView):
     """Like an article."""
-    permission_classes = (IsAuthenticatedOrReadOnly, )
+    permission_classes = (IsAuthenticatedOrReadOnly,)
     serializer_class = ArticleSerializer
 
     def put(self, request, slug):
@@ -89,13 +90,13 @@ class LikeArticleApiView(ListCreateAPIView):
         # if the current user has disliked it, then the dislike status
         # is set to null
         if single_article_instance in Article.objects.filter(
-                                        user_id_dislikes=request.user):
+                user_id_dislikes=request.user):
             single_article_instance.user_id_dislikes.remove(request.user)
 
         # if the current user had previously liked this article,
         # then the article is unliked
         if single_article_instance in Article.objects.filter(
-                                        user_id_likes=request.user):
+                user_id_likes=request.user):
             single_article_instance.user_id_likes.remove(request.user)
 
         # updating the article's like status to 1 for the
@@ -126,13 +127,13 @@ class DislikeArticleApiView(ListCreateAPIView):
         # if the current user has liked then the like status
         # is set to null
         if single_article_instance in Article.objects.filter(
-                                        user_id_likes=request.user):
+                user_id_likes=request.user):
             single_article_instance.user_id_likes.remove(request.user)
 
         # if the current user had previously disliked this article,
         # then the dislike status of article is set to none
         if single_article_instance in Article.objects.filter(
-                                        user_id_dislikes=request.user):
+                user_id_dislikes=request.user):
             single_article_instance.user_id_dislikes.remove(request.user)
 
         # updating the article's dislike status to 1 for the
@@ -190,7 +191,7 @@ class PostRatingsAPIView(CreateAPIView):
             return Response(
                 {"message": "Give a rating between 1 to 5 inclusive"},
                 status=status.HTTP_400_BAD_REQUEST
-                )
+            )
 
         try:
             article = Article.objects.get(slug=slug)
@@ -205,18 +206,18 @@ class PostRatingsAPIView(CreateAPIView):
 
         user = request.user
         response = Response(
-                {
-                    "message": "Article successfully rated",
-                    "rating": serializer.data['rate']
-                },
-                status=status.HTTP_201_CREATED
-                )
+            {
+                "message": "Article successfully rated",
+                "rating": serializer.data['rate']
+            },
+            status=status.HTTP_201_CREATED
+        )
 
         # update the rating if there's one
         try:
             article_ratings = ArticleRating.objects.get(
                 user=user, article=article
-                )
+            )
             article_ratings.rate = data['rate']
             article_ratings.save()
             return response
@@ -224,7 +225,7 @@ class PostRatingsAPIView(CreateAPIView):
         except ArticleRating.DoesNotExist:
             article_ratings = ArticleRating(
                 user=user, article=article, rate=data['rate']
-                )
+            )
             article_ratings.save()
             return response
 
@@ -280,23 +281,22 @@ class FavoriteArticle(CreateAPIView, DestroyAPIView):
 
 
 def set_favorite_status(data, user):
-        """Set the favorite value to either True or False"""
-        # Check if the user has favorited the article
-        value = [value for value in data.data['favorite'] if
-                 user in data.data['favorite']]
-        # Article has not been favorited, set favorite to False
-        if not value:
-            serialized_details = data.data
-            serialized_details['favorite'] = False
-            return Response(serialized_details, status.HTTP_200_OK)
-        # Article has not been favorited, set favorite to True
+    """Set the favorite value to either True or False"""
+    # Check if the user has favorited the article
+    value = [value for value in data.data['favorite'] if
+             user in data.data['favorite']]
+    # Article has not been favorited, set favorite to False
+    if not value:
         serialized_details = data.data
-        serialized_details['favorite'] = True
-        return Response(serialized_details)
+        serialized_details['favorite'] = False
+        return Response(serialized_details, status.HTTP_200_OK)
+    # Article has not been favorited, set favorite to True
+    serialized_details = data.data
+    serialized_details['favorite'] = True
+    return Response(serialized_details)
 
 
 class CommentDelete(UpdateAPIView):
-
     """This class Deletes Comments created by the a particular user"""
     permission_classes = (IsAuthorOrReadOnly,)
     queryset = Comment.objects.filter(is_deleted=False)
@@ -314,9 +314,10 @@ class CommentDetailsView(RetrieveUpdateAPIView):
 
 class CreateComment(ListCreateAPIView):
     """This class Creates comments."""
+    pagination_class = CustomPagination
     serializer_class = CommentSerializer
     queryset = Comment.objects.filter(is_deleted=False)
-    permission_classes = (IsAuthenticated, )
+    permission_classes = (IsAuthenticated,)
 
     def post(self, request, slug, *args, **kwargs):
         article = Article.objects.filter(slug=slug, is_deleted=False).first()
@@ -325,14 +326,16 @@ class CreateComment(ListCreateAPIView):
             'author': request.user,
             'article': get_object_or_404(Article, slug=self.kwargs["slug"])
         }
-        serializer = CommentSerializer(data=request.data, context=serializer_context)
+        serializer = CommentSerializer(data=request.data,
+                                       context=serializer_context)
         if serializer.is_valid():
             serializer.save(author=request.user, article_id=article.id)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class CommentsRetrieveUpdateDestroy(RetrieveUpdateDestroyAPIView, CreateAPIView):
+class CommentsRetrieveUpdateDestroy(RetrieveUpdateDestroyAPIView,
+                                    CreateAPIView):
     serializer_class = CommentSerializer
     permission_classes = (IsAuthenticated,)
     queryset = Comment.objects.filter(is_deleted=False)
