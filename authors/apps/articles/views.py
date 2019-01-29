@@ -25,8 +25,9 @@ from .pagination import CustomPagination
 
 
 class ArticleAPIView(ListCreateAPIView):
-    pagination_class = CustomPagination
     """Creates articles and retrieves all articles"""
+
+    pagination_class = CustomPagination
     permission_classes = (IsAuthenticatedOrReadOnly,)
     # Only fetch those articles whose 'is_deleted' field is False
     queryset = Article.objects.filter(is_deleted=False)

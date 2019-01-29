@@ -162,6 +162,7 @@ REST_FRAMEWORK = {
     # Enable pagination configuration
 
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    # This indicates the default page size.
     'PAGE_SIZE': 100,
 
 
