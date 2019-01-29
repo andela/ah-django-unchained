@@ -75,18 +75,17 @@ class CreateArticles(APITestCase):
         self.assertIn('count', response.data)
         self.assertIn('next', response.data)
         self.assertIn('previous', response.data)
-        self.assertEqual(self.create_article_data['title'], response.data['results'][0]['title'])
-        self.assertEqual(self.create_article_data2['title'], response.data['results'][1]['title'])
+        self.assertEqual(self.create_article_data['title'], response.data['results'][1]['title'])
         self.assertEqual(self.create_article_data['body'],
-                         response.data['results'][0]['body'])
-        self.assertEqual(self.create_article_data2['body'],
                          response.data['results'][1]['body'])
+        self.assertEqual(self.create_article_data2['body'],
+                         response.data['results'][0]['body'])
         self.assertEqual(self.create_article_data['description'],
-                         response.data['results'][0]['description'])
-        self.assertEqual(self.create_article_data2['description'],
                          response.data['results'][1]['description'])
+        self.assertEqual(self.create_article_data2['description'],
+                         response.data['results'][0]['description'])
         self.assertIn(self.create_article_data2['tagList'][0],
-                      response.data['results'][1]['tagList'])
+                      response.data['results'][0]['tagList'])
 
     def test_add_articles(self):
         """Test to add an article"""

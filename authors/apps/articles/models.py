@@ -25,6 +25,8 @@ class Article(models.Model):
     user_id_dislikes = models.ManyToManyField(
         User, related_name='dislikes', blank=True)
 
+    class Meta:
+        ordering = ['-created']
 
 class ArticleRating(models.Model):
     """
