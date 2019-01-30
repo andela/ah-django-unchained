@@ -26,6 +26,7 @@ class FilterArticles(APITestCase):
         }
 
     def register(self):
+        """Sign up new user"""
         register = self.client.post(self.sign_up_url, self.sign_up_data,
                                     format='json')
         token = register.data['token']
@@ -60,7 +61,7 @@ class FilterArticles(APITestCase):
         self.assertListEqual(self.article_data['tagList'],response.data['results'][0]['tagList'])
 
     def test_filter_all(self):
-        """Test that you can filter an article with the a specific title,taglist and author all at one """
+        """Test that you can filter an article with a specific title,taglist and author all at once """
 
         token = self.register()
         # Create article
