@@ -32,6 +32,8 @@ class FilterArticles(APITestCase):
         return token
 
     def test_filter_article_title(self):
+        """Test that you can filter an article with a certain title."""
+
         token = self.register()
         # Create article
         self.client.post(self.article_listcreate_url, self.article_data,
@@ -44,6 +46,8 @@ class FilterArticles(APITestCase):
         self.assertIn(self.article_data['title'],response.data['results'][0]['title'])
 
     def test_filter_article_tag(self):
+        """Test that you can filter an article with a specific tag"""
+
         token = self.register()
         # Create article
         self.client.post(self.article_listcreate_url, self.article_data,
@@ -56,6 +60,8 @@ class FilterArticles(APITestCase):
         self.assertListEqual(self.article_data['tagList'],response.data['results'][0]['tagList'])
 
     def test_filter_all(self):
+        """Test that you can filter an article with the a specific title,taglist and author all at one """
+
         token = self.register()
         # Create article
         self.client.post(self.article_listcreate_url, self.article_data,
