@@ -12,6 +12,7 @@ from .views import (ArticleAPIView, ArticleDetailsView,
                     HighlightText, RetrieveUpdateDeleteComments,
                     CommentHistory, ReadTime, PublishArticle, GetDraft)
 
+
 from . filter import FilterArticles
 
 
