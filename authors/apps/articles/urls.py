@@ -7,7 +7,8 @@ from .views import (ArticleAPIView, ArticleDetailsView,
                     CreateComment, CommentDetailsView,
                     CommentDelete, CommentsRetrieveUpdateDestroy,
                     ReadTime, ShareArticleViaEmailApiView,
-                    ShareViaFacebook, ShareViaTwitter
+                    ShareViaFacebook, ShareViaTwitter,
+                    LikeCommentApiView, DislikeCommentApiView
                     )
 
 
@@ -53,4 +54,8 @@ urlpatterns = [
     path('articles/<slug>/share/twitter/',
          ShareViaTwitter.as_view(),
          name="share_twitter"),
+    path('articles/<slug>/comments/<int:id>/like',
+         LikeCommentApiView.as_view(), name='comment_like'),
+    path('articles/<slug>/comments/<int:id>/dislike',
+         DislikeCommentApiView.as_view(), name='comment_dislike'), 
 ]
