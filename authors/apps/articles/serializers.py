@@ -103,6 +103,10 @@ class CommentSerializer(serializers.ModelSerializer):
     """Serializer for creating a Comment"""
     author = serializers.SerializerMethodField()
     body = serializers.CharField()
+    user_id_likes = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    user_id_dislikes = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    likes_count = serializers.SerializerMethodField()
+    dislikes_count = serializers.SerializerMethodField()
 
     def get_author(self, comment):
         author = UserProfileSerializer(comment.author.profile)
@@ -110,6 +114,14 @@ class CommentSerializer(serializers.ModelSerializer):
 
     def format_date(self, date):
         return date.strftime('%d %b %Y %H:%M:%S')
+    
+    # insert total likes
+    def get_likes_count(self, obj):
+        return obj.user_id_likes.count()
+
+    # insert total dislikes
+    def get_dislikes_count(self, obj):
+        return obj.user_id_dislikes.count()
 
     def to_representation(self, instance):
         threads = [
@@ -135,7 +147,9 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = ('id', 'body', 'createdAt', 'updatedAt',
-                  'author', 'parent', 'article', 'is_deleted')
+                  'author', 'parent', 'article', 'is_deleted',
+                  'user_id_likes', 'user_id_dislikes',
+                  'likes_count', 'dislikes_count')
 
 
 class DeleteCommentSerializer(serializers.ModelSerializer):
