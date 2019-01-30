@@ -41,7 +41,7 @@ class FilterArticles(APITestCase):
         response = self.client.get(self.filter_title_url,
                         format='json', HTTP_AUTHORIZATION='token {}'.format(token))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn(self.article_data['title'],response.data[0]['title'])
+        self.assertIn(self.article_data['title'],response.data['results'][0]['title'])
 
     def test_filter_article_tag(self):
         token = self.register()
@@ -53,7 +53,7 @@ class FilterArticles(APITestCase):
         response = self.client.get(self.filter_tag_url,
                         format='json', HTTP_AUTHORIZATION='token {}'.format(token))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertListEqual(self.article_data['tagList'],response.data[0]['tagList'])
+        self.assertListEqual(self.article_data['tagList'],response.data['results'][0]['tagList'])
 
     def test_filter_all(self):
         token = self.register()
@@ -65,6 +65,6 @@ class FilterArticles(APITestCase):
         response = self.client.get(self.filter_all,
                         format='json', HTTP_AUTHORIZATION='token {}'.format(token))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn(self.article_data['title'], response.data[0]['title'])
-        self.assertListEqual(self.article_data['tagList'], response.data[0]['tagList'])
+        self.assertIn(self.article_data['title'], response.data['results'][0]['title'])
+        self.assertListEqual(self.article_data['tagList'], response.data['results'][0]['tagList'])
 

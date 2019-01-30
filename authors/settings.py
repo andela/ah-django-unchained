@@ -162,7 +162,6 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'authors.apps.authentication.backends.JWTAuthentication',
     ),
-<<<<<<< HEAD
 
     # Enable pagination configuration
 
@@ -170,13 +169,6 @@ REST_FRAMEWORK = {
     # This indicates the default page size.
     'PAGE_SIZE': 100,
 
-
-    'DEFAULT_FILTER_BACKENDS': (
-        'rest_framework_filters.backends.DjangoFilterBackend',
-    ),
-
-=======
->>>>>>> Search for articles by author
 }
 AUTHENTICATION_BACKENDS = (
     'social_core.backends.google.GoogleOAuth2',
