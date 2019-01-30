@@ -24,6 +24,30 @@ class FilterArticles(APITestCase):
             "body": "Django is interesting",
             "tagList": ["python"]
         }
+        self.article_data1 = {
+            "title": "The weather",
+            "description": "Its cold",
+            "body": "Its really cold",
+            "tagList": ["weather", "cold"]
+        }
+        self.article_data2 = {
+            "title": "Reading",
+            "description": "Books are cool",
+            "body": "I like to read",
+            "tagList": ["books", "novels"]
+        }
+        self.article_data3 = {
+            "title": "Colours",
+            "description": "Colours are  cool",
+            "body": "Colors are interesting",
+            "tagList": ["green", "black", "grey"]
+        }
+        self.article_data4 = {
+            "title": "Shoes",
+            "description": "Shoes are cool",
+            "body": "Buying Shes",
+            "tagList": ["Sneakers", "running Shoes"]
+        }
 
     def register(self):
         """Sign up new user"""
@@ -32,12 +56,21 @@ class FilterArticles(APITestCase):
         token = register.data['token']
         return token
 
+
     def test_filter_article_title(self):
         """Test that you can filter an article with a certain title."""
 
         token = self.register()
         # Create article
         self.client.post(self.article_listcreate_url, self.article_data,
+                                    format='json',
+                                    HTTP_AUTHORIZATION='token {}'.format(token)
+                                    )
+        self.client.post(self.article_listcreate_url, self.article_data1,
+                                    format='json',
+                                    HTTP_AUTHORIZATION='token {}'.format(token)
+                                    )
+        self.client.post(self.article_listcreate_url, self.article_data2,
                                     format='json',
                                     HTTP_AUTHORIZATION='token {}'.format(token)
                                     )
@@ -55,6 +88,10 @@ class FilterArticles(APITestCase):
                                     format='json',
                                     HTTP_AUTHORIZATION='token {}'.format(token)
                                     )
+        self.client.post(self.article_listcreate_url, self.article_data3,
+                                    format='json',
+                                    HTTP_AUTHORIZATION='token {}'.format(token)
+                                    )
         response = self.client.get(self.filter_tag_url,
                         format='json', HTTP_AUTHORIZATION='token {}'.format(token))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -66,6 +103,14 @@ class FilterArticles(APITestCase):
         token = self.register()
         # Create article
         self.client.post(self.article_listcreate_url, self.article_data,
+                                    format='json',
+                                    HTTP_AUTHORIZATION='token {}'.format(token)
+                                    )
+        self.client.post(self.article_listcreate_url, self.article_data4,
+                                    format='json',
+                                    HTTP_AUTHORIZATION='token {}'.format(token)
+                                    )
+        self.client.post(self.article_listcreate_url, self.article_data2,
                                     format='json',
                                     HTTP_AUTHORIZATION='token {}'.format(token)
                                     )

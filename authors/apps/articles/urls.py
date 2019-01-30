@@ -13,8 +13,7 @@ from .views import (ArticleAPIView, ArticleDetailsView,
                     CommentHistory, ReadTime, PublishArticle, GetDraft)
 
 
-from . filter import FilterArticles
-
+from .filter import FilterArticles
 
 app_name = "articles"
 urlpatterns = [
