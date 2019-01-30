@@ -9,8 +9,7 @@ from rest_framework.generics import (ListCreateAPIView,
                                      RetrieveUpdateDestroyAPIView,
                                      RetrieveUpdateAPIView,
                                      UpdateAPIView, CreateAPIView,
-                                     DestroyAPIView)
-
+                                     DestroyAPIView,RetrieveAPIView)
 from rest_framework.permissions import (IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.exceptions import NotFound
@@ -372,3 +371,22 @@ class CommentsRetrieveUpdateDestroy(RetrieveUpdateDestroyAPIView,
         serializer.is_valid(raise_exception=True)
         serializer.save(author=self.request.user, article_id=article.pk)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+class ReadTime(RetrieveAPIView):
+    """
+    class to  get the minutes it take to read an article
+    """
+    serializer_class = GetArticleSerializer
+    queryset = Article.objects.filter(is_deleted=False)
+
+    def retrieve(self, request, slug, *args, **kwargs):
+        try:
+            article_instance = Article.objects.get(slug=slug)
+        except ObjectDoesNotExist:
+            return Response({'error': 'article was not found'}, status.HTTP_404_NOT_FOUND)
+        serializer = self.serializer_class(article_instance)
+        words = serializer.data['body'].split()
+        """ The average reading time for a user is between 250 and 300 words per minute.
+        I picked 279 as an estimate readtime """
+        read = len(words) / 279
+        return Response({'read_time': round(read)}, status.HTTP_200_OK)
+

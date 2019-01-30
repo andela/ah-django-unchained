@@ -1,6 +1,9 @@
+import json
 from django.urls import reverse
 from rest_framework.views import status
 from rest_framework.test import APITestCase, APIClient
+from authors.apps.articles.models import Article
+from .stories import small_story, medium_story, huge_story
 
 
 class CreateArticles(APITestCase):
@@ -41,6 +44,30 @@ class CreateArticles(APITestCase):
             "is_deleted": True
         }
 
+        self.small_body = {
+            "title": "small",
+            "body": small_story,
+            "description": "Here is my story",
+            "images": None,
+            "tagList": ["dragons", "training"]
+        }
+
+        self.medium_body = {
+            "title": "medium",
+            "body": medium_story,
+            "description": "Here is my story",
+            "images": None,
+            "tagList": ["dragons", "training"]
+        }
+
+        self.huge_body = {
+            "title": "huge",
+            "body": huge_story,
+            "description": "Here is my story",
+            "images": None,
+            "tagList": ["dragons", "training"]
+        }
+
     def signup_user_one(self):
         """Function to register user one and return their token"""
         register = self.client.post(self.signup_url,
@@ -63,6 +90,16 @@ class CreateArticles(APITestCase):
                                     article,
                                     format='json',
                                     HTTP_AUTHORIZATION='token {}'.format(token))
+        return response
+
+    def post_article_articles(self, data):
+        token = self.signup_user_one()
+        del data['images']
+        response = self.client.post(
+            self.article_listcreate,
+            data,
+            format='json',
+            HTTP_AUTHORIZATION='token {}'.format(token))
         return response
 
     def test_fetch_all_articles(self):
@@ -244,3 +281,29 @@ class CreateArticles(APITestCase):
                                       HTTP_AUTHORIZATION='token {}'.format(token))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['message'], 'Article already unfavorited.')
+    def test_read_time_small_article(self):
+        """Tests the read time for a small article"""
+        self.post_article_articles(self.small_body)
+        read_url = reverse('articles:articles-read', kwargs={'slug': 'small'})
+        response = self.client.get(read_url, format='json')
+        data = {'read_time': 0}
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(json.loads(response.content), data)
+
+    def test_read_time_medium_article(self):
+        """Tests the read time for a medium article"""
+        self.post_article_articles(self.medium_body)
+        read_url = reverse('articles:articles-read', kwargs={'slug': 'medium'})
+        response = self.client.get(read_url, format='json')
+        data = {'read_time': 3}
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(json.loads(response.content), data)
+
+    def test_read_time_huge_article(self):
+        """Tests the read time for a huge article"""
+        self.post_article_articles(self.huge_body)
+        read_url = reverse('articles:articles-read', kwargs={'slug': 'huge'})
+        response = self.client.get(read_url, format='json')
+        data = {'read_time': 7}
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(json.loads(response.content), data)
