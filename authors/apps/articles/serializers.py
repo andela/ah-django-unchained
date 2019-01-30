@@ -131,7 +131,8 @@ class CommentSerializer(serializers.ModelSerializer):
                 'author': UserProfileSerializer(
                     instance=UserProfile.objects.get(user=thread.author)).data,
                 'createdAt': self.format_date(thread.createdAt),
-                'updatedAt': self.format_date(thread.updatedAt)
+                'updatedAt': self.format_date(thread.updatedAt),
+                
             }for thread in instance.threads.all()
         ]
         thread_comment = super(
@@ -149,7 +150,7 @@ class CommentSerializer(serializers.ModelSerializer):
         fields = ('id', 'body', 'createdAt', 'updatedAt',
                   'author', 'parent', 'article', 'is_deleted',
                   'user_id_likes', 'user_id_dislikes',
-                  'likes_count', 'dislikes_count')
+                  'likes_count', 'dislikes_count',)
 
 
 class DeleteCommentSerializer(serializers.ModelSerializer):

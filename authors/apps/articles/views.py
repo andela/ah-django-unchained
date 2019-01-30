@@ -19,6 +19,7 @@ from rest_framework.permissions import (IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.exceptions import NotFound
 from authors.apps.core.permissions import IsAuthorOrReadOnly
+from authors.apps.profiles.models import UserProfile
 from .serializers import (ArticleSerializer,
                           GetArticleSerializer, DeleteArticleSerializer,
                           RatingSerializer, CommentSerializer,
@@ -564,3 +565,72 @@ class DislikeCommentApiView(ListCreateAPIView):
                                            context={'request': request},
                                            partial=True)
         return Response(serializer.data, status.HTTP_200_OK)
+
+
+class HighlightText(ListCreateAPIView):
+    permission_classes = (IsAuthenticatedOrReadOnly, )
+    serializer_class = ArticleSerializer
+
+    def create(self, request, slug):
+        """Get an article to comment"""
+        try:
+            # get an article that matches the specified slug
+            # and return a message if the article does not exist
+            single_article_instance = Article.objects.get(slug=slug)
+        except ObjectDoesNotExist:
+            raise NotFound("An article with this slug does not exist")
+
+        # check for all the required fields
+        required_fields = ['start_highlighting', 'end_highlighting', 'body']
+        for field in required_fields:
+            if field not in request.data:
+                return Response({'error': '{} is required'.format(field)},
+                                status.HTTP_400_BAD_REQUEST)
+
+        # serializing article details in order to extract
+        # the body of an article
+        serializer = self.serializer_class(single_article_instance)
+        word = serializer.data['body'].split()
+
+        # get the index of the fist and the last word
+        # of the highlighted text
+        start = request.data['start_highlighting']
+        end = request.data['end_highlighting']
+
+        try:
+            # ensure text slection is not out of range
+            if max(start, end) >= len(word):
+                return Response({
+                                'error': 'Selection out of range.'
+                                'Selection should'
+                                ' be between 0 and {}'.format(len(word))})
+
+            # ensure the start index is not large than the
+            # end index of highlighted text
+            if (start >= end):
+                return Response({
+                            'error': 'The index of highlight start should'
+                            ' not be greater or equal highlight end'})
+
+            highlighted_text = word[slice(start, end)]
+            selected_text = ' '.join(highlighted_text)
+        except TypeError:
+            # ensure that selection indices are integers
+            return Response({
+                'error': 'Start of highlight and end of'
+                ' highlight indices should be both integers',
+            }, status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+        serializer_context = {
+            'request': request.data['body'],
+            'author': request.user,
+            'article': get_object_or_404(Article, slug=self.kwargs["slug"])}
+        serializer = CommentSerializer(data=request.data,
+                                       context=serializer_context)
+        if serializer.is_valid():
+            serializer.save(author=request.user,
+                            article_id=single_article_instance.id,
+                            selected_text=selected_text)
+            serialized_details = serializer.data
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

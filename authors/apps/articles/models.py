@@ -53,6 +53,7 @@ class Comment(models.Model):
     body = models.TextField(blank=False)
     createdAt = models.DateTimeField(auto_now_add=True)
     updatedAt = models.DateTimeField(auto_now=True)
+    selected_text = models.TextField(null=True)
     is_deleted = models.BooleanField(default=False)
     user_id_likes = models.ManyToManyField(User, related_name='comment_likes', blank=True)
     user_id_dislikes = models.ManyToManyField(User, related_name='comment_dislikes', blank=True)
@@ -62,3 +63,5 @@ class Comment(models.Model):
 
     class Meta:
         ordering = ['-createdAt']
+
+
