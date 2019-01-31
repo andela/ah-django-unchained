@@ -76,13 +76,14 @@ class ArticleDetailsView(RetrieveUpdateAPIView):
 
 class GetDraft(generics.ListAPIView):
     """Get all Drafts"""
+    pagination_class = CustomPagination
     permission_classes = (IsAuthorOrReadOnly,)
     queryset = Article.objects.filter(is_published=False, is_deleted=False)
     serializer_class = GetArticleSerializer
 
 
 class PublishArticle(UpdateAPIView):
-    """This class handles the http GET and PUT requests."""
+    """This class handles PUT requests."""
     permission_classes = (IsAuthorOrReadOnly,)
     queryset = Article.objects.filter(is_deleted=False, is_published=False)
     serializer_class = PublishArticleSerializer
