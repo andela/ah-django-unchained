@@ -542,13 +542,13 @@ class DislikeCommentApiView(ListCreateAPIView):
             raise NotFound("A comment from this article does not exist")
 
         # check if the comment has been disliked by the current user
-        # if the current user has disliked it, remove their id from the row
+        # if the current user has disliked it, remove their id from the database
         if comment in Comment.objects.filter(
             user_id_likes=request.user):
             comment.user_id_likes.remove(request.user)
 
         # if the current user had previously disliked this comment,
-        # then the comment is disliked
+        # then the current user's id is removed from the database
         if comment in Comment.objects.filter(
             user_id_dislikes=request.user):
             comment.user_id_dislikes.remove(request.user)
