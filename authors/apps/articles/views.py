@@ -491,10 +491,10 @@ class LikeCommentApiView(ListCreateAPIView):
             # get an article with the specified slug
             # and return an exception if the article does not exist
             try:
-                Article.objects.get(slug=article_slug)
+                Article.objects.get(slug=article_slug, is_deleted=False)
             except ObjectDoesNotExist:
                 raise NotFound("Article does not exist")
-            comment = Comment.objects.get(id=comment_id)
+            comment = Comment.objects.get(id=comment_id, is_deleted=False)
         except ObjectDoesNotExist:
             raise NotFound("A comment from this article does not exist")
 
@@ -534,10 +534,10 @@ class DislikeCommentApiView(ListCreateAPIView):
             # get an article with the specified slug
             # and return an exception if the article does not exist
             try:
-                Article.objects.get(slug=article_slug)
+                Article.objects.get(slug=article_slug, is_deleted=False)
             except ObjectDoesNotExist:
                 raise NotFound("Article does not exist")
-            comment = Comment.objects.get(id=comment_id)
+            comment = Comment.objects.get(id=comment_id, is_deleted=False)
         except ObjectDoesNotExist:
             raise NotFound("A comment from this article does not exist")
 
