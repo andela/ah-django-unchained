@@ -15,6 +15,7 @@ Including another URLconf
 """
 from django.urls import include, path
 from django.contrib import admin
+import notifications.urls
 
 # import from django_rest_swagger
 from rest_framework_swagger.views import get_swagger_view
@@ -31,6 +32,7 @@ urlpatterns = [
 
     path('api/', include('authors.apps.articles.urls', namespace='articles')),
     path('api/', include('authors.apps.bookmark.urls', namespace='bookmark')),
+    path('api/', include('authors.apps.usernotifications.urls', namespace="notifications")),
     # Set the API documentation at the root of the site
     path('', schema_view)
 ]

@@ -55,6 +55,10 @@ INSTALLED_APPS = [
     'rest_framework_social_oauth2',
 
 
+    'authors.apps.usernotifications',
+    'notifications',
+   
+    
 
     # Enables API to be documented using Swagger
     'rest_framework_swagger',
@@ -232,8 +236,14 @@ EMAIL_PORT = 587
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_USE_TLS = True
 
+DOMAIN = os.getenv("DOMAIN")
+
 cloudinary.config(
     cloud_name=os.getenv("CLOUD_NAME"),
     api_key=os.getenv("API_KEY"),
     api_secret=os.getenv("API_SECRET")
 )
+DJANGO_NOTIFICATIONS_CONFIG = {
+    'USE_JSONFIELD': True,
+    'SOFT_DELETE': True
+}
