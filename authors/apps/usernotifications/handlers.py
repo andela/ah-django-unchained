@@ -18,11 +18,13 @@ def follow_handler(sender, instance, created, **kwargs):
     # get the user that has been followed
     follower = instance.user_from
     followed = instance.user_to
-    recipients = followed
+    recipient = followed
+    if not recipient.email_notification_subscription:
+        return
     url = 'api/profiles/{}/follow/'.format(followed.username)
     notify.send(
         follower,
-        recipient=recipients,
+        recipient=recipient,
         description="{} followed you on {}".format(follower.username, instance.created_at.strftime('%d-%B-%Y %H:%M')),
         verb=verbs.USER_FOLLOWING,
         action_object=instance,
@@ -40,6 +42,9 @@ def article_handler(sender, instance, created, **kwargs):
     followers = Friend.objects.select_related(
         'user_from', 'user_to').filter(user_to=article_author.id).all()
     recipients = [get_user_model().objects.get(id=u.user_from_id) for u in list(followers)]
+    for recipient in recipients:
+        if not recipient.email_notification_subscription:
+            return
 
     url = "api/articles/"
     notify.send(

@@ -89,7 +89,7 @@ class UnsubscribeAPIView(ListAPIView, UpdateAPIView):
 
 class SubscribeAPIView(ListCreateAPIView, UpdateAPIView):
     """
-    allow users to subscribe/unsubscribe to nofications
+    allow users to subscribe to nofications
     """
     permission_classes = [IsAuthenticated]
 
@@ -100,8 +100,9 @@ class SubscribeAPIView(ListCreateAPIView, UpdateAPIView):
         user = get_object_or_404(User, email=request.user.email)
         user.email_notification_subscription = True
         user.app_notification_subscription = True
+        user.save()
         message = {
-            "message": "You have successfully changed notification status",
+            "message": "You have successfully subscribed to notifications",
             "email": user.email_notification_subscription,
             "app": user.app_notification_subscription
         }
