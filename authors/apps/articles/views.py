@@ -7,7 +7,7 @@ from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.validators import validate_email
 from django.utils.datastructures import MultiValueDictKeyError
 from django.shortcuts import get_object_or_404
-from rest_framework import generics, status
+from rest_framework import status, generics
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.generics import (ListCreateAPIView,
@@ -37,7 +37,7 @@ class ArticleAPIView(ListCreateAPIView):
 
     pagination_class = CustomPagination
     permission_classes = (IsAuthenticatedOrReadOnly,)
-    # Only fetch those articles whose 'is_deleted'  field is False and  is_published True
+    # Only fetch those articles whose 'is_deleted'  field is False and is_published True
     queryset = Article.objects.filter(is_deleted=False).filter(
         is_published=True)
     serializer_class = ArticleSerializer
@@ -78,15 +78,16 @@ class ArticleDetailsView(RetrieveUpdateAPIView):
 class GetDraft(generics.ListAPIView):
     """Get all Drafts"""
     permission_classes = (IsAuthorOrReadOnly,)
-    queryset = Article.objects.filter(is_published=False).filter(is_deleted=False)
+    queryset = Article.objects.filter(is_published=False).filter(
+        is_deleted=False)
     serializer_class = GetArticleSerializer
-
 
 
 class PublishArticle(UpdateAPIView):
     """This class handles the http GET and PUT requests."""
     permission_classes = (IsAuthorOrReadOnly,)
-    queryset = Article.objects.filter(is_deleted=False).filter(is_published=False)
+    queryset = Article.objects.filter(is_deleted=False).filter(
+        is_published=False)
     serializer_class = PublishArticleSerializer
     lookup_field = 'slug'
 
