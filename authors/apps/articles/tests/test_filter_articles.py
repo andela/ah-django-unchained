@@ -7,6 +7,7 @@ class FilterArticles(APITestCase):
     def setUp(self):
         self.client = APIClient()
         self.sign_up_url = reverse('authentication:auth-register')
+        self.article_listcreate = reverse('articles:articles-listcreate')
         self.filter_title_url = 'http://127.0.0.1:8000/api/articles/search/?title=Coding is cool'
         self.filter_tag_url = 'http://127.0.0.1:8000/api/articles/search/?tags=python'
         self.filter_author_url = 'http://127.0.0.1:8000/api/articles/search/?author=Ken123'
@@ -62,11 +63,11 @@ class FilterArticles(APITestCase):
 
         token = self.register()
         # Create article
-        self.client.post(self.article_listcreate_url, self.article_data,
+        self.client.post(self.article_listcreate_url, self.article_data1,
                          format='json',
                          HTTP_AUTHORIZATION='token {}'.format(token)
                          )
-        self.client.post(self.article_listcreate_url, self.article_data1,
+        self.client.post(self.article_listcreate_url, self.article_data,
                          format='json',
                          HTTP_AUTHORIZATION='token {}'.format(token)
                          )
@@ -74,9 +75,11 @@ class FilterArticles(APITestCase):
                          format='json',
                          HTTP_AUTHORIZATION='token {}'.format(token)
                          )
+        all_articles = self.client.get(self.article_listcreate, format='json')
         response = self.client.get(self.filter_title_url,
                                    format='json',
                                    HTTP_AUTHORIZATION='token {}'.format(token))
+        self.assertNotEqual(self.article_data['title'], all_articles.data['results'][0],)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn(self.article_data['title'],
                       response.data['results'][0]['title'])
@@ -94,9 +97,11 @@ class FilterArticles(APITestCase):
                          format='json',
                          HTTP_AUTHORIZATION='token {}'.format(token)
                          )
+        all_articles = self.client.get(self.article_listcreate, format='json')
         response = self.client.get(self.filter_tag_url,
                                    format='json',
                                    HTTP_AUTHORIZATION='token {}'.format(token))
+        self.assertNotEqual(self.article_data['title'], all_articles.data['results'][0]['title'])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertListEqual(self.article_data['tagList'],
                              response.data['results'][0]['tagList'])
@@ -114,9 +119,11 @@ class FilterArticles(APITestCase):
                          format='json',
                          HTTP_AUTHORIZATION='token {}'.format(token)
                          )
+        all_articles = self.client.get(self.article_listcreate, format='json')
         response = self.client.get(self.filter_author_url,
                                    format='json',
                                    HTTP_AUTHORIZATION='token {}'.format(token))
+        self.assertNotEqual(self.article_data['title'], all_articles.data['results'][0])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_filter_all(self):
@@ -136,10 +143,15 @@ class FilterArticles(APITestCase):
                          format='json',
                          HTTP_AUTHORIZATION='token {}'.format(token)
                          )
+        #get all articles
+
+        all_articles=self.client.get(self.article_listcreate, format='json')
         response = self.client.get(self.filter_all,
                                    format='json',
                                    HTTP_AUTHORIZATION='token {}'.format(token))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertNotEqual(self.article_data['title'], all_articles.data['results'][0])
+
         self.assertIn(self.article_data['title'],
                       response.data['results'][0]['title'])
         self.assertListEqual(self.article_data['tagList'],
