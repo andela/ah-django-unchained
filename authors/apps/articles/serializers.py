@@ -18,6 +18,7 @@ class ArticleSerializer(TaggitSerializer, serializers.ModelSerializer):
         many=True, read_only=True)
     user_id_dislikes = serializers.PrimaryKeyRelatedField(
         many=True, read_only=True)
+
     likes_count = serializers.SerializerMethodField()
     dislikes_count = serializers.SerializerMethodField()
     # Field to favourite an article
@@ -29,6 +30,7 @@ class ArticleSerializer(TaggitSerializer, serializers.ModelSerializer):
                   'slug',
                   'description',
                   'body',
+                  'is_published',
                   'created',
                   'modified',
                   'images',
@@ -75,12 +77,14 @@ class GetArticleSerializer(serializers.ModelSerializer):
                   'modified',
                   'images',
                   'author',
+                  'is_published',
                   'slug',
                   'tagList',
                   'favorite']
         read_only_fields = ['modified',
                             'author',
                             'slug']
+
     """Get logged in user ID"""
 
     def get_author(self, obj):
@@ -89,6 +93,7 @@ class GetArticleSerializer(serializers.ModelSerializer):
 
 class DeleteArticleSerializer(serializers.ModelSerializer):
     """Serializer for deleting an article"""
+
     class Meta:
         model = Article
         fields = ['is_deleted']
@@ -103,8 +108,10 @@ class CommentSerializer(serializers.ModelSerializer):
     """Serializer for creating a Comment"""
     author = serializers.SerializerMethodField()
     body = serializers.CharField()
-    user_id_likes = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
-    user_id_dislikes = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    user_id_likes = serializers.PrimaryKeyRelatedField(many=True,
+                                                       read_only=True)
+    user_id_dislikes = serializers.PrimaryKeyRelatedField(many=True,
+                                                          read_only=True)
     likes_count = serializers.SerializerMethodField()
     dislikes_count = serializers.SerializerMethodField()
 
@@ -114,7 +121,7 @@ class CommentSerializer(serializers.ModelSerializer):
 
     def format_date(self, date):
         return date.strftime('%d %b %Y %H:%M:%S')
-    
+
     # insert total likes
     def get_likes_count(self, obj):
         return obj.user_id_likes.count()
@@ -132,10 +139,15 @@ class CommentSerializer(serializers.ModelSerializer):
                     instance=UserProfile.objects.get(user=thread.author)).data,
                 'createdAt': self.format_date(thread.createdAt),
                 'updatedAt': self.format_date(thread.updatedAt)
-            }for thread in instance.threads.all()
+            } for thread in instance.threads.all()
         ]
+
         thread_comment = super(
             CommentSerializer, self).to_representation(instance)
+
+        thread_comment = super(CommentSerializer, self).to_representation(
+            instance)
+
         thread_comment['createdAt'] = self.format_date(instance.createdAt)
         thread_comment['updatedAt'] = self.format_date(instance.updatedAt)
         thread_comment['article'] = instance.article.title
@@ -154,6 +166,7 @@ class CommentSerializer(serializers.ModelSerializer):
 
 class DeleteCommentSerializer(serializers.ModelSerializer):
     """Serializer for deleting an article"""
+
     class Meta:
         model = Comment
         fields = ['is_deleted', 'parent']
@@ -186,8 +199,8 @@ class HighlightSerializer(serializers.Serializer):
 
     def get_article(self, obj):
         return obj.article.slug
-        
-    
+
+
 class CommentHistorySerializer(serializers.Serializer):
     """Serializer for tracking comment edit history"""
 
@@ -195,3 +208,11 @@ class CommentHistorySerializer(serializers.Serializer):
     body = serializers.CharField()
     createdAt = serializers.CharField()
     updatedAt = serializers.CharField()
+
+
+class PublishArticleSerializer(serializers.ModelSerializer):
+    """Serializer for publishing an article"""
+
+    class Meta:
+        model = Article
+        fields = ['is_published', ]

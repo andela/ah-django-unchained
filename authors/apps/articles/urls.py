@@ -6,11 +6,11 @@ from .views import (ArticleAPIView, ArticleDetailsView,
                     FavoriteArticle, AverageRatingsAPIView,
                     CreateComment, CommentDetailsView,
                     CommentDelete, CommentsRetrieveUpdateDestroy,
-                    ReadTime, ShareArticleViaEmailApiView,
+                    ShareArticleViaEmailApiView,
                     ShareViaFacebook, ShareViaTwitter,
                     LikeCommentApiView, DislikeCommentApiView,
                     HighlightText, RetrieveUpdateDeleteComments,
-                    CommentHistory)
+                    CommentHistory, ReadTime, PublishArticle, GetDraft)
 
 
 app_name = "articles"
@@ -65,4 +65,10 @@ urlpatterns = [
          RetrieveUpdateDeleteComments.as_view(), name='single_comment'),
     path('articles/<slug>/comments/<int:id>/history/',
          CommentHistory.as_view(), name="comment_history"),
+
+    path('article/<slug>/publish/',
+         PublishArticle.as_view(),
+         name="publish_article"),
+    path('article/draft/', GetDraft.as_view(),
+         name="get_all_drafts"),
 ]

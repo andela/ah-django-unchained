@@ -13,7 +13,10 @@ class CreateArticles(APITestCase):
         self.signup_url = reverse('authentication:auth-register')
         self.article_listcreate = reverse('articles:articles-listcreate')
         self.article_favorite = reverse('articles:articles-favorite',
-                                        kwargs={'slug': 'a-new-story'})
+                                        kwargs={'slug': 'my-story'})
+        self.publish_data ={
+                        "is_published": True
+                    }
         self.signup_data = {
             "user": {
                 "username": "kennyg",
@@ -27,7 +30,7 @@ class CreateArticles(APITestCase):
                 "password": "Kwameisme1!"
             }}
         self.create_article_data = {
-            "title": "A new story",
+            "title": "my story",
             "body": "This is my story",
             "description": "Here is my story",
             "images": None,
@@ -107,11 +110,22 @@ class CreateArticles(APITestCase):
         token = self.signup_user_one()
         self.create_article(self.create_article_data, token)
         self.create_article(self.create_article_data2, token)
+        self.client.put(reverse('articles:publish_article',
+                                    kwargs={'slug': 'my-story'}),
+                        self.publish_data,
+                        format='json',
+                        HTTP_AUTHORIZATION='token {}'.format(token))
+        self.client.put(reverse('articles:publish_article',
+                                    kwargs={'slug': 'the-beginning'}),
+                        self.publish_data,
+                        format='json',
+                        HTTP_AUTHORIZATION='token {}'.format(token))
         response = self.client.get(self.article_listcreate, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('count', response.data)
         self.assertIn('next', response.data)
         self.assertIn('previous', response.data)
+
         self.assertEqual(self.create_article_data['title'], response.data['results'][1]['title'])
         self.assertEqual(self.create_article_data['body'],
                          response.data['results'][1]['body'])
@@ -124,7 +138,7 @@ class CreateArticles(APITestCase):
         self.assertIn(self.create_article_data2['tagList'][0],
                       response.data['results'][0]['tagList'])
 
-    def test_add_articles(self):
+    def test_add_draft_articles(self):
         """Test to add an article"""
         token = self.signup_user_one()
         del self.create_article_data['images']
@@ -146,8 +160,13 @@ class CreateArticles(APITestCase):
         """Test to get a single article"""
         token = self.signup_user_one()
         self.create_article(self.create_article_data, token)
+        self.client.put(reverse('articles:publish_article',
+                                    kwargs={'slug': 'my-story'}),
+                        self.publish_data,
+                        format='json',
+                        HTTP_AUTHORIZATION='token {}'.format(token))
         response = self.client.get(reverse('articles:articles-retrieveupdate',
-                                           kwargs={'slug': 'a-new-story'}),
+                                           kwargs={'slug': 'my-story'}),
                                    format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(self.create_article_data['title'],
@@ -163,9 +182,14 @@ class CreateArticles(APITestCase):
         """Test to update an article created by another user"""
         token = self.signup_user_one()
         self.create_article(self.create_article_data, token)
+        self.client.put(reverse('articles:publish_article',
+                                kwargs={'slug': 'my-story'}),
+                        self.publish_data,
+                        format='json',
+                        HTTP_AUTHORIZATION='token {}'.format(token))
         token2 = self.signup_user_two()
         response = self.client.put(reverse('articles:articles-retrieveupdate',
-                                           kwargs={'slug': 'a-new-story'}),
+                                           kwargs={'slug': 'my-story'}),
                                    self.create_article_data2,
                                    format='json',
                                    HTTP_AUTHORIZATION='token {}'.format(token2))
@@ -175,9 +199,14 @@ class CreateArticles(APITestCase):
         """Test to legitimately update an article created by a user"""
         token = self.signup_user_one()
         self.create_article(self.create_article_data, token)
+        self.client.put(reverse('articles:publish_article',
+                                kwargs={'slug': 'my-story'}),
+                        self.publish_data,
+                        format='json',
+                        HTTP_AUTHORIZATION='token {}'.format(token))
         del self.create_article_data2['images']
         response = self.client.put(reverse('articles:articles-retrieveupdate',
-                                           kwargs={'slug': 'a-new-story'}),
+                                           kwargs={'slug': 'my-story'}),
                                    self.create_article_data2,
                                    format='json',
                                    HTTP_AUTHORIZATION='token {}'.format(token))
@@ -193,8 +222,13 @@ class CreateArticles(APITestCase):
         """Test to delete an article"""
         token = self.signup_user_one()
         self.create_article(self.create_article_data, token)
+        self.client.put(reverse('articles:publish_article',
+                                kwargs={'slug': 'my-story'}),
+                        self.publish_data,
+                        format='json',
+                        HTTP_AUTHORIZATION='token {}'.format(token))
         response = self.client.put(reverse('articles:articles-delete',
-                                           kwargs={'slug': 'a-new-story'}),
+                                           kwargs={'slug': 'my-story'}),
                                    self.delete_article,
                                    format='json',
                                    HTTP_AUTHORIZATION='token {}'.format(token))
@@ -206,9 +240,14 @@ class CreateArticles(APITestCase):
         """Test to delete someone else's article"""
         token = self.signup_user_one()
         self.create_article(self.create_article_data, token)
+        self.client.put(reverse('articles:publish_article',
+                                kwargs={'slug': 'my-story'}),
+                        self.publish_data,
+                        format='json',
+                        HTTP_AUTHORIZATION='token {}'.format(token))
         token2 = self.signup_user_two()
         response = self.client.put(reverse('articles:articles-delete',
-                                           kwargs={'slug': 'a-new-story'}),
+                                           kwargs={'slug': 'my-story'}),
                                    self.delete_article,
                                    format='json',
                                    HTTP_AUTHORIZATION='token {}'.format(token2))

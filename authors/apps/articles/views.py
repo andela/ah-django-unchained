@@ -7,7 +7,7 @@ from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.validators import validate_email
 from django.utils.datastructures import MultiValueDictKeyError
 from django.shortcuts import get_object_or_404
-from rest_framework import status
+from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.generics import (ListCreateAPIView,
@@ -19,13 +19,13 @@ from rest_framework.permissions import (IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.exceptions import NotFound
 from authors.apps.core.permissions import IsAuthorOrReadOnly
-from authors.apps.profiles.models import UserProfile
 from .serializers import (ArticleSerializer,
                           GetArticleSerializer, DeleteArticleSerializer,
                           RatingSerializer, CommentSerializer,
                           DeleteCommentSerializer, SharingSerializer,
-                          HighlightSerializer, CommentHistorySerializer)
-from .models import (Article, ArticleRating, Comment, HighlightTextModel)
+                          CommentHistorySerializer,
+                          HighlightSerializer,PublishArticleSerializer)
+from .models import Article, ArticleRating, Comment, HighlightTextModel
 from .pagination import CustomPagination
 from ..authentication.utils import send_link
 
@@ -37,8 +37,9 @@ class ArticleAPIView(ListCreateAPIView):
 
     pagination_class = CustomPagination
     permission_classes = (IsAuthenticatedOrReadOnly,)
-    # Only fetch those articles whose 'is_deleted' field is False
-    queryset = Article.objects.filter(is_deleted=False)
+    # Only fetch those articles whose 'is_deleted'  field is False and  is_published True
+    queryset = Article.objects.filter(is_deleted=False).filter(
+        is_published=True)
     serializer_class = ArticleSerializer
 
     def post(self, request):
@@ -72,6 +73,22 @@ class ArticleDetailsView(RetrieveUpdateAPIView):
         article = get_object_or_404(Article, slug=self.kwargs["slug"])
         serializer = self.serializer_class(article)
         return set_favorite_status(serializer, self.request.user.id)
+
+
+class GetDraft(generics.ListAPIView):
+    """Get all Drafts"""
+    permission_classes = (IsAuthorOrReadOnly,)
+    queryset = Article.objects.filter(is_published=False).filter(is_deleted=False)
+    serializer_class = GetArticleSerializer
+
+
+
+class PublishArticle(UpdateAPIView):
+    """This class handles the http GET and PUT requests."""
+    permission_classes = (IsAuthorOrReadOnly,)
+    queryset = Article.objects.filter(is_deleted=False).filter(is_published=False)
+    serializer_class = PublishArticleSerializer
+    lookup_field = 'slug'
 
 
 class DeleteArticle(UpdateAPIView):
@@ -328,6 +345,7 @@ class CreateComment(ListCreateAPIView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, request, slug, *args, **kwargs):
+        # User shouldn't be able to comment on an article has been deleted.
         article = Article.objects.filter(slug=slug, is_deleted=False).first()
         serializer_context = {
             'request': request,
@@ -393,7 +411,8 @@ class ReadTime(RetrieveAPIView):
         try:
             article_instance = Article.objects.get(slug=slug)
         except ObjectDoesNotExist:
-            return Response({'error': 'article was not found'}, status.HTTP_404_NOT_FOUND)
+            return Response({'error': 'article was not found'},
+                            status.HTTP_404_NOT_FOUND)
         serializer = self.serializer_class(article_instance)
         words = serializer.data['body'].split()
         """ The average reading time for a user is between 250 and 300 words per minute.

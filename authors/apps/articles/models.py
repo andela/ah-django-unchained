@@ -9,9 +9,9 @@ class Article(models.Model):
     """
     This is the Article model that is used to handle CRUD on articles
     """
-    title = models.CharField(max_length=200, blank=False)
-    body = models.TextField(blank=False)
-    description = models.CharField(max_length=50, blank=False)
+    title = models.CharField(max_length=200, blank=True)
+    body = models.TextField(blank=True)
+    description = models.CharField(max_length=50, blank=True)
     images = CloudinaryField(blank=True, default='No image', null=True)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
@@ -20,8 +20,12 @@ class Article(models.Model):
     is_published = models.BooleanField(default=False)
     favorite = models.ManyToManyField(
         User, related_name='favorite', default=False)
+
+    favorite = models.ManyToManyField(User, related_name='favorite',
+                                      default=False)
+
     author = models.ForeignKey(User, on_delete=models.CASCADE)
-    tagList = TaggableManager()
+    tagList = TaggableManager(None)
     user_id_likes = models.ManyToManyField(
         User, related_name='likes', blank=True)
     user_id_dislikes = models.ManyToManyField(
@@ -45,10 +49,13 @@ class ArticleRating(models.Model):
 
 class Comment(models.Model):
     """This is the Article model that is used to handle CRUD on articles"""
-    parent = models.ForeignKey(
-        'self', null=True, blank=False, on_delete=models.CASCADE, related_name='threads')
-    author = models.ForeignKey(
-        User, related_name='author', on_delete=models.CASCADE)
+
+    parent = models.ForeignKey('self', null=True, blank=False,
+                               on_delete=models.CASCADE,
+                               related_name='threads')
+    author = models.ForeignKey(User, related_name='author',
+                               on_delete=models.CASCADE)
+
     article = models.ForeignKey(Article, on_delete=models.CASCADE, null=True,
                                 related_name='comments')
     body = models.TextField(blank=False)
