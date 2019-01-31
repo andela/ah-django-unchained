@@ -143,9 +143,8 @@ class FilterArticles(APITestCase):
                          format='json',
                          HTTP_AUTHORIZATION='token {}'.format(token)
                          )
-        #get all articles
-
-        all_articles=self.client.get(self.article_listcreate, format='json')
+        # get all articles
+        all_articles = self.client.get(self.article_listcreate, format='json')
         response = self.client.get(self.filter_all,
                                    format='json',
                                    HTTP_AUTHORIZATION='token {}'.format(token))
