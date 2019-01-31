@@ -1,7 +1,7 @@
 from django.urls import reverse
 from rest_framework.views import status
 from rest_framework.test import APITestCase, APIClient
-from authors.apps.articles.models import Article
+# from authors.apps.articles.models import Article
 
 
 class CreateArticles(APITestCase):
