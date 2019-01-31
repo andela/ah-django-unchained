@@ -20,6 +20,6 @@ class ArticleFilter(filters.FilterSet):
 
 class FilterArticles(ListAPIView):
     serializer_class = ArticleSerializer
-    queryset = Article.objects.all()
+    queryset = Article.objects.filter(is_deleted=False)
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_class = ArticleFilter

@@ -7,9 +7,10 @@ class FilterArticles(APITestCase):
     def setUp(self):
         self.client = APIClient()
         self.sign_up_url = reverse('authentication:auth-register')
-        self.filter_title_url = 'http://127.0.0.1:8000/api/article/search/?title=Coding is cool'
-        self.filter_tag_url = 'http://127.0.0.1:8000/api/article/search/?tags=python'
-        self.filter_all = 'http://127.0.0.1:8000/api/article/search/?tags=python&title=Coding is cool&author=Ken123'
+        self.filter_title_url = 'http://127.0.0.1:8000/api/articles/search/?title=Coding is cool'
+        self.filter_tag_url = 'http://127.0.0.1:8000/api/articles/search/?tags=python'
+        self.filter_author_url = 'http://127.0.0.1:8000/api/articles/search/?author=Ken123'
+        self.filter_all = 'http://127.0.0.1:8000/api/articles/search/?tags=python&title=Coding is cool&author=Ken123'
         self.sign_up_data = {
             "user": {
                 "username": "Ken123",
@@ -56,28 +57,29 @@ class FilterArticles(APITestCase):
         token = register.data['token']
         return token
 
-
     def test_filter_article_title(self):
         """Test that you can filter an article with a certain title."""
 
         token = self.register()
         # Create article
         self.client.post(self.article_listcreate_url, self.article_data,
-                                    format='json',
-                                    HTTP_AUTHORIZATION='token {}'.format(token)
-                                    )
+                         format='json',
+                         HTTP_AUTHORIZATION='token {}'.format(token)
+                         )
         self.client.post(self.article_listcreate_url, self.article_data1,
-                                    format='json',
-                                    HTTP_AUTHORIZATION='token {}'.format(token)
-                                    )
+                         format='json',
+                         HTTP_AUTHORIZATION='token {}'.format(token)
+                         )
         self.client.post(self.article_listcreate_url, self.article_data2,
-                                    format='json',
-                                    HTTP_AUTHORIZATION='token {}'.format(token)
-                                    )
+                         format='json',
+                         HTTP_AUTHORIZATION='token {}'.format(token)
+                         )
         response = self.client.get(self.filter_title_url,
-                        format='json', HTTP_AUTHORIZATION='token {}'.format(token))
+                                   format='json',
+                                   HTTP_AUTHORIZATION='token {}'.format(token))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn(self.article_data['title'],response.data['results'][0]['title'])
+        self.assertIn(self.article_data['title'],
+                      response.data['results'][0]['title'])
 
     def test_filter_article_tag(self):
         """Test that you can filter an article with a specific tag"""
@@ -85,17 +87,37 @@ class FilterArticles(APITestCase):
         token = self.register()
         # Create article
         self.client.post(self.article_listcreate_url, self.article_data,
-                                    format='json',
-                                    HTTP_AUTHORIZATION='token {}'.format(token)
-                                    )
+                         format='json',
+                         HTTP_AUTHORIZATION='token {}'.format(token)
+                         )
         self.client.post(self.article_listcreate_url, self.article_data3,
-                                    format='json',
-                                    HTTP_AUTHORIZATION='token {}'.format(token)
-                                    )
+                         format='json',
+                         HTTP_AUTHORIZATION='token {}'.format(token)
+                         )
         response = self.client.get(self.filter_tag_url,
-                        format='json', HTTP_AUTHORIZATION='token {}'.format(token))
+                                   format='json',
+                                   HTTP_AUTHORIZATION='token {}'.format(token))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertListEqual(self.article_data['tagList'],response.data['results'][0]['tagList'])
+        self.assertListEqual(self.article_data['tagList'],
+                             response.data['results'][0]['tagList'])
+
+    def test_filter_author(self):
+        """Test that you can filter an article with a specific tag"""
+
+        token = self.register()
+        # Create article
+        self.client.post(self.article_listcreate_url, self.article_data,
+                         format='json',
+                         HTTP_AUTHORIZATION='token {}'.format(token)
+                         )
+        self.client.post(self.article_listcreate_url, self.article_data3,
+                         format='json',
+                         HTTP_AUTHORIZATION='token {}'.format(token)
+                         )
+        response = self.client.get(self.filter_author_url,
+                                   format='json',
+                                   HTTP_AUTHORIZATION='token {}'.format(token))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_filter_all(self):
         """Test that you can filter an article with a specific title,taglist and author all at once """
@@ -103,20 +125,22 @@ class FilterArticles(APITestCase):
         token = self.register()
         # Create article
         self.client.post(self.article_listcreate_url, self.article_data,
-                                    format='json',
-                                    HTTP_AUTHORIZATION='token {}'.format(token)
-                                    )
+                         format='json',
+                         HTTP_AUTHORIZATION='token {}'.format(token)
+                         )
         self.client.post(self.article_listcreate_url, self.article_data4,
-                                    format='json',
-                                    HTTP_AUTHORIZATION='token {}'.format(token)
-                                    )
+                         format='json',
+                         HTTP_AUTHORIZATION='token {}'.format(token)
+                         )
         self.client.post(self.article_listcreate_url, self.article_data2,
-                                    format='json',
-                                    HTTP_AUTHORIZATION='token {}'.format(token)
-                                    )
+                         format='json',
+                         HTTP_AUTHORIZATION='token {}'.format(token)
+                         )
         response = self.client.get(self.filter_all,
-                        format='json', HTTP_AUTHORIZATION='token {}'.format(token))
+                                   format='json',
+                                   HTTP_AUTHORIZATION='token {}'.format(token))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn(self.article_data['title'], response.data['results'][0]['title'])
-        self.assertListEqual(self.article_data['tagList'], response.data['results'][0]['tagList'])
-
+        self.assertIn(self.article_data['title'],
+                      response.data['results'][0]['title'])
+        self.assertListEqual(self.article_data['tagList'],
+                             response.data['results'][0]['tagList'])

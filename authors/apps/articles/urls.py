@@ -12,7 +12,6 @@ from .views import (ArticleAPIView, ArticleDetailsView,
                     HighlightText, RetrieveUpdateDeleteComments,
                     CommentHistory, ReadTime, PublishArticle, GetDraft)
 
-
 from .filter import FilterArticles
 
 app_name = "articles"
@@ -23,6 +22,8 @@ urlpatterns = [
     path('articles/draft/', GetDraft.as_view(),
          name="get_all_drafts"),
     path('article/search/', FilterArticles.as_view(), name="search"),
+
+    path('articles/search/', FilterArticles.as_view(), name="search"),
     path('articles/', ArticleAPIView.as_view(), name="articles-listcreate"),
     path('articles/<slug:slug>/',
          ArticleDetailsView.as_view(),
@@ -75,6 +76,5 @@ urlpatterns = [
          RetrieveUpdateDeleteComments.as_view(), name='single_comment'),
     path('articles/<slug>/comments/<int:id>/history/',
          CommentHistory.as_view(), name="comment_history"),
-
 
 ]
