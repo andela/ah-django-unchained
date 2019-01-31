@@ -58,8 +58,8 @@ class UnsubscribeAPIView(ListAPIView, UpdateAPIView):
         unsubscribe from email notifications
         """
         try:
-            payload = jwt.decode(token, settings.SECRET_KEY, algorithms="HS256")
-            user = get_object_or_404(User, id=payload['id'])
+            email = jwt.decode(token, settings.SECRET_KEY)['email']
+            user = User.objects.get(email=email)
         except(TypeError, ValueError, OverflowError, Exception):
             raise Http404
 

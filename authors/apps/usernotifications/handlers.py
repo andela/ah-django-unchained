@@ -13,7 +13,7 @@ from . import verbs
 
 def follow_handler(sender, instance, created, **kwargs):
     """
-    notfication handler for friends
+    notification handler for friends
     """
     # get the user that has been followed
     follower = instance.user_from
@@ -54,45 +54,14 @@ def article_handler(sender, instance, created, **kwargs):
         )
 
 
-def favorited_article_comments_handler(sender, instance, created, **kwargs):
-    """
-    notification handler for favorited articles
-    """
-    recipients = []
-    if instance.parent:
-        parent_comment_author = instance.parent.author
-        recipients.append(parent_comment_author)
-    comment_author = instance.author
-    article = instance.article
-    description = "{} posted a comment to {} on {}"
-    if article:
-        # get all users that have favorited the article
-        favorited_users = [fav.user for fav in Favorite.objects.filter(object_id=article.id).values('favorite')]
-        recipients += favorited_users
-        article_author = article.author
-        if article_author.id != comment_author.id:
-            recipients.append(article_author)
-        resource_url = "{}/api/articles/".format(settings.DOMAIN)
-        notify.send(
-            comment_author,
-            recipient=recipients,
-            description=desc_string.format(
-                comment_author.username,
-                article or instance,
-                instance.createdAt.strftime('%d-%B-%Y %H:%M')
-                ),
-            verb=verbs.COMMENT_CREATED,
-            target=article or instance,
-            action_object=instance,
-            resource_url=resource_url
-        )
-
-
 def email_notification_handler(sender, instance, created, **kwargs):
     """
     notification handler for emails
     """
-    recipient = instance.recipient
+    user = instance.recipient
+    recipient = User.objects.get(email=user)
+    if not recipient.email_notification_subscription:
+        return
     description = instance.description
     token = recipient.token
     opt_out_link = '{}/api/notifications/unsubscribe/{}'.format(settings.DOMAIN, token)
