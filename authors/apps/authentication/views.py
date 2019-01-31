@@ -41,7 +41,17 @@ class RegistrationAPIView(generics.CreateAPIView):
         serializer = self.serializer_class(data=user)
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data.get('email', None)
-        send_link(email)
+        payload = {'email':  email,
+                    "iat": datetime.now(),
+                    "exp": datetime.utcnow()
+                    + timedelta(minutes=30)}
+        token = jwt.encode(payload,
+                            settings.SECRET_KEY,
+                            algorithm='HS256').decode('utf-8')       
+        template = 'email_verify_account.html'
+        url = '/api/users/verify/'
+        subject = "Authors Haven Verification Link"
+        send_link(email,subject, template, url, token)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -80,7 +90,10 @@ class ResendVerifyAPIView(generics.ListCreateAPIView):
         token = request.META.get('HTTP_AUTHORIZATION', '').split(' ')[1]
         payload = jwt.decode(token, settings.SECRET_KEY)
         email = payload['email']
-        send_link(email)
+        template = 'email_verify_account.html'
+        url = '/api/users/verify/'
+        subject = "Authors Haven Verification Link"
+        send_link(email,subject, template, url, token)
         message = {
             "message": "Verification link sent successfully. Please check your email.",
         }

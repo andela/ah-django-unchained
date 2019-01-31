@@ -1,19 +1,23 @@
 import random
+import os
+from urllib.parse import quote
 
 from django.template.defaultfilters import slugify
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.core.validators import validate_email
+from django.utils.datastructures import MultiValueDictKeyError
 from django.shortcuts import get_object_or_404
+from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.generics import (ListCreateAPIView,
                                      RetrieveUpdateDestroyAPIView,
                                      RetrieveUpdateAPIView,
                                      UpdateAPIView, CreateAPIView,
-                                     DestroyAPIView,RetrieveAPIView)
+                                     DestroyAPIView, RetrieveAPIView)
 from rest_framework.permissions import (IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.exceptions import NotFound
-from rest_framework import status
 from authors.apps.core.permissions import IsAuthorOrReadOnly
 from .serializers import (ArticleSerializer,
                           GetArticleSerializer, DeleteArticleSerializer,
@@ -21,6 +25,9 @@ from .serializers import (ArticleSerializer,
                           DeleteCommentSerializer)
 from .models import (Article, ArticleRating, Comment)
 from .pagination import CustomPagination
+from ..authentication.utils import send_link
+
+base_url = os.getenv('APP_BASE_URL')
 
 
 class ArticleAPIView(ListCreateAPIView):
@@ -371,6 +378,8 @@ class CommentsRetrieveUpdateDestroy(RetrieveUpdateDestroyAPIView,
         serializer.is_valid(raise_exception=True)
         serializer.save(author=self.request.user, article_id=article.pk)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
 class ReadTime(RetrieveAPIView):
     """
     class to  get the minutes it take to read an article
@@ -390,3 +399,79 @@ class ReadTime(RetrieveAPIView):
         read = len(words) / 279
         return Response({'read_time': round(read)}, status.HTTP_200_OK)
 
+
+class ShareArticleViaEmailApiView(CreateAPIView):
+    """Share via Email"""
+
+    def get(self, request, slug):
+        try:
+            try:
+                Article.objects.get(slug=slug)
+            except ObjectDoesNotExist:
+                message = {"errors": {
+                    "message": [
+                        "Article not found."
+                    ]}
+                }
+                return Response(message, status=status.HTTP_404_NOT_FOUND)
+
+            email = request.GET['email']
+            try:
+                validate_email(email)
+                template = 'email_share_article.html'
+                url = base_url + '/api/articles/{}'.format(slug)
+                subject = "Article from Authors Haven"
+                send_link(email, subject, template, url)
+                message = {
+                    "message": "Article link sent successfully.",
+                }
+                return Response(message, status=status.HTTP_200_OK)
+            except ValidationError:
+                message = {
+                    "message": "The email provided is not a valid one.",
+                }
+                return Response(message, status=status.HTTP_400_BAD_REQUEST)
+        except MultiValueDictKeyError:
+            message = {"errors": {
+                "email": [
+                    "Email not provided."
+                ]}
+            }
+            return Response(message, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ShareViaFacebook(CreateAPIView):
+    """Share via Facebook"""
+
+    def get(self, request, slug):
+        try:
+            # get an article that matches the slug specified
+            # and return a message if the article does not exist
+            Article.objects.get(slug=slug)
+        except ObjectDoesNotExist:
+            raise NotFound("This article does not exist")
+
+        facebook_url = "https://www.facebook.com/sharer/sharer.php?u="
+        article_link = '{}/api/articles/{}'.format(base_url, slug)
+        url_link = facebook_url + article_link
+        message = {'link': url_link}
+        return Response(message, status=status.HTTP_200_OK)
+
+
+class ShareViaTwitter(CreateAPIView):
+    """Share via Twitter"""
+
+    def get(self, request, slug):
+        try:
+            # get an article that matches the slug specified
+            # and return a message if the article does not exist
+            Article.objects.get(slug=slug)
+        except ObjectDoesNotExist:
+            raise NotFound("This article does not exist")
+
+        twitter_url = "https://twitter.com/home?status="
+        info = quote('Check this out ')
+        article_link = "{}{}/api/articles/{}".format(info, base_url, slug)
+        url_link = twitter_url + article_link
+        message = {'link': url_link}
+        return Response(message, status=status.HTTP_200_OK)
