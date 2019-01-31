@@ -21,7 +21,7 @@ class CreateBookmark(generics.CreateAPIView):
             article_instance = Article.objects.get(slug=slug)
         except ObjectDoesNotExist:
             return Response(
-                {'error': 'article {} does not exist'.format(slug)},
+                {'error': 'Article {} does not exist'.format(slug)},
                 status.HTTP_404_NOT_FOUND)
         data = {
             "article": article_instance.id,
@@ -31,10 +31,12 @@ class CreateBookmark(generics.CreateAPIView):
             serializer.is_valid(raise_exception=True)
             serializer.save()
         except IntegrityError:
-            return Response({'error': 'Article already exist in your bookmark'}, status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {'error': 'Article already exist in your bookmark'},
+                status.HTTP_400_BAD_REQUEST)
         return Response(
-                {'message': 'Article  has been added to your bookmark'},
-                status.HTTP_201_CREATED)
+            {'message': 'Article  has been added to your bookmark'},
+            status.HTTP_201_CREATED)
 
 
 class ListALlBookmarks(generics.ListAPIView):
@@ -43,12 +45,7 @@ class ListALlBookmarks(generics.ListAPIView):
     permission_classes = (IsAuthenticated,)
 
     def list(self, request, *args, **kwargs):
-        try:
-            bookmark = Bookmarks.objects.filter(user=request.user)
-        except ObjectDoesNotExist:
-            return Response(
-                {'error': 'Bookmark object not found'},
-                status.HTTP_404_NOT_FOUND)
+        bookmark = Bookmarks.objects.filter(user=request.user)
         serializer = self.serializer_class(bookmark, many=True)
         data = serializer.data
         if len(data) == 0:
@@ -59,7 +56,7 @@ class ListALlBookmarks(generics.ListAPIView):
             article_instance = Article.objects.get(pk=item['article'])
             item['title'] = article_instance.title
             item['slug'] = article_instance.slug
-            item['body'] = article_instance.body
+            item['description'] = article_instance.description
             item['user'] = request.user.username
         return Response({'my_bookmarks': data}, status.HTTP_200_OK)
 
@@ -80,4 +77,5 @@ class DeleteBookmark(generics.DestroyAPIView):
                 status.HTTP_404_NOT_FOUND)
         self.perform_destroy(bookmark)
         return Response(
-            {'message': 'Article has been remove from your bookmark'.format(bookmark.article.title)})
+            {'message': 'Article has been remove from your bookmark'.format(
+                bookmark.article.title)})

@@ -2,7 +2,6 @@ from rest_framework import serializers
 from .models import Bookmarks
 from ..authentication.models import User
 from ..articles.models import Article
-from .models import Bookmarks
 
 
 class BookmarksSerializer(serializers.Serializer):
