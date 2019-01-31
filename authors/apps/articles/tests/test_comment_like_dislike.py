@@ -28,6 +28,9 @@ class CreateArticles(APITestCase):
         self.new_comment = {
             "body": "Good Work"
             }
+        self.delete_item = {
+            "is_deleted": True
+        }
     
     def register(self):
         """Method to sign up user and get token"""
@@ -43,6 +46,15 @@ class CreateArticles(APITestCase):
         response = self.client.post(reverse('articles:create_comments',
                                     kwargs={'slug': 'a-new-story'}),
                                     self.new_comment,
+                                    format='json',
+                                    HTTP_AUTHORIZATION='token {}'.format(token)
+                                    )
+        return response
+    
+    def delete_comment(self, id, token):
+        response = self.client.put(reverse('articles:delete_comments',
+                                    kwargs={'slug': 'a-new-story', 'id': id}),
+                                    self.delete_item,
                                     format='json',
                                     HTTP_AUTHORIZATION='token {}'.format(token)
                                     )
@@ -157,7 +169,7 @@ class CreateArticles(APITestCase):
         self.assertEqual(response.data['likes_count'], 1)
         self.assertEqual(response.data['dislikes_count'], 0)
 
-    def test_dislike_a_liked_article(self):
+    def test_dislike_a_liked_comment(self):
         """Test to dislike a liked article"""
         token = self.register()
         self.create_article(self.create_article_data, token)
@@ -174,3 +186,59 @@ class CreateArticles(APITestCase):
         self.assertTrue(response.data['user_id_dislikes'])
         self.assertEqual(response.data['likes_count'], 0)
         self.assertEqual(response.data['dislikes_count'], 1)
+
+    def test_like_a_deleted_comment(self):
+        """Test to like a deleted comment"""
+        token = self.register()
+        self.create_article(self.create_article_data, token)
+        response = self.create_comment(token)
+        id = response.data['id']
+        response = self.delete_comment(id, token)
+        self.assertEqual(response.data['is_deleted'], True)
+        response = self.like_comment(id, token)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.data['detail'], 'A comment from this article does not exist')
+
+    def test_unlike_a_deleted_comment(self):
+        """Test to unlike a deleted comment"""
+        token = self.register()
+        self.create_article(self.create_article_data, token)
+        response = self.create_comment(token)
+        id = response.data['id']
+        response = self.delete_comment(id, token)
+        self.assertEqual(response.data['is_deleted'], True)
+        response = self.dislike_comment(id, token)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.data['detail'], 'A comment from this article does not exist')
+    
+    def test_like_comment_for_deleted_article(self):
+        """Test to like a comment for a deleted article"""
+        token = self.register()
+        self.create_article(self.create_article_data, token)
+        response = self.create_comment(token)
+        id = response.data['id']
+        response = self.client.put(reverse('articles:articles-delete',
+                                           kwargs={'slug': 'a-new-story'}),
+                                   self.delete_item,
+                                   format='json',
+                                   HTTP_AUTHORIZATION='token {}'.format(token))
+        self.assertEqual(response.data['is_deleted'], True)
+        response = self.like_comment(id, token)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.data['detail'], 'Article does not exist')
+
+    def test_dislike_comment_for_deleted_article(self):
+        """Test to dislike a comment for a deleted article"""
+        token = self.register()
+        self.create_article(self.create_article_data, token)
+        response = self.create_comment(token)
+        id = response.data['id']
+        response = self.client.put(reverse('articles:articles-delete',
+                                           kwargs={'slug': 'a-new-story'}),
+                                   self.delete_item,
+                                   format='json',
+                                   HTTP_AUTHORIZATION='token {}'.format(token))
+        self.assertEqual(response.data['is_deleted'], True)
+        response = self.dislike_comment(id, token)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.data['detail'], 'Article does not exist')
