@@ -91,6 +91,7 @@ class PublishArticle(UpdateAPIView):
 
 
 class DeleteArticle(UpdateAPIView):
+    """"This class deletes Articles"""
     permission_classes = (IsAuthorOrReadOnly,)
     queryset = Article.objects.filter(is_deleted=False)
     serializer_class = DeleteArticleSerializer
