@@ -23,8 +23,9 @@ from authors.apps.profiles.models import UserProfile
 from .serializers import (ArticleSerializer,
                           GetArticleSerializer, DeleteArticleSerializer,
                           RatingSerializer, CommentSerializer,
-                          DeleteCommentSerializer, SharingSerializer)
-from .models import (Article, ArticleRating, Comment)
+                          DeleteCommentSerializer, SharingSerializer,
+                          HighlightSerializer)
+from .models import (Article, ArticleRating, Comment, HighlightTextModel)
 from .pagination import CustomPagination
 from ..authentication.utils import send_link
 
@@ -569,68 +570,109 @@ class DislikeCommentApiView(ListCreateAPIView):
 
 class HighlightText(ListCreateAPIView):
     permission_classes = (IsAuthenticatedOrReadOnly, )
-    serializer_class = ArticleSerializer
+    serializer_class = HighlightSerializer
 
-    def create(self, request, slug):
-        """Get an article to comment"""
-        try:
-            # get an article that matches the specified slug
-            # and return a message if the article does not exist
-            single_article_instance = Article.objects.get(slug=slug)
-        except ObjectDoesNotExist:
-            raise NotFound("An article with this slug does not exist")
+    def post(self, request, slug):
+        # get an article that matches the specified slug
+        # and return a message if the article does not exist
+        single_article_instance = get_object_or_404(Article, slug=slug)
 
         # check for all the required fields
-        required_fields = ['start_highlighting', 'end_highlighting', 'body']
+        required_fields = ['start_highlight_position',
+                           'end_highlight_position', 'body']
         for field in required_fields:
-            if field not in request.data:
+            if field not in request.data.get('comment', {}):
                 return Response({'error': '{} is required'.format(field)},
                                 status.HTTP_400_BAD_REQUEST)
 
-        # serializing article details in order to extract
-        # the body of an article
-        serializer = self.serializer_class(single_article_instance)
-        word = serializer.data['body'].split()
-
         # get the index of the fist and the last word
         # of the highlighted text
-        start = request.data['start_highlighting']
-        end = request.data['end_highlighting']
+        comment = request.data.get('comment', {})
 
         try:
-            # ensure text slection is not out of range
-            if max(start, end) >= len(word):
+            selection_range = self.select_index_position(
+                int(comment.get('start_highlight_position', 0)),
+                int(comment.get('end_highlight_position', 0)))
+            
+            if selection_range[0] >= selection_range[1]:
                 return Response({
-                                'error': 'Selection out of range.'
-                                'Selection should'
-                                ' be between 0 and {}'.format(len(word))})
+                            'error': 'The start_index_position should'
+                            ' not be greater or equal end_index_position'})
 
-            # ensure the start index is not large than the
-            # end index of highlighted text
-            if (start >= end):
-                return Response({
-                            'error': 'The index of highlight start should'
-                            ' not be greater or equal highlight end'})
-
-            highlighted_text = word[slice(start, end)]
-            selected_text = ' '.join(highlighted_text)
-        except TypeError:
+        except ValueError:
             # ensure that selection indices are integers
             return Response({
                 'error': 'Start of highlight and end of'
                 ' highlight indices should be both integers',
             }, status.HTTP_422_UNPROCESSABLE_ENTITY)
 
-        serializer_context = {
-            'request': request.data['body'],
-            'author': request.user,
-            'article': get_object_or_404(Article, slug=self.kwargs["slug"])}
-        serializer = CommentSerializer(data=request.data,
-                                       context=serializer_context)
+        selected_text = str(
+            single_article_instance.body[selection_range[0]:selection_range[1]])
+        comment['selected_text'] = selected_text
+
+        serializer = HighlightSerializer(data=comment, partial=True)
         if serializer.is_valid():
-            serializer.save(author=request.user,
-                            article_id=single_article_instance.id,
-                            selected_text=selected_text)
-            serialized_details = serializer.data
+            serializer.save(user_id=request.user,
+                            article=single_article_instance)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def select_index_position(self, start_index_position, end_index_position):
+        """Stores the index values  in a variable."""
+        index_values = [start_index_position, end_index_position]
+        return index_values
+
+    def get(self, request, slug):
+        """Get all comment for highligted text of a single article."""
+        article = get_object_or_404(Article, slug=slug)
+        highlighted_comment = article.highlight.filter()
+        serializer = self.serializer_class(highlighted_comment, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class RetrieveUpdateDeleteComments(RetrieveUpdateDestroyAPIView):
+    permission_classes = (IsAuthenticatedOrReadOnly, )
+    serializer_class = HighlightSerializer
+    queryset = HighlightTextModel.objects.all()
+    lookup_field = 'id'
+
+    def get(self, request, slug, id):
+        article = get_object_or_404(Article, slug=slug)
+        try:
+            highlightcomment = article.highlight.filter(id=id).first().pk
+            return super().get(request, highlightcomment)
+        except:
+            message = {"error": "This comment doesnot exist"}
+            return Response(message, status.HTTP_404_NOT_FOUND)
+
+    def delete(self, request, slug, id):
+            article = get_object_or_404(Article, slug=slug)
+            try:
+                highlightcomment = article.highlight.filter(id=id).first().pk
+            except:
+                message = {"error": "The comment does not exist"}
+                return Response(message, status.HTTP_404_NOT_FOUND)
+            super().delete(self, request, highlightcomment)
+            message = {"message": "Comment on highligted text deleted successfully"}
+            return Response(
+                message, status.HTTP_200_OK)
+
+    def update(self, request, slug, id):
+        article = Article.objects.filter(slug=slug).first()
+        if not article:
+            message = {"error": "Article doesn't exist"}
+            return Response(message, status.HTTP_404_NOT_FOUND)
+        highlightcomment = article.highlight.filter(id=id).first()
+        if not highlightcomment:
+            message = {"message": "Comment on selected text does not exist"}
+            return Response(message, status=status.HTTP_404_NOT_FOUND)
+
+        update_comment = request.data.get('comment', {})['body']
+        data = {
+            'body': update_comment
+        }
+        serializer = self.serializer_class(highlightcomment,
+                                           data=data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(author=request.user)
+        return Response(serializer.data, status=status.HTTP_200_OK)

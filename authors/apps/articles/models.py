@@ -53,7 +53,6 @@ class Comment(models.Model):
     body = models.TextField(blank=False)
     createdAt = models.DateTimeField(auto_now_add=True)
     updatedAt = models.DateTimeField(auto_now=True)
-    selected_text = models.TextField(null=True)
     is_deleted = models.BooleanField(default=False)
     user_id_likes = models.ManyToManyField(User, related_name='comment_likes', blank=True)
     user_id_dislikes = models.ManyToManyField(User, related_name='comment_dislikes', blank=True)
@@ -65,3 +64,18 @@ class Comment(models.Model):
         ordering = ['-createdAt']
 
 
+class HighlightTextModel(models.Model):
+    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    body = models.TextField()
+    article = models.ForeignKey(Article, related_name='highlight',
+                                on_delete=models.CASCADE, null=True)
+    selected_text = models.TextField(blank=True, null=True)
+    start_highlight_position = models.IntegerField(blank=True, null=True)
+    end_highlight_position = models.IntegerField(blank=True, null=True)
+    createdAt = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return str(self.body)
+
+    class Meta:
+        ordering = ['-createdAt']

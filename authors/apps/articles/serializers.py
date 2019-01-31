@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from authors.apps.profiles.serializers import UserProfileSerializer
 from authors.apps.profiles.models import UserProfile
-from .models import Article, Comment
+from .models import Article, Comment, HighlightTextModel
 
 from taggit_serializer.serializers import (TagListSerializerField,
                                            TaggitSerializer)
@@ -150,7 +150,7 @@ class CommentSerializer(serializers.ModelSerializer):
         fields = ('id', 'body', 'createdAt', 'updatedAt',
                   'author', 'parent', 'article', 'is_deleted',
                   'user_id_likes', 'user_id_dislikes',
-                  'likes_count', 'dislikes_count',)
+                  'likes_count', 'dislikes_count')
 
 
 class DeleteCommentSerializer(serializers.ModelSerializer):
@@ -162,3 +162,32 @@ class DeleteCommentSerializer(serializers.ModelSerializer):
 
 class SharingSerializer(serializers.Serializer):
     pass
+
+
+class HighlightSerializer(serializers.Serializer):
+    """Serializer for creating a Comment"""
+    id = serializers.IntegerField(read_only=True)
+    user_id = serializers.SerializerMethodField()
+    article = serializers.SerializerMethodField()
+    body = serializers.CharField()
+    selected_text = serializers.CharField()
+    start_highlight_position = serializers.CharField()
+    end_highlight_position = serializers.CharField()
+    
+    def get_user_id(self, obj):
+        user_id = UserProfileSerializer(obj.author.profile)
+        return user_id.data
+
+    def create(self, validated_data):
+        return HighlightTextModel.objects.create(**validated_data)
+
+    def update(self, instance, validated_data):
+        instance.body = validated_data.get('body', instance.body)
+        instance.save()
+        return instance
+
+    def get_user_id(self, obj):
+        return obj.user_id.id
+
+    def get_article(self, obj):
+        return obj.article.slug
