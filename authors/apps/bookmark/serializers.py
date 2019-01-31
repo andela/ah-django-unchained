@@ -1,14 +1,17 @@
 from rest_framework import serializers
 from .models import Bookmarks
 from ..authentication.models import User
+from ..articles.models import Article
+from .models import Bookmarks
 
 
-class BookmarksSerializer(serializers.ModelSerializer):
+class BookmarksSerializer(serializers.Serializer):
     user = serializers.PrimaryKeyRelatedField(
         queryset=User.objects.all()
     )
+    article = serializers.PrimaryKeyRelatedField(
+        queryset=Article.objects.all()
+    )
 
-    class Meta:
-        model = Bookmarks
-        fields = ('user', 'article', 'created_at',)
-        read_only_fields = ('created_at',)
+    def create(self, validated_data):
+        return Bookmarks.objects.create(**validated_data)
