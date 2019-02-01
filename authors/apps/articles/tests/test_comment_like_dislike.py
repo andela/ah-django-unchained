@@ -1,17 +1,13 @@
 from django.urls import reverse
 from rest_framework.views import status
 from rest_framework.test import APITestCase, APIClient
-# from authors.apps.articles.models import Article
 
 
 class CreateArticles(APITestCase):
     def setUp(self):
         self.client = APIClient()
-        self.login_url = reverse('authentication:auth-login')
         self.signup_url = reverse('authentication:auth-register')
         self.article_listcreate = reverse('articles:articles-listcreate')
-        self.article_favorite = reverse('articles:articles-favorite',
-                                        kwargs={'slug': 'a-new-story'})
         self.signup_data = {
             "user": {
                 "username": "kennyg",
