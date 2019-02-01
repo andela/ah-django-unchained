@@ -18,9 +18,6 @@ class Article(models.Model):
     slug = models.SlugField(max_length=50, blank=False, unique=True)
     is_deleted = models.BooleanField(default=False)
     is_published = models.BooleanField(default=False)
-    favorite = models.ManyToManyField(
-        User, related_name='favorite', default=False)
-
     favorite = models.ManyToManyField(User, related_name='favorite',
                                       default=False)
 
