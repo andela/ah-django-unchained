@@ -80,10 +80,11 @@ class UnsubscribeAPIView(ListAPIView, UpdateAPIView):
         user = get_object_or_404(User, email=request.user.email)
         user.app_notification_subscription = False
         message = {
-            "message": "You have successfully unsubscribed from notifications",
+            "message": "You have successfully unsubscribed from app notifications",
             "email": user.email_notification_subscription,
             "app": user.app_notification_subscription
         }
+        user.save()
         return Response(message, status=status.HTTP_200_OK)
 
 

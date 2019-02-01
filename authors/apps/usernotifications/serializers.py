@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from notifications.models import Notification
 
-from authors.apps.articles.models import Article, Comment
+from authors.apps.articles.models import Article
 from authors.apps.authentication.models import User
 
 
@@ -24,10 +24,6 @@ class ActorTargetField(serializers.RelatedField):
         if isinstance(value, Article):
             actor_type = "article"
             data = value.slug
-
-        elif isinstance(value, Comment):
-            actor_type = "comment"
-            data = value.body
 
         elif isinstance(value, User):
             actor_type = "user"

@@ -49,7 +49,7 @@ class BaseTestCase(TestCase):
         self.token1 = login_res1.data["token"]
 
 
-class NotificationsTestCase(BaseTestCase):
+class InAppNotificationsTestCase(BaseTestCase):
     def test_get_notification_on_article_creation(self):
         # follow user
         res = self.client.post(
@@ -78,3 +78,65 @@ class NotificationsTestCase(BaseTestCase):
             HTTP_AUTHORIZATION='Token ' + self.token1)
         self.assertEqual(response2.status_code, status.HTTP_200_OK)
         self.assertEqual(response2.data["count"], 1)
+
+    def test_get_notification_when_followed(self):
+        # assert no notifcations
+        response1 = self.client.get(
+            reverse("notifications:all-notifications"),
+            HTTP_AUTHORIZATION='Token ' + self.token)
+        self.assertEqual(response1.status_code, status.HTTP_200_OK)
+        self.assertEqual(response1.data["count"], 0)
+
+        # send follow request
+        response2 = self.client.post(
+            'http://127.0.0.1:8000/api/profiles/testuser/follow',
+            HTTP_AUTHORIZATION='Token ' + self.token1)
+        self.assertEqual(response2.status_code, status.HTTP_200_OK)
+
+        # assert notifcation is available
+        response3 = self.client.get(
+            reverse("notifications:all-notifications"),
+            HTTP_AUTHORIZATION='Token ' + self.token)
+        self.assertEqual(response3.status_code, status.HTTP_200_OK)
+        self.assertEqual(response3.data["count"], 1)
+
+    def test_unsubscribe_from_in_app(self):
+        # test unsubscribe
+        response1 = self.client.put(
+            'http://127.0.0.1:8000/api/notifications/unsubscribe/',
+            HTTP_AUTHORIZATION='Token ' + self.token1)
+        self.assertEqual(response1.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response1.data['message'],
+            "You have successfully unsubscribed from app notifications")
+        self.assertEqual(response1.data["email"], True)
+        self.assertEqual(response1.data["app"], False)
+
+        # test unsubscribed user won't receive notifications
+        # follow user
+        response2 = self.client.post(
+            'http://127.0.0.1:8000/api/profiles/testuser/follow',
+            HTTP_AUTHORIZATION='Token ' + self.token1)
+        self.assertEqual(response2.status_code, status.HTTP_200_OK)
+
+        # check notification is empty
+        response3 = self.client.get(
+            reverse("notifications:all-notifications"),
+            HTTP_AUTHORIZATION='Token ' + self.token1)
+        self.assertEqual(response3.status_code, status.HTTP_200_OK)
+        self.assertEqual(response3.data["count"], 0)
+
+        # followed user post article
+        response4 = self.client.post(
+            reverse("articles:articles-listcreate"),
+            data=json.dumps(self.article_details),
+            content_type="application/json",
+            HTTP_AUTHORIZATION='Token ' + self.token)
+        self.assertEqual(response4.status_code, status.HTTP_201_CREATED)
+
+        # check notification is still empty
+        response5 = self.client.get(
+            reverse("notifications:all-notifications"),
+            HTTP_AUTHORIZATION='Token ' + self.token1)
+        self.assertEqual(response5.status_code, status.HTTP_200_OK)
+        self.assertEqual(response5.data["count"], 0)

@@ -236,7 +236,7 @@ EMAIL_PORT = 587
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_USE_TLS = True
 
-DOMAIN = os.getenv("DOMAIN")
+DOMAIN = os.getenv("APP_BASE_URL")
 
 cloudinary.config(
     cloud_name=os.getenv("CLOUD_NAME"),

@@ -42,8 +42,9 @@ def article_handler(sender, instance, created, **kwargs):
     followers = Friend.objects.select_related(
         'user_from', 'user_to').filter(user_to=article_author.id).all()
     recipients = [get_user_model().objects.get(id=u.user_from_id) for u in list(followers)]
-    for recipient in recipients:
-        if not recipient.email_notification_subscription:
+    for user in recipients:
+        recipient = User.objects.get(email=user)
+        if recipient.app_notification_subscription is False:
             return
 
     url = "api/articles/"
