@@ -475,3 +475,89 @@ class ShareViaTwitter(CreateAPIView):
         url_link = twitter_url + article_link
         message = {'link': url_link}
         return Response(message, status=status.HTTP_200_OK)
+
+
+class LikeCommentApiView(ListCreateAPIView):
+    """Like an article."""
+    permission_classes = (IsAuthenticatedOrReadOnly, )
+    serializer_class = CommentSerializer
+
+    def put(self, request, *args, **kwargs):
+        # get a comment with the specified id
+        # and return an exception if the comment does not exist
+        try:
+            comment_id = kwargs['id']
+            article_slug = kwargs['slug']
+            # get an article with the specified slug
+            # and return an exception if the article does not exist
+            try:
+                Article.objects.get(slug=article_slug, is_deleted=False)
+            except ObjectDoesNotExist:
+                raise NotFound("Article does not exist")
+            comment = Comment.objects.get(id=comment_id, is_deleted=False)
+        except ObjectDoesNotExist:
+            raise NotFound("A comment from this article does not exist")
+
+        # check if the comment has been disliked by the current user
+        # if the current user has disliked it, remove their id from the row
+        if comment in Comment.objects.filter(
+            user_id_dislikes=request.user):
+            comment.user_id_dislikes.remove(request.user)
+
+        # if the current user had previously liked this comment,
+        # then the comment is unliked
+        if comment in Comment.objects.filter(
+            user_id_likes=request.user):
+            comment.user_id_likes.remove(request.user)
+
+        # like the comment
+        else:
+            comment.user_id_likes.add(request.user)
+
+        serializer = self.serializer_class(comment,
+                                           context={'request': request},
+                                           partial=True)
+        return Response(serializer.data, status.HTTP_200_OK)
+
+
+class DislikeCommentApiView(ListCreateAPIView):
+    """Dislike an Article."""
+    permission_classes = (IsAuthenticatedOrReadOnly, )
+    serializer_class = CommentSerializer
+
+    def put(self, request, *args, **kwargs):
+        # get a comment with the specified id
+        # and return an exception if the comment does not exist
+        try:
+            comment_id = kwargs['id']
+            article_slug = kwargs['slug']
+            # get an article with the specified slug
+            # and return an exception if the article does not exist
+            try:
+                Article.objects.get(slug=article_slug, is_deleted=False)
+            except ObjectDoesNotExist:
+                raise NotFound("Article does not exist")
+            comment = Comment.objects.get(id=comment_id, is_deleted=False)
+        except ObjectDoesNotExist:
+            raise NotFound("A comment from this article does not exist")
+
+        # check if the comment has been disliked by the current user
+        # if the current user has disliked it, remove their id from the database
+        if comment in Comment.objects.filter(
+            user_id_likes=request.user):
+            comment.user_id_likes.remove(request.user)
+
+        # if the current user had previously disliked this comment,
+        # then the current user's id is removed from the database
+        if comment in Comment.objects.filter(
+            user_id_dislikes=request.user):
+            comment.user_id_dislikes.remove(request.user)
+
+        # dislike the comment
+        else:
+            comment.user_id_dislikes.add(request.user)
+
+        serializer = self.serializer_class(comment,
+                                           context={'request': request},
+                                           partial=True)
+        return Response(serializer.data, status.HTTP_200_OK)

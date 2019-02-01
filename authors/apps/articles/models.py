@@ -54,6 +54,8 @@ class Comment(models.Model):
     createdAt = models.DateTimeField(auto_now_add=True)
     updatedAt = models.DateTimeField(auto_now=True)
     is_deleted = models.BooleanField(default=False)
+    user_id_likes = models.ManyToManyField(User, related_name='comment_likes', blank=True)
+    user_id_dislikes = models.ManyToManyField(User, related_name='comment_dislikes', blank=True)
 
     def __str__(self):
         return str(self.body)
