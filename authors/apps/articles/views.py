@@ -7,14 +7,14 @@ from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.validators import validate_email
 from django.utils.datastructures import MultiValueDictKeyError
 from django.shortcuts import get_object_or_404
-from rest_framework import status, generics
+from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.generics import (ListCreateAPIView,
                                      RetrieveUpdateDestroyAPIView,
                                      RetrieveUpdateAPIView,
                                      UpdateAPIView, CreateAPIView,
-                                     DestroyAPIView, RetrieveAPIView)
+                                     DestroyAPIView, RetrieveAPIView, ListAPIView)
 from rest_framework.permissions import (IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.exceptions import NotFound
@@ -74,7 +74,7 @@ class ArticleDetailsView(RetrieveUpdateAPIView):
         return set_favorite_status(serializer, self.request.user.id)
 
 
-class GetDraft(generics.ListAPIView):
+class GetDraft(ListAPIView):
     """Get all Drafts"""
     pagination_class = CustomPagination
     permission_classes = (IsAuthorOrReadOnly,)

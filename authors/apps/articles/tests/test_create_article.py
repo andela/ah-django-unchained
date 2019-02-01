@@ -105,11 +105,13 @@ class CreateArticles(APITestCase):
             HTTP_AUTHORIZATION='token {}'.format(token))
         return response
 
-    def test_fetch_all_articles(self):
+    def test_fetch_all_published_articles(self):
         """Tests to fetch all articles"""
         token = self.signup_user_one()
+        # create article
         self.create_article(self.create_article_data, token)
         self.create_article(self.create_article_data2, token)
+        # publish articles
         self.client.put(reverse('articles:publish_article',
                                 kwargs={'slug': 'my-story'}),
                         self.publish_data,
@@ -139,8 +141,8 @@ class CreateArticles(APITestCase):
         self.assertIn(self.create_article_data2['tagList'][0],
                       response.data['results'][0]['tagList'])
 
-    def test_publish_articles(self):
-        """Test to add an article"""
+    def test_create_article_draft(self):
+        """Test to create article draft"""
         token = self.signup_user_one()
         del self.create_article_data['images']
         response = self.client.post(self.article_listcreate,
@@ -158,7 +160,17 @@ class CreateArticles(APITestCase):
         self.assertIn(self.create_article_data2['tagList'][0],
                       response.data['tagList'])
 
-    def test_get_single_article(self):
+    def test_get_all_article_drafts(self):
+        token = self.signup_user_one()
+        self.create_article(self.create_article_data, token)
+        self.create_article(self.create_article_data2, token)
+        response = self.client.get(reverse('articles:get_all_drafts'),
+                                   format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn(self.create_article_data2['title'],
+                      response.data['results'][0]['title'])
+
+    def test_get_single_published_article(self):
         """Test to get a single article"""
         token = self.signup_user_one()
         self.create_article(self.create_article_data, token)

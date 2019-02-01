@@ -13,6 +13,7 @@ from .views import (ArticleAPIView, ArticleDetailsView,
                     CommentHistory, ReadTime, PublishArticle, GetDraft)
 
 
+
 app_name = "articles"
 urlpatterns = [
     path('articles/', ArticleAPIView.as_view(), name="articles-listcreate"),
