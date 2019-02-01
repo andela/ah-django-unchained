@@ -1,6 +1,7 @@
 from django.urls import reverse
 from rest_framework.views import status
 from rest_framework.test import APITestCase, APIClient
+from urllib.parse import quote
 
 
 class FilterArticles(APITestCase):
@@ -8,10 +9,11 @@ class FilterArticles(APITestCase):
         self.client = APIClient()
         self.sign_up_url = reverse('authentication:auth-register')
         self.article_listcreate = reverse('articles:articles-listcreate')
-        self.filter_title_url = 'http://127.0.0.1:8000/api/articles/search/?title=Coding is cool'
+        title = quote('Coding is cool')
+        self.filter_title_url = 'http://127.0.0.1:8000/api/articles/search/?title={}'.format(title)
         self.filter_tag_url = 'http://127.0.0.1:8000/api/articles/search/?tags=python'
         self.filter_author_url = 'http://127.0.0.1:8000/api/articles/search/?author=Ken123'
-        self.filter_all = 'http://127.0.0.1:8000/api/articles/search/?tags=python&title=Coding is cool&author=Ken123'
+        self.filter_all = 'http://127.0.0.1:8000/api/articles/search/?tags=python&title={}&author=Ken123'.format(title)
         self.sign_up_data = {
             "user": {
                 "username": "Ken123",
@@ -127,7 +129,7 @@ class FilterArticles(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_filter_all(self):
-        """Test that you can filter an article with a specific title,taglist and author all at once """
+        """Test that you can filter an article with a specific title, taglist and author all at once """
 
         token = self.register()
         # Create article
