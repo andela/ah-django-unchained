@@ -49,7 +49,10 @@ class BaseTestCase(TestCase):
         self.token1 = login_res1.data["token"]
 
 
-class InAppNotificationsTestCase(BaseTestCase):
+class NotificationsTestCase(BaseTestCase):
+    """
+    class for notification tests
+    """
     def test_get_notification_on_article_creation(self):
         # follow user
         res = self.client.post(
@@ -100,6 +103,11 @@ class InAppNotificationsTestCase(BaseTestCase):
         self.assertEqual(response3.status_code, status.HTTP_200_OK)
         self.assertEqual(response3.data["count"], 1)
 
+
+class SubscribeUnsubscribeTestCase(BaseTestCase):
+    """
+    test class for subscribing and unsubscribing to notifications
+    """
     def test_unsubscribe_from_in_app(self):
         # test unsubscribe
         response1 = self.client.put(
@@ -140,3 +148,14 @@ class InAppNotificationsTestCase(BaseTestCase):
             HTTP_AUTHORIZATION='Token ' + self.token1)
         self.assertEqual(response5.status_code, status.HTTP_200_OK)
         self.assertEqual(response5.data["count"], 0)
+
+        # test user can subscribe back
+        response6 = self.client.post(
+            'http://127.0.0.1:8000/api/notifications/subscribe/',
+            HTTP_AUTHORIZATION='Token ' + self.token1)
+        self.assertEqual(response6.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response6.data['message'],
+            "You have successfully subscribed to notifications")
+        self.assertEqual(response6.data["email"], True)
+        self.assertEqual(response6.data["app"], True)

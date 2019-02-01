@@ -15,7 +15,6 @@ Including another URLconf
 """
 from django.urls import include, path
 from django.contrib import admin
-import notifications.urls
 
 # import from django_rest_swagger
 from rest_framework_swagger.views import get_swagger_view

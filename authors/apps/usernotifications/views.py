@@ -7,8 +7,6 @@ from django.http import Http404
 from rest_framework import status
 from rest_framework.generics import (
     ListAPIView,
-    ListCreateAPIView,
-    DestroyAPIView,
     UpdateAPIView
     )
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -18,7 +16,7 @@ from .serializers import NotificationSerializer, UnsubscribeSerializer
 from authors.apps.authentication.models import User
 
 
-class NotificationAPIView(ListAPIView, DestroyAPIView):
+class NotificationAPIView(ListAPIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = NotificationSerializer
 
@@ -88,7 +86,7 @@ class UnsubscribeAPIView(ListAPIView, UpdateAPIView):
         return Response(message, status=status.HTTP_200_OK)
 
 
-class SubscribeAPIView(ListCreateAPIView, UpdateAPIView):
+class SubscribeAPIView(UpdateAPIView):
     """
     allow users to subscribe to nofications
     """
