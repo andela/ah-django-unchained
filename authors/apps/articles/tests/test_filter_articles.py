@@ -7,13 +7,15 @@ from urllib.parse import quote
 class FilterArticles(APITestCase):
     def setUp(self):
         self.client = APIClient()
+        self.author_filter = 'Ken123'
         self.sign_up_url = reverse('authentication:auth-register')
         self.article_listcreate = reverse('articles:articles-listcreate')
         title = quote('Coding is cool')
         self.filter_title_url = 'http://127.0.0.1:8000/api/articles/search/?title={}'.format(title)
         self.filter_tag_url = 'http://127.0.0.1:8000/api/articles/search/?tags=python'
-        self.filter_author_url = 'http://127.0.0.1:8000/api/articles/search/?author=Ken123'
-        self.filter_all = 'http://127.0.0.1:8000/api/articles/search/?tags=python&title={}&author=Ken123'.format(title)
+        self.filter_author_url = 'http://127.0.0.1:8000/api/articles/search/?author={}'.format(self.author_filter)
+        self.author_filter2 = 'MaggyC123'
+        self.filter_all = 'http://127.0.0.1:8000/api/articles/search/?tags=python&title={}&author={}'.format(title, self.author_filter)
         self.sign_up_data = {
             "user": {
                 "username": "Ken123",
@@ -81,7 +83,7 @@ class FilterArticles(APITestCase):
         response = self.client.get(self.filter_title_url,
                                    format='json',
                                    HTTP_AUTHORIZATION='token {}'.format(token))
-        self.assertNotEqual(self.article_data['title'], all_articles.data['results'][0],)
+        self.assertNotEqual(self.article_data['title'], all_articles.data['results'][0]['title'])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn(self.article_data['title'],
                       response.data['results'][0]['title'])
@@ -103,7 +105,7 @@ class FilterArticles(APITestCase):
         response = self.client.get(self.filter_tag_url,
                                    format='json',
                                    HTTP_AUTHORIZATION='token {}'.format(token))
-        self.assertNotEqual(self.article_data['title'], all_articles.data['results'][0]['title'])
+        self.assertNotEqual(self.article_data['tagList'], all_articles.data['results'][0]['tagList'])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertListEqual(self.article_data['tagList'],
                              response.data['results'][0]['tagList'])
@@ -125,7 +127,8 @@ class FilterArticles(APITestCase):
         response = self.client.get(self.filter_author_url,
                                    format='json',
                                    HTTP_AUTHORIZATION='token {}'.format(token))
-        self.assertNotEqual(self.article_data['title'], all_articles.data['results'][0])
+        self.assertEqual(self.author_filter, all_articles.data['results'][0]['author'])
+        self.assertNotEqual(self.author_filter2, all_articles.data['results'][0]['author'])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_filter_all(self):
@@ -153,7 +156,7 @@ class FilterArticles(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertNotEqual(self.article_data['title'], all_articles.data['results'][0])
 
-        self.assertIn(self.article_data['title'],
-                      response.data['results'][0]['title'])
+        self.assertEqual(self.article_data['title'],
+                         response.data['results'][0]['title'])
         self.assertListEqual(self.article_data['tagList'],
                              response.data['results'][0]['tagList'])
