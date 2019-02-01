@@ -2,6 +2,7 @@ from django.db import models
 from authors.apps.authentication.models import User
 from taggit.managers import TaggableManager
 from cloudinary.models import CloudinaryField
+from simple_history.models import HistoricalRecords
 
 
 class Article(models.Model):
@@ -56,6 +57,7 @@ class Comment(models.Model):
     is_deleted = models.BooleanField(default=False)
     user_id_likes = models.ManyToManyField(User, related_name='comment_likes', blank=True)
     user_id_dislikes = models.ManyToManyField(User, related_name='comment_dislikes', blank=True)
+    history = HistoricalRecords()
 
     def __str__(self):
         return str(self.body)
