@@ -144,3 +144,6 @@ class DeleteCommentSerializer(serializers.ModelSerializer):
         model = Comment
         fields = ['is_deleted', 'parent']
 
+
+class SharingSerializer(serializers.Serializer):
+    pass

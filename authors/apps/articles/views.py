@@ -22,7 +22,7 @@ from authors.apps.core.permissions import IsAuthorOrReadOnly
 from .serializers import (ArticleSerializer,
                           GetArticleSerializer, DeleteArticleSerializer,
                           RatingSerializer, CommentSerializer,
-                          DeleteCommentSerializer)
+                          DeleteCommentSerializer, SharingSerializer)
 from .models import (Article, ArticleRating, Comment)
 from .pagination import CustomPagination
 from ..authentication.utils import send_link
@@ -402,6 +402,7 @@ class ReadTime(RetrieveAPIView):
 
 class ShareArticleViaEmailApiView(CreateAPIView):
     """Share via Email"""
+    serializer_class = SharingSerializer
 
     def get(self, request, slug):
         try:
@@ -442,6 +443,7 @@ class ShareArticleViaEmailApiView(CreateAPIView):
 
 class ShareViaFacebook(CreateAPIView):
     """Share via Facebook"""
+    serializer_class = SharingSerializer
 
     def get(self, request, slug):
         try:
@@ -460,6 +462,7 @@ class ShareViaFacebook(CreateAPIView):
 
 class ShareViaTwitter(CreateAPIView):
     """Share via Twitter"""
+    serializer_class = SharingSerializer
 
     def get(self, request, slug):
         try:
