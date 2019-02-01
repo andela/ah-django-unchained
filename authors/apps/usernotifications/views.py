@@ -31,7 +31,7 @@ class NotificationAPIView(ListAPIView):
             )
 
     def notifications(self, request):
-        # this method will be overriden by the following methods
+        # this method will be overridden by the following methods
         pass
 
 
@@ -74,7 +74,7 @@ class UnsubscribeAPIView(ListAPIView, UpdateAPIView):
         """
         unsubscribe from app notifications
         """
-        self.permission_classes.append(IsAuthenticated)
+        self.permission_classes.append(IsAuthenticated,)
         user = get_object_or_404(User, email=request.user.email)
         user.app_notification_subscription = False
         message = {
@@ -88,7 +88,7 @@ class UnsubscribeAPIView(ListAPIView, UpdateAPIView):
 
 class SubscribeAPIView(UpdateAPIView):
     """
-    allow users to subscribe to nofications
+    allow users to subscribe to notifications
     """
     permission_classes = [IsAuthenticated]
 
