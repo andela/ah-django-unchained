@@ -590,7 +590,7 @@ class HighlightText(ListCreateAPIView):
         comment = request.data.get('comment', {})
 
         try:
-            selection_range = self.select_index_position(
+            selection_range = HighlightText.select_index_position(
                 int(comment.get('start_highlight_position', 0)),
                 int(comment.get('end_highlight_position', 0)))
             
@@ -616,8 +616,9 @@ class HighlightText(ListCreateAPIView):
                             article=single_article_instance)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def select_index_position(self, start_index_position, end_index_position):
+    
+    @staticmethod
+    def select_index_position(start_index_position, end_index_position):
         """Stores the index values  in a variable."""
         index_values = [start_index_position, end_index_position]
         return index_values
@@ -635,44 +636,44 @@ class RetrieveUpdateDeleteComments(RetrieveUpdateDestroyAPIView):
     serializer_class = HighlightSerializer
     queryset = HighlightTextModel.objects.all()
     lookup_field = 'id'
-
+    
     def get(self, request, slug, id):
-        article = get_object_or_404(Article, slug=slug)
-        try:
-            highlightcomment = article.highlight.filter(id=id).first().pk
-            return super().get(request, highlightcomment)
-        except:
-            message = {"error": "This comment doesnot exist"}
-            return Response(message, status.HTTP_404_NOT_FOUND)
+        """Get single comments."""
+        highlight_comment = RetrieveUpdateDeleteComments.get_all_comments(slug,id)
+        if not highlight_comment:
+                return Response({'error': "The comment does not exist"},
+                                status.HTTP_404_NOT_FOUND)
+        return super().get(request, highlight_comment)
 
     def delete(self, request, slug, id):
-            article = get_object_or_404(Article, slug=slug)
-            try:
-                highlightcomment = article.highlight.filter(id=id).first().pk
-            except:
-                message = {"error": "The comment does not exist"}
-                return Response(message, status.HTTP_404_NOT_FOUND)
-            super().delete(self, request, highlightcomment)
-            message = {"message": "Comment on highligted text deleted successfully"}
-            return Response(
-                message, status.HTTP_200_OK)
+        """Delete single comment"""
+        highlight_comment = RetrieveUpdateDeleteComments.get_all_comments(slug,id)
+        if not highlight_comment:
+            return Response({'error': "The comment does not exist"},
+                            status.HTTP_404_NOT_FOUND)
+        super().delete(self, request, highlight_comment)
+        message = {"message": "Comment on highlighted text deleted successfully"}
+        return Response(
+            message, status.HTTP_200_OK)
 
     def update(self, request, slug, id):
-        article = Article.objects.filter(slug=slug).first()
-        if not article:
-            message = {"error": "Article doesn't exist"}
-            return Response(message, status.HTTP_404_NOT_FOUND)
-        highlightcomment = article.highlight.filter(id=id).first()
-        if not highlightcomment:
-            message = {"message": "Comment on selected text does not exist"}
-            return Response(message, status=status.HTTP_404_NOT_FOUND)
-
+        """Update specific comment."""
+        highlight_comment = RetrieveUpdateDeleteComments.get_all_comments(slug,id).first()
+        if not highlight_comment:
+            return Response({'error': "The comment does not exist"},
+                            status.HTTP_404_NOT_FOUND)
         update_comment = request.data.get('comment', {})['body']
         data = {
             'body': update_comment
         }
-        serializer = self.serializer_class(highlightcomment,
+        serializer = self.serializer_class(highlight_comment,
                                            data=data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save(author=request.user)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @staticmethod
+    def get_all_comments(slug, id):
+        article = get_object_or_404(Article, slug=slug)
+        highlight_comment = article.highlight.filter(id=id)
+        return highlight_comment

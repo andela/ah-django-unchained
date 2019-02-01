@@ -209,7 +209,7 @@ class CommentsTestCase(APITestCase):
             format='json')
         response_data = json.loads(json.dumps(response.data))
         self.assertEqual(response.data['message'],
-                         'Comment on highligted text deleted successfully')
+                         'Comment on highlighted text deleted successfully')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
     
     def test_update_single_comments(self):
@@ -261,7 +261,7 @@ class CommentsTestCase(APITestCase):
             HTTP_AUTHORIZATION='token {}'.format(token),
             format='json')
         response_data = json.loads(json.dumps(response.data))
-        self.assertEqual(response.data['message'], 'Comment on selected text does not exist')
+        self.assertEqual(response.data['error'], 'The comment does not exist')
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
     
     def test_get_delete_unexisting_comments(self):

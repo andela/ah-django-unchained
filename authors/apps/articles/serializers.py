@@ -131,8 +131,7 @@ class CommentSerializer(serializers.ModelSerializer):
                 'author': UserProfileSerializer(
                     instance=UserProfile.objects.get(user=thread.author)).data,
                 'createdAt': self.format_date(thread.createdAt),
-                'updatedAt': self.format_date(thread.updatedAt),
-                
+                'updatedAt': self.format_date(thread.updatedAt)
             }for thread in instance.threads.all()
         ]
         thread_comment = super(
@@ -171,12 +170,8 @@ class HighlightSerializer(serializers.Serializer):
     article = serializers.SerializerMethodField()
     body = serializers.CharField()
     selected_text = serializers.CharField()
-    start_highlight_position = serializers.CharField()
-    end_highlight_position = serializers.CharField()
-    
-    def get_user_id(self, obj):
-        user_id = UserProfileSerializer(obj.author.profile)
-        return user_id.data
+    start_highlight_position = serializers.IntegerField()
+    end_highlight_position = serializers.IntegerField()
 
     def create(self, validated_data):
         return HighlightTextModel.objects.create(**validated_data)

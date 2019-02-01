@@ -69,7 +69,7 @@ class HighlightTextModel(models.Model):
     body = models.TextField()
     article = models.ForeignKey(Article, related_name='highlight',
                                 on_delete=models.CASCADE, null=True)
-    selected_text = models.TextField(blank=True, null=True)
+    selected_text = models.TextField(blank=True)
     start_highlight_position = models.IntegerField(blank=True, null=True)
     end_highlight_position = models.IntegerField(blank=True, null=True)
     createdAt = models.DateTimeField(auto_now_add=True)
