@@ -7,7 +7,9 @@ from authors.apps.authentication.models import User
 
 
 class BaseTestCase(TestCase):
-    """Base tests to be used by all other tests"""
+    """
+    Base tests to be used by all other tests
+    """
     def setUp(self):
         self.client = APIClient()
         self.login_url = reverse("authentication:auth-login")
@@ -54,6 +56,10 @@ class NotificationsTestCase(BaseTestCase):
     class for notification tests
     """
     def test_get_notification_on_article_creation(self):
+        """
+        test user will get notification
+        when users they follow post articles
+        """
         # follow user
         res = self.client.post(
             'http://127.0.0.1:8000/api/profiles/testuser/follow',
@@ -81,8 +87,15 @@ class NotificationsTestCase(BaseTestCase):
             HTTP_AUTHORIZATION='Token ' + self.token1)
         self.assertEqual(response2.status_code, status.HTTP_200_OK)
         self.assertEqual(response2.data["count"], 1)
+        self.assertIn(
+            'testuser posted an article on',
+            response2.data["notifications"][0]["description"]
+            )
 
     def test_get_notification_when_followed(self):
+        """
+        test user will get notification when followed
+        """
         # assert no notifcations
         response1 = self.client.get(
             reverse("notifications:all-notifications"),
@@ -102,6 +115,17 @@ class NotificationsTestCase(BaseTestCase):
             HTTP_AUTHORIZATION='Token ' + self.token)
         self.assertEqual(response3.status_code, status.HTTP_200_OK)
         self.assertEqual(response3.data["count"], 1)
+        self.assertIn(
+            'andrew followed you on',
+            response3.data["notifications"][0]["description"]
+            )
+
+    def test_unauthenticated_user_cannot_view_notifications(self):
+        """
+        test an authenticated user won't view notifications
+        """
+        response = self.client.get(reverse("notifications:all-notifications"))
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
 
 class SubscribeUnsubscribeTestCase(BaseTestCase):
@@ -109,6 +133,10 @@ class SubscribeUnsubscribeTestCase(BaseTestCase):
     test class for subscribing and unsubscribing to notifications
     """
     def test_unsubscribe_from_in_app(self):
+        """
+        test user can unsubscribe from notifications
+        test user can subscribe back to notifications
+        """
         # test unsubscribe
         response1 = self.client.put(
             'http://127.0.0.1:8000/api/notifications/unsubscribe/',

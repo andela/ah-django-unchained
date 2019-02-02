@@ -19,7 +19,7 @@ def follow_handler(sender, instance, created, **kwargs):
     follower = instance.user_from
     followed = instance.user_to
     recipient = followed
-    if not recipient.email_notification_subscription:
+    if recipient.email_notification_subscription is False:
         return
     url = 'api/profiles/{}/follow/'.format(followed.username)
     notify.send(
@@ -66,7 +66,7 @@ def email_notification_handler(sender, instance, created, **kwargs):
     """
     user = instance.recipient
     recipient = User.objects.get(email=user)
-    if not recipient.email_notification_subscription:
+    if recipient.email_notification_subscription is False:
         return
     description = instance.description
     token = recipient.token
