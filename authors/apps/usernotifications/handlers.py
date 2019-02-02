@@ -1,5 +1,4 @@
 from django.conf import settings
-from django.contrib.auth import get_user_model
 from django.template.loader import render_to_string
 from django.db.models.signals import post_save
 from django.core.mail import send_mail
@@ -21,7 +20,7 @@ def follow_handler(sender, instance, created, **kwargs):
     recipient = followed
     if recipient.email_notification_subscription is False:
         return
-    url = 'api/profiles/{}/follow/'.format(followed.username)
+    url = 'api/profiles/{}'.format(followed.username)
     notify.send(
         follower,
         recipient=recipient,
@@ -38,26 +37,26 @@ def article_handler(sender, instance, created, **kwargs):
     notification handler for articles
     """
     article_author = instance.author
-    # add the user's followers to the recipients list
     followers = Friend.objects.select_related(
-        'user_from', 'user_to').filter(user_to=article_author.id).all()
-    recipients = [get_user_model().objects.get(id=u.user_from_id) for u in list(followers)]
-    for user in recipients:
-        recipient = User.objects.get(email=user)
-        if recipient.app_notification_subscription is False:
-            return
-
-    url = "api/articles/"
-    notify.send(
-        article_author,
-        recipient=recipients,
-        description="{} posted an article on {}".format(
-            article_author.username,
-            instance.created.strftime('%d-%B-%Y %H:%M')),
-        verb=verbs.ARTICLE_CREATION,
-        action_object=instance,
-        resource_url=url
-        )
+        'user_from').filter(user_to=article_author.id).all()
+    # add the author's followers to the recipients list
+    recipients = [User.objects.get(id=u.user_from_id) for u in followers]
+    # add only the subscribed followers to the recipients list
+    subsribed_users = [user for user in recipients if user.app_notification_subscription is True]
+    if not subsribed_users:
+        return
+    for user in subsribed_users:
+        url = "api/articles/"
+        notify.send(
+            article_author,
+            recipient=user,
+            description="{} posted an article on {}".format(
+                article_author.username,
+                instance.created.strftime('%d-%B-%Y %H:%M')),
+            verb=verbs.ARTICLE_CREATION,
+            action_object=instance,
+            resource_url=url
+            )
 
 
 def email_notification_handler(sender, instance, created, **kwargs):
@@ -70,7 +69,9 @@ def email_notification_handler(sender, instance, created, **kwargs):
         return
     description = instance.description
     token = recipient.token
-    opt_out_link = '{}/api/notifications/unsubscribe/{}'.format(settings.DOMAIN, token)
+    opt_out_link = '{}/api/notifications/unsubscribe/{}'.format(
+        settings.DOMAIN, token
+        )
     try:
         resource_url = instance.data['resource_url']
     except TypeError:

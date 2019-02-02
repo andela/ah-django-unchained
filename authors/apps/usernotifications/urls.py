@@ -6,7 +6,7 @@ app_name = "notifications"
 
 urlpatterns = [
     path(
-        'notifications/all/',
+        'notifications/',
         views.AllNotificationsAPIView.as_view(),
         name="all-notifications"
         ),

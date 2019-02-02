@@ -1,6 +1,8 @@
 import json
 from django.test import TestCase
 from django.urls import reverse
+from django.core import mail
+from django.conf import settings
 from rest_framework.test import APIClient
 from rest_framework import status
 from authors.apps.authentication.models import User
@@ -50,6 +52,21 @@ class BaseTestCase(TestCase):
         self.assertEqual(login_res1.status_code, status.HTTP_200_OK)
         self.token1 = login_res1.data["token"]
 
+        self.follower2 = User.objects.create_user(
+            username="maggy66",
+            email="maggy@gmail.com",
+            password="this_user123@A")
+
+        self.follower2_data = {"user": {
+            "email": "maggy@gmail.com",
+            "password": "this_user123@A"
+        }}
+
+        login_res2 = self.client.post(
+            self.login_url, self.follower2_data, format='json')
+        self.assertEqual(login_res2.status_code, status.HTTP_200_OK)
+        self.token2 = login_res2.data["token"]
+
 
 class NotificationsTestCase(BaseTestCase):
     """
@@ -60,37 +77,60 @@ class NotificationsTestCase(BaseTestCase):
         test user will get notification
         when users they follow post articles
         """
-        # follow user
-        res = self.client.post(
+        # two users follow a particular user
+        response1 = self.client.post(
             'http://127.0.0.1:8000/api/profiles/testuser/follow',
             HTTP_AUTHORIZATION='Token ' + self.token1)
-        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(response1.status_code, status.HTTP_200_OK)
+
+        response2 = self.client.post(
+            'http://127.0.0.1:8000/api/profiles/testuser/follow',
+            HTTP_AUTHORIZATION='Token ' + self.token2)
+        self.assertEqual(response2.status_code, status.HTTP_200_OK)
+
+        # unsubscribe one user
+        response3 = self.client.put(
+            'http://127.0.0.1:8000/api/notifications/unsubscribe/',
+            HTTP_AUTHORIZATION='Token ' + self.token2)
+        self.assertEqual(response3.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response3.data['message'],
+            "You have successfully unsubscribed from app notifications")
+        self.assertTrue(response3.data["email"])
+        self.assertFalse(response3.data["app"])
 
         # check notification is empty
-        res2 = self.client.get(
+        response4 = self.client.get(
             reverse("notifications:all-notifications"),
             HTTP_AUTHORIZATION='Token ' + self.token1)
-        self.assertEqual(res2.status_code, status.HTTP_200_OK)
-        self.assertEqual(res2.data["count"], 0)
+        self.assertEqual(response4.status_code, status.HTTP_200_OK)
+        self.assertEqual(response4.data["count"], 0)
 
         # followed user post article
-        response = self.client.post(
+        response5 = self.client.post(
             reverse("articles:articles-listcreate"),
             data=json.dumps(self.article_details),
             content_type="application/json",
             HTTP_AUTHORIZATION='Token ' + self.token)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response5.status_code, status.HTTP_201_CREATED)
 
         # check notification is populated
-        response2 = self.client.get(
+        response6 = self.client.get(
             reverse("notifications:all-notifications"),
             HTTP_AUTHORIZATION='Token ' + self.token1)
-        self.assertEqual(response2.status_code, status.HTTP_200_OK)
-        self.assertEqual(response2.data["count"], 1)
+        self.assertEqual(response6.status_code, status.HTTP_200_OK)
+        self.assertEqual(response6.data["count"], 1)
         self.assertIn(
             'testuser posted an article on',
-            response2.data["notifications"][0]["description"]
+            response6.data["notifications"][0]["description"]
             )
+
+        # check notification is not populated for the unsubscribed user
+        response7 = self.client.get(
+            reverse("notifications:all-notifications"),
+            HTTP_AUTHORIZATION='Token ' + self.token2)
+        self.assertEqual(response7.status_code, status.HTTP_200_OK)
+        self.assertEqual(response7.data["count"], 0)
 
     def test_get_notification_when_followed(self):
         """
@@ -120,6 +160,24 @@ class NotificationsTestCase(BaseTestCase):
             response3.data["notifications"][0]["description"]
             )
 
+    def test_send_email_notification(self):
+        """
+        test that email notification is sent
+        """
+        # empty the test outbox
+        mail.outbox = []
+        self.assertEqual(len(mail.outbox), 0)
+        mail.send_mail(
+            'Authors Haven Notifications', 'Here is the message.',
+            settings.EMAIL_HOST_USER, ['andrewhinga5@gmail.com'],
+            fail_silently=False,
+        )
+        # test that one message has been sent.
+        self.assertEqual(len(mail.outbox), 1)
+        # verify that the subject of the first message is correct.
+        self.assertEqual(mail.outbox[0].subject,
+                         'Authors Haven Notifications')
+
     def test_unauthenticated_user_cannot_view_notifications(self):
         """
         test an authenticated user won't view notifications
@@ -145,8 +203,8 @@ class SubscribeUnsubscribeTestCase(BaseTestCase):
         self.assertEqual(
             response1.data['message'],
             "You have successfully unsubscribed from app notifications")
-        self.assertEqual(response1.data["email"], True)
-        self.assertEqual(response1.data["app"], False)
+        self.assertTrue(response1.data["email"])
+        self.assertFalse(response1.data["app"])
 
         # test unsubscribed user won't receive notifications
         # follow user
@@ -185,8 +243,8 @@ class SubscribeUnsubscribeTestCase(BaseTestCase):
         self.assertEqual(
             response6.data['message'],
             "You have successfully subscribed to notifications")
-        self.assertEqual(response6.data["email"], True)
-        self.assertEqual(response6.data["app"], True)
+        self.assertTrue(response6.data["email"])
+        self.assertTrue(response6.data["app"])
 
     def test_unauthenticated_unsubscribe(self):
         """
@@ -196,3 +254,13 @@ class SubscribeUnsubscribeTestCase(BaseTestCase):
         response1 = self.client.put(
             'http://127.0.0.1:8000/api/notifications/subscribe/')
         self.assertEqual(response1.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_unsubscribe_from_email_notifications(self):
+        """
+        test that user can unsubscribe from email notifications
+        """
+        unsubscribe_url = reverse('notifications:email-unsubscribe',
+                             kwargs={"token": self.token})
+        response = self.client.get(
+            unsubscribe_url, HTTP_AUTHORIZATION='Token ' + self.token)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
