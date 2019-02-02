@@ -19,11 +19,13 @@ from rest_framework.permissions import (IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.exceptions import NotFound
 from authors.apps.core.permissions import IsAuthorOrReadOnly
+from authors.apps.profiles.models import UserProfile
 from .serializers import (ArticleSerializer,
                           GetArticleSerializer, DeleteArticleSerializer,
                           RatingSerializer, CommentSerializer,
-                          DeleteCommentSerializer, SharingSerializer)
-from .models import (Article, ArticleRating, Comment)
+                          DeleteCommentSerializer, SharingSerializer,
+                          HighlightSerializer)
+from .models import (Article, ArticleRating, Comment, HighlightTextModel)
 from .pagination import CustomPagination
 from ..authentication.utils import send_link
 
@@ -564,3 +566,114 @@ class DislikeCommentApiView(ListCreateAPIView):
                                            context={'request': request},
                                            partial=True)
         return Response(serializer.data, status.HTTP_200_OK)
+
+
+class HighlightText(ListCreateAPIView):
+    permission_classes = (IsAuthenticatedOrReadOnly, )
+    serializer_class = HighlightSerializer
+
+    def post(self, request, slug):
+        # get an article that matches the specified slug
+        # and return a message if the article does not exist
+        single_article_instance = get_object_or_404(Article, slug=slug)
+
+        # check for all the required fields
+        required_fields = ['start_highlight_position',
+                           'end_highlight_position', 'body']
+        for field in required_fields:
+            if field not in request.data.get('comment', {}):
+                return Response({'error': '{} is required'.format(field)},
+                                status.HTTP_400_BAD_REQUEST)
+
+        # get the index of the fist and the last word
+        # of the highlighted text
+        comment = request.data.get('comment', {})
+
+        try:
+            selection_range = HighlightText.select_index_position(
+                int(comment.get('start_highlight_position', 0)),
+                int(comment.get('end_highlight_position', 0)))
+            
+            if selection_range[0] >= selection_range[1]:
+                return Response({
+                            'error': 'The start_index_position should'
+                            ' not be greater or equal end_index_position'})
+
+        except ValueError:
+            # ensure that selection indices are integers
+            return Response({
+                'error': 'Start of highlight and end of'
+                ' highlight indices should be both integers',
+            }, status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+        selected_text = str(
+            single_article_instance.body[selection_range[0]:selection_range[1]])
+        comment['selected_text'] = selected_text
+
+        serializer = HighlightSerializer(data=comment, partial=True)
+        if serializer.is_valid():
+            serializer.save(user_id=request.user,
+                            article=single_article_instance)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    @staticmethod
+    def select_index_position(start_index_position, end_index_position):
+        """Stores the index values  in a variable."""
+        index_values = [start_index_position, end_index_position]
+        return index_values
+
+    def get(self, request, slug):
+        """Get all comment for highligted text of a single article."""
+        article = get_object_or_404(Article, slug=slug)
+        highlighted_comment = article.highlight.filter()
+        serializer = self.serializer_class(highlighted_comment, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class RetrieveUpdateDeleteComments(RetrieveUpdateDestroyAPIView):
+    permission_classes = (IsAuthenticatedOrReadOnly, )
+    serializer_class = HighlightSerializer
+    queryset = HighlightTextModel.objects.all()
+    lookup_field = 'id'
+    
+    def get(self, request, slug, id):
+        """Get single comments."""
+        highlight_comment = RetrieveUpdateDeleteComments.get_all_comments(slug,id)
+        if not highlight_comment:
+                return Response({'error': "The comment does not exist"},
+                                status.HTTP_404_NOT_FOUND)
+        return super().get(request, highlight_comment)
+
+    def delete(self, request, slug, id):
+        """Delete single comment"""
+        highlight_comment = RetrieveUpdateDeleteComments.get_all_comments(slug,id)
+        if not highlight_comment:
+            return Response({'error': "The comment does not exist"},
+                            status.HTTP_404_NOT_FOUND)
+        super().delete(self, request, highlight_comment)
+        message = {"message": "Comment on highlighted text deleted successfully"}
+        return Response(
+            message, status.HTTP_200_OK)
+
+    def update(self, request, slug, id):
+        """Update specific comment."""
+        highlight_comment = RetrieveUpdateDeleteComments.get_all_comments(slug,id).first()
+        if not highlight_comment:
+            return Response({'error': "The comment does not exist"},
+                            status.HTTP_404_NOT_FOUND)
+        update_comment = request.data.get('comment', {})['body']
+        data = {
+            'body': update_comment
+        }
+        serializer = self.serializer_class(highlight_comment,
+                                           data=data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(author=request.user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @staticmethod
+    def get_all_comments(slug, id):
+        article = get_object_or_404(Article, slug=slug)
+        highlight_comment = article.highlight.filter(id=id)
+        return highlight_comment

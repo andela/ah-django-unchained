@@ -62,3 +62,20 @@ class Comment(models.Model):
 
     class Meta:
         ordering = ['-createdAt']
+
+
+class HighlightTextModel(models.Model):
+    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    body = models.TextField()
+    article = models.ForeignKey(Article, related_name='highlight',
+                                on_delete=models.CASCADE, null=True)
+    selected_text = models.TextField(blank=True)
+    start_highlight_position = models.IntegerField(blank=True, null=True)
+    end_highlight_position = models.IntegerField(blank=True, null=True)
+    createdAt = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return str(self.body)
+
+    class Meta:
+        ordering = ['-createdAt']

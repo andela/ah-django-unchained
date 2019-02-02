@@ -8,8 +8,8 @@ from .views import (ArticleAPIView, ArticleDetailsView,
                     CommentDelete, CommentsRetrieveUpdateDestroy,
                     ReadTime, ShareArticleViaEmailApiView,
                     ShareViaFacebook, ShareViaTwitter,
-                    LikeCommentApiView, DislikeCommentApiView
-                    )
+                    LikeCommentApiView, DislikeCommentApiView,
+                    HighlightText, RetrieveUpdateDeleteComments)
 
 
 app_name = "articles"
@@ -57,5 +57,9 @@ urlpatterns = [
     path('articles/<slug>/comments/<int:id>/like',
          LikeCommentApiView.as_view(), name='comment_like'),
     path('articles/<slug>/comments/<int:id>/dislike',
-         DislikeCommentApiView.as_view(), name='comment_dislike'), 
+         DislikeCommentApiView.as_view(), name='comment_dislike'),
+    path('articles/<slug>/highlight/',
+         HighlightText.as_view(), name='high_light'),
+    path('articles/<slug>/highlight/<int:id>',
+         RetrieveUpdateDeleteComments.as_view(), name='single_comment')
 ]
