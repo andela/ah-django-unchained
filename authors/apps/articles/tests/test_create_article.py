@@ -127,7 +127,7 @@ class CreateArticles(APITestCase):
                         HTTP_AUTHORIZATION='token {}'.format(token))
         response = self.client.get(self.article_listcreate, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['results'][0]['is_published'], True)
+        self.assertTrue(response.data['results'][0]['is_published'],True)
         self.assertIn('count', response.data)
         self.assertIn('next', response.data)
         self.assertIn('previous', response.data)
@@ -155,7 +155,7 @@ class CreateArticles(APITestCase):
                                     HTTP_AUTHORIZATION='token {}'.format(
                                         token))
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data['is_published'], False)
+        self.assertFalse(response.data['is_published'], False)
         self.assertEqual(self.create_article_data['title'],
                          response.data['title'])
         self.assertEqual(self.create_article_data['body'],
