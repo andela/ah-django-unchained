@@ -187,3 +187,12 @@ class SubscribeUnsubscribeTestCase(BaseTestCase):
             "You have successfully subscribed to notifications")
         self.assertEqual(response6.data["email"], True)
         self.assertEqual(response6.data["app"], True)
+
+    def test_unauthenticated_unsubscribe(self):
+        """
+        test an unauthenticated user cannot subscribe
+        to notifications
+        """
+        response1 = self.client.put(
+            'http://127.0.0.1:8000/api/notifications/subscribe/')
+        self.assertEqual(response1.status_code, status.HTTP_403_FORBIDDEN)
