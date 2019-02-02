@@ -6,8 +6,8 @@ from .models import Article
 
 class ArticleFilter(filters.FilterSet):
     author = filters.CharFilter(field_name='author__username',
-                                lookup_expr='exact')
-    title = filters.CharFilter(field_name='title', lookup_expr='exact')
+                                lookup_expr='icontains')
+    title = filters.CharFilter(field_name='title', lookup_expr='icontains')
     tags = filters.CharFilter(field_name='tagList', method='get_tags')
 
     def get_tags(self, queryset, name, value):
