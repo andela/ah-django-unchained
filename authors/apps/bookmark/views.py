@@ -50,7 +50,7 @@ class ListALlBookmarks(generics.ListAPIView):
         data = serializer.data
         if len(data) == 0:
             return Response(
-                {'error': 'You have no bookmark available'},
+                {'my_bookmarks': []},
                 status.HTTP_404_NOT_FOUND)
         for item in data:
             article_instance = Article.objects.get(pk=item['article'])

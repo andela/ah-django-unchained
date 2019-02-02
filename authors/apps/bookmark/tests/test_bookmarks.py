@@ -99,7 +99,7 @@ class TestBookmarks(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual(
             json.loads(response.content),
-            {'error': 'You have no bookmark available'})
+           {'my_bookmarks': []})
 
     def test_delete_bookmarks(self):
         """test deleting bookmarks"""
