@@ -30,6 +30,7 @@ urlpatterns = [
     path('api/', include('authors.apps.profiles.urls', namespace='profiles')),
 
     path('api/', include('authors.apps.articles.urls', namespace='articles')),
+    path('api/', include('authors.apps.bookmark.urls', namespace='bookmark')),
     # Set the API documentation at the root of the site
     path('', schema_view)
 ]

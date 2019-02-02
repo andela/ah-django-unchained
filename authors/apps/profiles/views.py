@@ -34,6 +34,6 @@ class ProfileView(generics.RetrieveUpdateAPIView):
                 'user').get(user__username=username)
         except ObjectDoesNotExist:
             data = {'error': 'Username {} not found'.format(username)}
-            return Response(data , status.HTTP_404_NOT_FOUND)
+            return Response(data, status.HTTP_404_NOT_FOUND)
         serializer = self.serializer_class(user_instance)
         return Response({'profile': serializer.data}, status.HTTP_200_OK)

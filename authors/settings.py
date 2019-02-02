@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'authors.apps.profiles',
     'authors.apps.friends',
     'authors.apps.articles',
+    'authors.apps.bookmark',
     'oauth2_provider',
     'social_django',
     'rest_framework_social_oauth2',
