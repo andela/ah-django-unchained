@@ -30,6 +30,7 @@ class CreateArticles(APITestCase):
             }}
         self.create_article_data = {
             "title": "my story",
+            "is_published": False,
             "body": "This is my story",
             "description": "Here is my story",
             "images": None,
@@ -38,6 +39,7 @@ class CreateArticles(APITestCase):
         self.create_article_data2 = {
             "title": "The beginning",
             "body": "This begins now",
+            "is_published": False,
             "description": "Here is my story",
             "images": None,
             "tagList": ["dragons", "training"]
@@ -112,6 +114,7 @@ class CreateArticles(APITestCase):
         self.create_article(self.create_article_data, token)
         self.create_article(self.create_article_data2, token)
         # publish articles
+        self.assertNotEqual(self.create_article_data['is_published'], True)
         self.client.put(reverse('articles:publish_article',
                                 kwargs={'slug': 'my-story'}),
                         self.publish_data,
@@ -124,6 +127,7 @@ class CreateArticles(APITestCase):
                         HTTP_AUTHORIZATION='token {}'.format(token))
         response = self.client.get(self.article_listcreate, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['results'][0]['is_published'], True)
         self.assertIn('count', response.data)
         self.assertIn('next', response.data)
         self.assertIn('previous', response.data)
@@ -151,6 +155,7 @@ class CreateArticles(APITestCase):
                                     HTTP_AUTHORIZATION='token {}'.format(
                                         token))
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['is_published'], False)
         self.assertEqual(self.create_article_data['title'],
                          response.data['title'])
         self.assertEqual(self.create_article_data['body'],
@@ -165,7 +170,8 @@ class CreateArticles(APITestCase):
         self.create_article(self.create_article_data, token)
         self.create_article(self.create_article_data2, token)
         response = self.client.get(reverse('articles:get_all_drafts'),
-                                   format='json')
+                                   format='json',
+                                   HTTP_AUTHORIZATION='token {}'.format(token))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn(self.create_article_data2['title'],
                       response.data['results'][0]['title'])

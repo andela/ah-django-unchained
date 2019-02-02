@@ -12,10 +12,13 @@ from .views import (ArticleAPIView, ArticleDetailsView,
                     HighlightText, RetrieveUpdateDeleteComments,
                     CommentHistory, ReadTime, PublishArticle, GetDraft)
 
-
-
 app_name = "articles"
 urlpatterns = [
+    path('articles/<slug>/publish/',
+         PublishArticle.as_view(),
+         name="publish_article"),
+    path('articles/draft/', GetDraft.as_view(),
+         name="get_all_drafts"),
     path('articles/', ArticleAPIView.as_view(), name="articles-listcreate"),
     path('articles/<slug:slug>/',
          ArticleDetailsView.as_view(),
@@ -39,7 +42,8 @@ urlpatterns = [
     path('articles/<slug>/comments/<int:id>/',
          CommentDetailsView.as_view(), name="get_comments"),
     path('articles/<slug>/comments/add/<int:id>/',
-         CommentsRetrieveUpdateDestroy.as_view(), name="create_thread_comments"),
+         CommentsRetrieveUpdateDestroy.as_view(),
+         name="create_thread_comments"),
     path('articles/<slug>/comments/delete/<int:id>/',
          CommentDelete.as_view(), name="delete_comments"),
     path('articles/<slug>/comments/',
@@ -67,9 +71,5 @@ urlpatterns = [
     path('articles/<slug>/comments/<int:id>/history/',
          CommentHistory.as_view(), name="comment_history"),
 
-    path('article/<slug>/publish/',
-         PublishArticle.as_view(),
-         name="publish_article"),
-    path('article/draft/', GetDraft.as_view(),
-         name="get_all_drafts"),
+
 ]

@@ -14,7 +14,8 @@ from rest_framework.generics import (ListCreateAPIView,
                                      RetrieveUpdateDestroyAPIView,
                                      RetrieveUpdateAPIView,
                                      UpdateAPIView, CreateAPIView,
-                                     DestroyAPIView, RetrieveAPIView, ListAPIView)
+                                     DestroyAPIView, RetrieveAPIView,
+                                     ListAPIView)
 from rest_framework.permissions import (IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.exceptions import NotFound
@@ -77,7 +78,7 @@ class ArticleDetailsView(RetrieveUpdateAPIView):
 class GetDraft(ListAPIView):
     """Get all Drafts"""
     pagination_class = CustomPagination
-    permission_classes = (IsAuthorOrReadOnly,)
+    permission_classes = (IsAuthenticated,)
     queryset = Article.objects.filter(is_published=False, is_deleted=False)
     serializer_class = GetArticleSerializer
 
@@ -503,7 +504,7 @@ class ShareViaTwitter(CreateAPIView):
 
 class LikeCommentApiView(ListCreateAPIView):
     """Like an article."""
-    permission_classes = (IsAuthenticatedOrReadOnly, )
+    permission_classes = (IsAuthenticatedOrReadOnly,)
     serializer_class = CommentSerializer
 
     def put(self, request, *args, **kwargs):
@@ -525,13 +526,13 @@ class LikeCommentApiView(ListCreateAPIView):
         # check if the comment has been disliked by the current user
         # if the current user has disliked it, remove their id from the row
         if comment in Comment.objects.filter(
-            user_id_dislikes=request.user):
+                user_id_dislikes=request.user):
             comment.user_id_dislikes.remove(request.user)
 
         # if the current user had previously liked this comment,
         # then the comment is unliked
         if comment in Comment.objects.filter(
-            user_id_likes=request.user):
+                user_id_likes=request.user):
             comment.user_id_likes.remove(request.user)
 
         # like the comment
@@ -546,7 +547,7 @@ class LikeCommentApiView(ListCreateAPIView):
 
 class DislikeCommentApiView(ListCreateAPIView):
     """Dislike an Article."""
-    permission_classes = (IsAuthenticatedOrReadOnly, )
+    permission_classes = (IsAuthenticatedOrReadOnly,)
     serializer_class = CommentSerializer
 
     def put(self, request, *args, **kwargs):
@@ -568,13 +569,13 @@ class DislikeCommentApiView(ListCreateAPIView):
         # check if the comment has been disliked by the current user
         # if the current user has disliked it, remove their id from the database
         if comment in Comment.objects.filter(
-            user_id_likes=request.user):
+                user_id_likes=request.user):
             comment.user_id_likes.remove(request.user)
 
         # if the current user had previously disliked this comment,
         # then the current user's id is removed from the database
         if comment in Comment.objects.filter(
-            user_id_dislikes=request.user):
+                user_id_dislikes=request.user):
             comment.user_id_dislikes.remove(request.user)
 
         # dislike the comment
@@ -588,7 +589,7 @@ class DislikeCommentApiView(ListCreateAPIView):
 
 
 class HighlightText(ListCreateAPIView):
-    permission_classes = (IsAuthenticatedOrReadOnly, )
+    permission_classes = (IsAuthenticatedOrReadOnly,)
     serializer_class = HighlightSerializer
 
     def post(self, request, slug):
@@ -612,21 +613,22 @@ class HighlightText(ListCreateAPIView):
             selection_range = HighlightText.select_index_position(
                 int(comment.get('start_highlight_position', 0)),
                 int(comment.get('end_highlight_position', 0)))
-            
+
             if selection_range[0] >= selection_range[1]:
                 return Response({
-                            'error': 'The start_index_position should'
-                            ' not be greater or equal end_index_position'})
+                    'error': 'The start_index_position should'
+                             ' not be greater or equal end_index_position'})
 
         except ValueError:
             # ensure that selection indices are integers
             return Response({
                 'error': 'Start of highlight and end of'
-                ' highlight indices should be both integers',
+                         ' highlight indices should be both integers',
             }, status.HTTP_422_UNPROCESSABLE_ENTITY)
 
         selected_text = str(
-            single_article_instance.body[selection_range[0]:selection_range[1]])
+            single_article_instance.body[
+            selection_range[0]:selection_range[1]])
         comment['selected_text'] = selected_text
 
         serializer = HighlightSerializer(data=comment, partial=True)
@@ -635,7 +637,7 @@ class HighlightText(ListCreateAPIView):
                             article=single_article_instance)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
     @staticmethod
     def select_index_position(start_index_position, end_index_position):
         """Stores the index values  in a variable."""
@@ -651,33 +653,37 @@ class HighlightText(ListCreateAPIView):
 
 
 class RetrieveUpdateDeleteComments(RetrieveUpdateDestroyAPIView):
-    permission_classes = (IsAuthenticatedOrReadOnly, )
+    permission_classes = (IsAuthenticatedOrReadOnly,)
     serializer_class = HighlightSerializer
     queryset = HighlightTextModel.objects.all()
     lookup_field = 'id'
-    
+
     def get(self, request, slug, id):
         """Get single comments."""
-        highlight_comment = RetrieveUpdateDeleteComments.get_all_comments(slug,id)
+        highlight_comment = RetrieveUpdateDeleteComments.get_all_comments(slug,
+                                                                          id)
         if not highlight_comment:
-                return Response({'error': "The comment does not exist"},
-                                status.HTTP_404_NOT_FOUND)
+            return Response({'error': "The comment does not exist"},
+                            status.HTTP_404_NOT_FOUND)
         return super().get(request, highlight_comment)
 
     def delete(self, request, slug, id):
         """Delete single comment"""
-        highlight_comment = RetrieveUpdateDeleteComments.get_all_comments(slug,id)
+        highlight_comment = RetrieveUpdateDeleteComments.get_all_comments(slug,
+                                                                          id)
         if not highlight_comment:
             return Response({'error': "The comment does not exist"},
                             status.HTTP_404_NOT_FOUND)
         super().delete(self, request, highlight_comment)
-        message = {"message": "Comment on highlighted text deleted successfully"}
+        message = {
+            "message": "Comment on highlighted text deleted successfully"}
         return Response(
             message, status.HTTP_200_OK)
 
     def update(self, request, slug, id):
         """Update specific comment."""
-        highlight_comment = RetrieveUpdateDeleteComments.get_all_comments(slug,id).first()
+        highlight_comment = RetrieveUpdateDeleteComments.get_all_comments(slug,
+                                                                          id).first()
         if not highlight_comment:
             return Response({'error': "The comment does not exist"},
                             status.HTTP_404_NOT_FOUND)

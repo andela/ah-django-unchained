@@ -142,9 +142,6 @@ class CommentSerializer(serializers.ModelSerializer):
             } for thread in instance.threads.all()
         ]
 
-        thread_comment = super(
-            CommentSerializer, self).to_representation(instance)
-
         thread_comment = super(CommentSerializer, self).to_representation(
             instance)
 
