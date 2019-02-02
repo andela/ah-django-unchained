@@ -24,7 +24,7 @@ from .serializers import (ArticleSerializer,
                           GetArticleSerializer, DeleteArticleSerializer,
                           RatingSerializer, CommentSerializer,
                           DeleteCommentSerializer, SharingSerializer,
-                          HighlightSerializer)
+                          HighlightSerializer, CommentHistorySerializer)
 from .models import (Article, ArticleRating, Comment, HighlightTextModel)
 from .pagination import CustomPagination
 from ..authentication.utils import send_link
@@ -677,3 +677,28 @@ class RetrieveUpdateDeleteComments(RetrieveUpdateDestroyAPIView):
         article = get_object_or_404(Article, slug=slug)
         highlight_comment = article.highlight.filter(id=id)
         return highlight_comment
+
+
+class CommentHistory(ListCreateAPIView):
+
+    serializer_class = CommentHistorySerializer
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, id, slug, **kwargs):
+
+        try:
+            # get an article that matches the slug specified
+            # and return a message if the article does not exist
+            Article.objects.get(slug=slug, is_deleted=False)
+        except ObjectDoesNotExist:
+            raise NotFound("This article does not exist")
+        edited_comment = Comment.history.filter(id=id, is_deleted=False)
+        if not edited_comment:
+            message = {'error': 'This comment does not exist'}
+            return Response(message, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = self.serializer_class(edited_comment, many=True)
+        data = {
+            'comment_history': serializer.data
+        }
+        return Response(data, status=status.HTTP_200_OK)

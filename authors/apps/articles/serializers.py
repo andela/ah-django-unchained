@@ -186,3 +186,12 @@ class HighlightSerializer(serializers.Serializer):
 
     def get_article(self, obj):
         return obj.article.slug
+        
+    
+class CommentHistorySerializer(serializers.Serializer):
+    """Serializer for tracking comment edit history"""
+
+    id = serializers.IntegerField()
+    body = serializers.CharField()
+    createdAt = serializers.CharField()
+    updatedAt = serializers.CharField()
