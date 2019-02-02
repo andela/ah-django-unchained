@@ -9,12 +9,9 @@ class TestBookmarks(APITestCase):
         self.client = APIClient()
         self.signup_url = reverse('authentication:auth-register')
         self.article_url = reverse('articles:articles-listcreate')
-        self.post_bookmark_url = reverse(
-            'bookmarks:create-bookmark',
-            kwargs={'slug': 'tdd'})
         self.get_bookmark_url = reverse('bookmarks:bookmarks')
-        self.delete_bookmark_url = reverse(
-            'bookmarks:delete-bookmark',
+        self.edit_bookmark_url = reverse(
+            'bookmarks:edit-bookmark',
             kwargs={'slug': 'tdd'})
         self.signup_data = {
             "user": {
@@ -49,7 +46,7 @@ class TestBookmarks(APITestCase):
         """Test getting an invalid article"""
         token = self.signup_user()
         response = self.client.post(
-            self.post_bookmark_url,
+            self.edit_bookmark_url,
             format='json',
             HTTP_AUTHORIZATION='token {}'.format(token))
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
@@ -62,7 +59,7 @@ class TestBookmarks(APITestCase):
         token = self.signup_user()
         self.create_article(self.create_article_data, token)
         response = self.client.post(
-            self.post_bookmark_url,
+            self.edit_bookmark_url,
             format='json',
             HTTP_AUTHORIZATION='token {}'.format(token))
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -75,7 +72,7 @@ class TestBookmarks(APITestCase):
         token = self.signup_user()
         self.create_article(self.create_article_data, token)
         self.client.post(
-            self.post_bookmark_url,
+            self.edit_bookmark_url,
             format='json',
             HTTP_AUTHORIZATION='token {}'.format(token))
 
@@ -99,20 +96,19 @@ class TestBookmarks(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual(
             json.loads(response.content),
-           {'my_bookmarks': []})
+            {'my_bookmarks': []})
 
     def test_delete_bookmarks(self):
         """test deleting bookmarks"""
         token = self.signup_user()
         self.create_article(self.create_article_data, token)
         self.client.post(
-            self.post_bookmark_url,
+            self.edit_bookmark_url,
             format='json',
             HTTP_AUTHORIZATION='token {}'.format(token))
 
         response = self.client.delete(
-            self.delete_bookmark_url,
-            format='json',
+            self.edit_bookmark_url, format='json',
             HTTP_AUTHORIZATION='token {}'.format(token)
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -125,8 +121,7 @@ class TestBookmarks(APITestCase):
         token = self.signup_user()
         self.create_article(self.create_article_data, token)
         response = self.client.delete(
-            self.delete_bookmark_url,
-            format='json',
+            self.edit_bookmark_url, format='json',
             HTTP_AUTHORIZATION='token {}'.format(token)
         )
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
@@ -139,7 +134,7 @@ class TestBookmarks(APITestCase):
         token = self.signup_user()
         self.create_article(self.create_article_data, token)
         response = self.client.post(
-            self.post_bookmark_url,
+            self.edit_bookmark_url,
             format='json')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(

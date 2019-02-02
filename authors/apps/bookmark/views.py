@@ -10,7 +10,7 @@ from .serializers import BookmarksSerializer
 from .models import Bookmarks
 
 
-class CreateBookmark(generics.CreateAPIView):
+class CreateBookmark(generics.CreateAPIView, generics.DestroyAPIView):
     serializer_class = BookmarksSerializer
     queryset = Bookmarks.objects.all()
     permission_classes = (IsAuthenticatedOrReadOnly,)
@@ -38,6 +38,19 @@ class CreateBookmark(generics.CreateAPIView):
             {'message': 'Article  has been added to your bookmark'},
             status.HTTP_201_CREATED)
 
+    def destroy(self, request, slug, *args, **kwargs):
+        article_instance = Article.objects.get(slug=slug)
+        article_id = article_instance.id
+        try:
+            bookmark = Bookmarks.objects.get(article=article_id)
+        except ObjectDoesNotExist:
+            return Response(
+                {'error': 'Article does not exist in your bookmark'},
+                status.HTTP_404_NOT_FOUND)
+        self.perform_destroy(bookmark)
+        return Response(
+            {'message': 'Article has been remove from your bookmark'})
+
 
 class ListALlBookmarks(generics.ListAPIView):
     serializer_class = BookmarksSerializer
@@ -59,23 +72,3 @@ class ListALlBookmarks(generics.ListAPIView):
             item['description'] = article_instance.description
             item['user'] = request.user.username
         return Response({'my_bookmarks': data}, status.HTTP_200_OK)
-
-
-class DeleteBookmark(generics.DestroyAPIView):
-    queryset = Bookmarks.objects.all()
-    serializer_class = BookmarksSerializer
-    permission_classes = (IsAuthenticated,)
-
-    def destroy(self, request, slug, *args, **kwargs):
-        article_instance = Article.objects.get(slug=slug)
-        article_id = article_instance.id
-        try:
-            bookmark = Bookmarks.objects.get(article=article_id)
-        except ObjectDoesNotExist:
-            return Response(
-                {'error': 'Article does not exist in your bookmark'},
-                status.HTTP_404_NOT_FOUND)
-        self.perform_destroy(bookmark)
-        return Response(
-            {'message': 'Article has been remove from your bookmark'.format(
-                bookmark.article.title)})
