@@ -204,11 +204,11 @@ class FilterArticles(APITestCase):
 
         token = self.register()
         # Create article
-        self.client.post(self.article_listcreate_url, self.article_data,
+        self.client.post(self.article_listcreate_url, self.article_data4,
                          format='json',
                          HTTP_AUTHORIZATION='token {}'.format(token)
                          )
-        self.client.post(self.article_listcreate_url, self.article_data4,
+        self.client.post(self.article_listcreate_url, self.article_data,
                          format='json',
                          HTTP_AUTHORIZATION='token {}'.format(token)
                          )
@@ -217,11 +217,7 @@ class FilterArticles(APITestCase):
                          HTTP_AUTHORIZATION='token {}'.format(token)
                          )
         # publish articles
-        self.client.put(reverse('articles:publish_article',
-                                kwargs={'slug': 'coding-is-cool'}),
-                        self.publish_data,
-                        format='json',
-                        HTTP_AUTHORIZATION='token {}'.format(token))
+
         self.client.put(reverse('articles:publish_article',
                                 kwargs={'slug': 'the-weather'}),
                         self.publish_data,
@@ -232,6 +228,11 @@ class FilterArticles(APITestCase):
                         self.publish_data,
                         format='json',
                         HTTP_AUTHORIZATION='token {}'.format(token))
+        self.client.put(reverse('articles:publish_article',
+                                kwargs={'slug': 'coding-is-cool'}),
+                        self.publish_data,
+                        format='json',
+                        HTTP_AUTHORIZATION='token {}'.format(token))
 
         # get all articles
         all_articles = self.client.get(self.article_listcreate, format='json')
@@ -239,8 +240,8 @@ class FilterArticles(APITestCase):
                                    format='json',
                                    HTTP_AUTHORIZATION='token {}'.format(token))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertNotEqual(self.article_data['title'],
-                            all_articles.data['results'][0])
+        self.assertNotEqual(self.article_data2['title'],
+                            response.data['results'][0]['title'])
 
         self.assertEqual(self.article_data['title'],
                          response.data['results'][0]['title'])
