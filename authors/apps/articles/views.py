@@ -7,8 +7,6 @@ from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.validators import validate_email
 from django.utils.datastructures import MultiValueDictKeyError
 from django.shortcuts import get_object_or_404
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -21,7 +19,7 @@ from rest_framework.generics import (ListCreateAPIView,
 from rest_framework.permissions import (IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.exceptions import NotFound
-from authors.apps.core.permissions import IsAuthorOrReadOnly, IsAuthor
+from authors.apps.core.permissions import IsAuthorOrReadOnly
 from .serializers import (ArticleSerializer,
                           GetArticleSerializer, DeleteArticleSerializer,
                           RatingSerializer, CommentSerializer,
@@ -84,8 +82,6 @@ class GetDraft(ListAPIView):
 
     def get_queryset(self):
         user = self.request.user.id
-        article = Article.objects.filter()
-
         return Article.objects.filter(author_id=user)
 
 
