@@ -14,18 +14,19 @@ from rest_framework.generics import (ListCreateAPIView,
                                      RetrieveUpdateDestroyAPIView,
                                      RetrieveUpdateAPIView,
                                      UpdateAPIView, CreateAPIView,
-                                     DestroyAPIView, RetrieveAPIView)
+                                     DestroyAPIView, RetrieveAPIView,
+                                     ListAPIView)
 from rest_framework.permissions import (IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.exceptions import NotFound
 from authors.apps.core.permissions import IsAuthorOrReadOnly
-from authors.apps.profiles.models import UserProfile
 from .serializers import (ArticleSerializer,
                           GetArticleSerializer, DeleteArticleSerializer,
                           RatingSerializer, CommentSerializer,
                           DeleteCommentSerializer, SharingSerializer,
-                          HighlightSerializer, CommentHistorySerializer)
-from .models import (Article, ArticleRating, Comment, HighlightTextModel)
+                          CommentHistorySerializer,
+                          HighlightSerializer, PublishArticleSerializer)
+from .models import Article, ArticleRating, Comment, HighlightTextModel
 from .pagination import CustomPagination
 from ..authentication.utils import send_link
 
@@ -37,8 +38,8 @@ class ArticleAPIView(ListCreateAPIView):
 
     pagination_class = CustomPagination
     permission_classes = (IsAuthenticatedOrReadOnly,)
-    # Only fetch those articles whose 'is_deleted' field is False
-    queryset = Article.objects.filter(is_deleted=False)
+    # Only fetch those articles whose 'is_deleted'  field is False and is_published True
+    queryset = Article.objects.filter(is_deleted=False, is_published=True)
     serializer_class = ArticleSerializer
 
     def post(self, request):
@@ -74,7 +75,26 @@ class ArticleDetailsView(RetrieveUpdateAPIView):
         return set_favorite_status(serializer, self.request.user.id)
 
 
+class GetDraft(ListAPIView):
+    """Get article drafts for a particular author"""
+    pagination_class = CustomPagination
+    serializer_class = GetArticleSerializer
+
+    def get_queryset(self):
+        user = self.request.user.id
+        return Article.objects.filter(is_published=False, is_deleted=False, author_id=user)
+
+
+class PublishArticle(UpdateAPIView):
+    """This class handles PUT requests."""
+    permission_classes = (IsAuthorOrReadOnly,)
+    queryset = Article.objects.filter(is_deleted=False, is_published=False)
+    serializer_class = PublishArticleSerializer
+    lookup_field = 'slug'
+
+
 class DeleteArticle(UpdateAPIView):
+    """"This class deletes Articles"""
     permission_classes = (IsAuthorOrReadOnly,)
     queryset = Article.objects.filter(is_deleted=False)
     serializer_class = DeleteArticleSerializer
@@ -328,6 +348,7 @@ class CreateComment(ListCreateAPIView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, request, slug, *args, **kwargs):
+        # User shouldn't be able to comment on an article has been deleted.
         article = Article.objects.filter(slug=slug, is_deleted=False).first()
         serializer_context = {
             'request': request,
@@ -393,7 +414,8 @@ class ReadTime(RetrieveAPIView):
         try:
             article_instance = Article.objects.get(slug=slug)
         except ObjectDoesNotExist:
-            return Response({'error': 'article was not found'}, status.HTTP_404_NOT_FOUND)
+            return Response({'error': 'article was not found'},
+                            status.HTTP_404_NOT_FOUND)
         serializer = self.serializer_class(article_instance)
         words = serializer.data['body'].split()
         """ The average reading time for a user is between 250 and 300 words per minute.
@@ -484,7 +506,7 @@ class ShareViaTwitter(CreateAPIView):
 
 class LikeCommentApiView(ListCreateAPIView):
     """Like an article."""
-    permission_classes = (IsAuthenticatedOrReadOnly, )
+    permission_classes = (IsAuthenticatedOrReadOnly,)
     serializer_class = CommentSerializer
 
     def put(self, request, *args, **kwargs):
@@ -506,13 +528,13 @@ class LikeCommentApiView(ListCreateAPIView):
         # check if the comment has been disliked by the current user
         # if the current user has disliked it, remove their id from the row
         if comment in Comment.objects.filter(
-            user_id_dislikes=request.user):
+                user_id_dislikes=request.user):
             comment.user_id_dislikes.remove(request.user)
 
         # if the current user had previously liked this comment,
         # then the comment is unliked
         if comment in Comment.objects.filter(
-            user_id_likes=request.user):
+                user_id_likes=request.user):
             comment.user_id_likes.remove(request.user)
 
         # like the comment
@@ -527,7 +549,7 @@ class LikeCommentApiView(ListCreateAPIView):
 
 class DislikeCommentApiView(ListCreateAPIView):
     """Dislike an Article."""
-    permission_classes = (IsAuthenticatedOrReadOnly, )
+    permission_classes = (IsAuthenticatedOrReadOnly,)
     serializer_class = CommentSerializer
 
     def put(self, request, *args, **kwargs):
@@ -549,13 +571,13 @@ class DislikeCommentApiView(ListCreateAPIView):
         # check if the comment has been disliked by the current user
         # if the current user has disliked it, remove their id from the database
         if comment in Comment.objects.filter(
-            user_id_likes=request.user):
+                user_id_likes=request.user):
             comment.user_id_likes.remove(request.user)
 
         # if the current user had previously disliked this comment,
         # then the current user's id is removed from the database
         if comment in Comment.objects.filter(
-            user_id_dislikes=request.user):
+                user_id_dislikes=request.user):
             comment.user_id_dislikes.remove(request.user)
 
         # dislike the comment
@@ -569,7 +591,7 @@ class DislikeCommentApiView(ListCreateAPIView):
 
 
 class HighlightText(ListCreateAPIView):
-    permission_classes = (IsAuthenticatedOrReadOnly, )
+    permission_classes = (IsAuthenticatedOrReadOnly,)
     serializer_class = HighlightSerializer
 
     def post(self, request, slug):
@@ -593,21 +615,22 @@ class HighlightText(ListCreateAPIView):
             selection_range = HighlightText.select_index_position(
                 int(comment.get('start_highlight_position', 0)),
                 int(comment.get('end_highlight_position', 0)))
-            
+
             if selection_range[0] >= selection_range[1]:
                 return Response({
-                            'error': 'The start_index_position should'
-                            ' not be greater or equal end_index_position'})
+                    'error': 'The start_index_position should'
+                             ' not be greater or equal end_index_position'})
 
         except ValueError:
             # ensure that selection indices are integers
             return Response({
                 'error': 'Start of highlight and end of'
-                ' highlight indices should be both integers',
+                         ' highlight indices should be both integers',
             }, status.HTTP_422_UNPROCESSABLE_ENTITY)
 
         selected_text = str(
-            single_article_instance.body[selection_range[0]:selection_range[1]])
+            single_article_instance.body[
+            selection_range[0]:selection_range[1]])
         comment['selected_text'] = selected_text
 
         serializer = HighlightSerializer(data=comment, partial=True)
@@ -616,7 +639,7 @@ class HighlightText(ListCreateAPIView):
                             article=single_article_instance)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
     @staticmethod
     def select_index_position(start_index_position, end_index_position):
         """Stores the index values  in a variable."""
@@ -632,33 +655,37 @@ class HighlightText(ListCreateAPIView):
 
 
 class RetrieveUpdateDeleteComments(RetrieveUpdateDestroyAPIView):
-    permission_classes = (IsAuthenticatedOrReadOnly, )
+    permission_classes = (IsAuthenticatedOrReadOnly,)
     serializer_class = HighlightSerializer
     queryset = HighlightTextModel.objects.all()
     lookup_field = 'id'
-    
+
     def get(self, request, slug, id):
         """Get single comments."""
-        highlight_comment = RetrieveUpdateDeleteComments.get_all_comments(slug,id)
+        highlight_comment = RetrieveUpdateDeleteComments.get_all_comments(slug,
+                                                                          id)
         if not highlight_comment:
-                return Response({'error': "The comment does not exist"},
-                                status.HTTP_404_NOT_FOUND)
+            return Response({'error': "The comment does not exist"},
+                            status.HTTP_404_NOT_FOUND)
         return super().get(request, highlight_comment)
 
     def delete(self, request, slug, id):
         """Delete single comment"""
-        highlight_comment = RetrieveUpdateDeleteComments.get_all_comments(slug,id)
+        highlight_comment = RetrieveUpdateDeleteComments.get_all_comments(slug,
+                                                                          id)
         if not highlight_comment:
             return Response({'error': "The comment does not exist"},
                             status.HTTP_404_NOT_FOUND)
         super().delete(self, request, highlight_comment)
-        message = {"message": "Comment on highlighted text deleted successfully"}
+        message = {
+            "message": "Comment on highlighted text deleted successfully"}
         return Response(
             message, status.HTTP_200_OK)
 
     def update(self, request, slug, id):
         """Update specific comment."""
-        highlight_comment = RetrieveUpdateDeleteComments.get_all_comments(slug,id).first()
+        highlight_comment = RetrieveUpdateDeleteComments.get_all_comments(slug,
+                                                                          id).first()
         if not highlight_comment:
             return Response({'error': "The comment does not exist"},
                             status.HTTP_404_NOT_FOUND)
@@ -680,7 +707,6 @@ class RetrieveUpdateDeleteComments(RetrieveUpdateDestroyAPIView):
 
 
 class CommentHistory(ListCreateAPIView):
-
     serializer_class = CommentHistorySerializer
     permission_classes = (IsAuthenticated,)
 
