@@ -77,4 +77,5 @@ urlpatterns = [
     path('articles/<slug>/comments/<int:id>/history/',
          CommentHistory.as_view(), name="comment_history"),
 
+
 ]
