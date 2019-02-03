@@ -50,7 +50,7 @@ class ArticleSerializer(TaggitSerializer, serializers.ModelSerializer):
 
     # Inserts the ID of the author of an article into the foreign key row
     def get_author(self, obj):
-        return obj.author.id
+        return obj.author.username
 
     # insert total likes
     def get_likes_count(self, obj):
@@ -88,7 +88,7 @@ class GetArticleSerializer(serializers.ModelSerializer):
     """Get logged in user ID"""
 
     def get_author(self, obj):
-        return obj.author.id
+        return obj.author.username
 
 
 class DeleteArticleSerializer(serializers.ModelSerializer):

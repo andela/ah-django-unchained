@@ -7,6 +7,8 @@ from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.validators import validate_email
 from django.utils.datastructures import MultiValueDictKeyError
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -19,13 +21,13 @@ from rest_framework.generics import (ListCreateAPIView,
 from rest_framework.permissions import (IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.exceptions import NotFound
-from authors.apps.core.permissions import IsAuthorOrReadOnly
+from authors.apps.core.permissions import IsAuthorOrReadOnly, IsAuthor
 from .serializers import (ArticleSerializer,
                           GetArticleSerializer, DeleteArticleSerializer,
                           RatingSerializer, CommentSerializer,
                           DeleteCommentSerializer, SharingSerializer,
                           CommentHistorySerializer,
-                          HighlightSerializer,PublishArticleSerializer)
+                          HighlightSerializer, PublishArticleSerializer)
 from .models import Article, ArticleRating, Comment, HighlightTextModel
 from .pagination import CustomPagination
 from ..authentication.utils import send_link
@@ -76,11 +78,15 @@ class ArticleDetailsView(RetrieveUpdateAPIView):
 
 
 class GetDraft(ListAPIView):
-    """Get all Drafts"""
     pagination_class = CustomPagination
-    permission_classes = (IsAuthenticated,)
-    queryset = Article.objects.filter(is_published=False, is_deleted=False)
     serializer_class = GetArticleSerializer
+    queryset = Article.objects.filter(is_published=False, is_deleted=False)
+
+    def get_queryset(self):
+        user = self.request.user.id
+        article = Article.objects.filter()
+
+        return Article.objects.filter(author_id=user)
 
 
 class PublishArticle(UpdateAPIView):
@@ -705,7 +711,6 @@ class RetrieveUpdateDeleteComments(RetrieveUpdateDestroyAPIView):
 
 
 class CommentHistory(ListCreateAPIView):
-
     serializer_class = CommentHistorySerializer
     permission_classes = (IsAuthenticated,)
 
