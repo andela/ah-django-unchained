@@ -76,13 +76,13 @@ class ArticleDetailsView(RetrieveUpdateAPIView):
 
 
 class GetDraft(ListAPIView):
+    """Get article drafts for a particular author"""
     pagination_class = CustomPagination
     serializer_class = GetArticleSerializer
-    queryset = Article.objects.filter(is_published=False, is_deleted=False)
 
     def get_queryset(self):
         user = self.request.user.id
-        return Article.objects.filter(author_id=user)
+        return Article.objects.filter(is_published=False, is_deleted=False, author_id=user)
 
 
 class PublishArticle(UpdateAPIView):
