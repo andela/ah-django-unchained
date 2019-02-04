@@ -37,6 +37,10 @@ class BaseTestCase(TestCase):
             "tagList": ["dragons", "training"],
         }
 
+        self.publish_data = {
+            "is_published": True
+        }
+
         self.follower = User.objects.create_user(
             username="andrew",
             email="andrew@gmail.com",
@@ -113,6 +117,13 @@ class NotificationsTestCase(BaseTestCase):
             content_type="application/json",
             HTTP_AUTHORIZATION='Token ' + self.token)
         self.assertEqual(response5.status_code, status.HTTP_201_CREATED)
+
+        response5_p = self.client.put(
+            reverse('articles:publish_article', kwargs={'slug': 'your-first-blog'}),
+            self.publish_data, format='json',
+            HTTP_AUTHORIZATION='Token ' + self.token
+            )
+        self.assertEqual(response5_p.status_code, status.HTTP_200_OK)
 
         # check notification is populated
         response6 = self.client.get(

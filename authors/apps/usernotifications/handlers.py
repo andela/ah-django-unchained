@@ -2,6 +2,7 @@ from django.conf import settings
 from django.template.loader import render_to_string
 from django.db.models.signals import post_save
 from django.core.mail import send_mail
+from django.urls import reverse
 from notifications.signals import notify
 from notifications.models import Notification
 from authors.apps.friends.models import Friend
@@ -46,17 +47,19 @@ def article_handler(sender, instance, created, **kwargs):
     if not subsribed_users:
         return
     for user in subsribed_users:
-        url = "api/articles/"
-        notify.send(
-            article_author,
-            recipient=user,
-            description="{} posted an article on {}".format(
-                article_author.username,
-                instance.created.strftime('%d-%B-%Y %H:%M')),
-            verb=verbs.ARTICLE_CREATION,
-            action_object=instance,
-            resource_url=url
-            )
+        url = reverse("articles:publish_article", kwargs={'slug': instance.slug})
+        if instance.is_published:
+            notify.send(
+                article_author,
+                recipient=user,
+                description="{} posted an article on {}".format(
+                    article_author.username,
+                    instance.modified.strftime('%d-%B-%Y %H:%M')),
+                verb=verbs.ARTICLE_CREATION,
+                action_object=instance,
+                resource_url=url
+                )
+        return False
 
 
 def email_notification_handler(sender, instance, created, **kwargs):
