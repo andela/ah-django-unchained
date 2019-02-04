@@ -2,4 +2,7 @@ from django.apps import AppConfig
 
 
 class FriendsConfig(AppConfig):
-    name = 'friends'
+    name = 'authors.apps.friends'
+
+    def ready(self):
+        from authors.apps.usernotifications import handlers
