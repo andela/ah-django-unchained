@@ -355,8 +355,7 @@ class CreateComment(ListCreateAPIView):
             'author': request.user,
             'article': get_object_or_404(Article, slug=self.kwargs["slug"])
         }
-        serializer = CommentSerializer(data=request.data,
-                                       context=serializer_context)
+        serializer = CommentSerializer(data=request.data, context=serializer_context)
         if serializer.is_valid():
             serializer.save(author=request.user, article_id=article.id)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
