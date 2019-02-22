@@ -158,7 +158,7 @@ class ResetPasswordAPIView(generics.CreateAPIView):
         user = models.User.objects.filter(email=email)
         if user:
             token = jwt.encode({"email": email, "iat": datetime.now(),
-                                "exp": datetime.utcnow() + timedelta(minutes=5)},
+                                "exp": datetime.utcnow() + timedelta(minutes=60)},
                                settings.SECRET_KEY, algorithm='HS256').decode()
             to_email = [email]
             DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
