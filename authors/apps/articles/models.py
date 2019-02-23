@@ -12,7 +12,7 @@ class Article(models.Model):
     title = models.CharField(max_length=200, blank=True)
     body = models.TextField(blank=True)
     description = models.CharField(max_length=50, blank=True)
-    images = models.URLField(blank=True, default='https://cdn0.iconfinder.com/data/icons/mtt-web-icons/139/article-512.png')
+    images = CloudinaryField(blank=True, default='No image', null=True)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
     slug = models.SlugField(max_length=50, blank=False, unique=True)

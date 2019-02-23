@@ -12,7 +12,7 @@ class ArticleSerializer(TaggitSerializer, serializers.ModelSerializer):
     # Field in the database corresponding to the User model
     author = serializers.SerializerMethodField()
     # Uploads an image to the Cloudinary servers
-    images = serializers.URLField(required=False)
+    images = serializers.ImageField(default=None)
     tagList = TagListSerializerField()
     user_id_likes = serializers.PrimaryKeyRelatedField(
         many=True, read_only=True)
