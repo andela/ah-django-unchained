@@ -6,7 +6,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
     """
     Class to serialize user profile data
     """
-    profile_image = serializers.ImageField(default=None)
+    profile_image = serializers.URLField(required=False)
     gender = serializers.RegexField(
         regex='^(N|F|M)$',
         error_messages={

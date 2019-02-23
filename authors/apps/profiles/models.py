@@ -29,7 +29,7 @@ class UserProfile(models.Model):
         max_length=10, choices=gender_choices, default='N')
 
     # cloudinary field
-    profile_image = CloudinaryField('image', blank=True)
+    profile_image = models.URLField(blank=True,default='https://d1nhio0ox7pgb.cloudfront.net/_img/o_collection_png/green_dark_grey/512x512/plain/user.png')
 
     # A char field for the First name
     first_name = models.CharField(max_length=100, blank=True)
