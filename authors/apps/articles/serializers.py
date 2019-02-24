@@ -41,7 +41,8 @@ class ArticleSerializer(TaggitSerializer, serializers.ModelSerializer):
                   'user_id_dislikes',
                   'likes_count',
                   'dislikes_count',
-                  'favorite']
+                  'favorite',
+                  'average_rating']
         read_only_fields = ['created',
                             'modified',
                             'author',
@@ -81,7 +82,8 @@ class GetArticleSerializer(serializers.ModelSerializer):
                   'is_published',
                   'slug',
                   'tagList',
-                  'favorite']
+                  'favorite',
+                  'average_rating']
         read_only_fields = ['modified',
                             'author',
                             'slug',

@@ -28,6 +28,8 @@ class Article(models.Model):
     user_id_dislikes = models.ManyToManyField(
         User, related_name='dislikes', blank=True)
 
+    average_rating = models.FloatField(blank=True, default=0)
+
     class Meta:
         ordering = ['-created']
 
