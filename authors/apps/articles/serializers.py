@@ -12,7 +12,7 @@ class ArticleSerializer(TaggitSerializer, serializers.ModelSerializer):
     # Field in the database corresponding to the User model
     author = serializers.SerializerMethodField()
     # Uploads an image to the Cloudinary servers
-    images = serializers.ImageField(default=None)
+    images = serializers.URLField(required=False, allow_blank=True)
     tagList = TagListSerializerField()
     user_id_likes = serializers.PrimaryKeyRelatedField(
         many=True, read_only=True)
@@ -46,7 +46,8 @@ class ArticleSerializer(TaggitSerializer, serializers.ModelSerializer):
                             'modified',
                             'author',
                             'slug',
-                            'images']
+                            'images'
+                            ]
 
     # Inserts the ID of the author of an article into the foreign key row
     def get_author(self, obj):
@@ -66,7 +67,7 @@ class GetArticleSerializer(serializers.ModelSerializer):
     # Field in the database corresponding to the User model
     author = serializers.SerializerMethodField()
     # Uploads an image to the Cloudinary servers
-    images = serializers.ImageField(default=None)
+    images = serializers.URLField(required=False)
     tagList = TagListSerializerField()
 
     class Meta:
@@ -83,7 +84,8 @@ class GetArticleSerializer(serializers.ModelSerializer):
                   'favorite']
         read_only_fields = ['modified',
                             'author',
-                            'slug']
+                            'slug',
+                            'images']
 
     """Get logged in user ID"""
 
