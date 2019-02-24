@@ -175,15 +175,15 @@ class DislikeArticleApiView(ListCreateAPIView):
         return Response(serializer.data, status.HTTP_200_OK)
 
 
-class AverageRatingsAPIView(APIView):
+class AverageRatingsAPIView(UpdateAPIView):
     """
     Class for viewing article ratings
     """
 
     serializer_class = RatingSerializer
 
-    def get(self, request, slug):
-        """method for viewing average ratings"""
+    def put(self, request, slug):
+        """method for viewing and updating average ratings"""
         rate = 0
 
         try:
@@ -196,10 +196,17 @@ class AverageRatingsAPIView(APIView):
         for rate_article in rate_articles:
             rate += rate_article.rate
         rate_value = 0
-        if rate:
-            rate_value = rate / rate_articles.count()
+        if not rate:
+            return Response(
+            data={"ratings": 0}, status=status.HTTP_200_OK)
+            
+        rate_value = rate / rate_articles.count()
+        average_rating = round(rate_value, 1)
+        serializer=ArticleSerializer(article)
+        article.average_rating=average_rating
+        article.save()
         return Response(
-            data={"ratings": round(rate_value, 1)}, status=status.HTTP_200_OK)
+            data={"ratings": average_rating}, status=status.HTTP_200_OK)
 
 
 class PostRatingsAPIView(CreateAPIView):

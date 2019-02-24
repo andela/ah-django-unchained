@@ -115,7 +115,7 @@ class TestArticleRatings(APITestCase):
         self.assertEqual(res1.status_code, status.HTTP_201_CREATED)
 
         # assert that the rating is 4
-        res2 = self.client.get(
+        res2 = self.client.put(
             "/api/articles/rate/{}/".format(slug))
         self.assertEqual(res2.status_code, status.HTTP_200_OK)
         self.assertEqual(res2.data['ratings'], 4)
@@ -127,7 +127,7 @@ class TestArticleRatings(APITestCase):
         self.assertEqual(res3.status_code, status.HTTP_201_CREATED)
 
         # assert that the new rating is 3
-        res4 = self.client.get(
+        res4 = self.client.put(
             "/api/articles/rate/{}/".format(slug))
         self.assertEqual(res4.status_code, status.HTTP_200_OK)
         self.assertEqual(res4.data['ratings'], 3)
@@ -135,7 +135,7 @@ class TestArticleRatings(APITestCase):
     def test_view_article_rating(self):
         # assert that ratings of an article that's not rated is 0
         slug = self.slug
-        res1 = self.client.get(
+        res1 = self.client.put(
             "/api/articles/rate/{}/".format(slug))
         self.assertEqual(res1.status_code, status.HTTP_200_OK)
         self.assertEqual(res1.data['ratings'], 0)
@@ -148,7 +148,7 @@ class TestArticleRatings(APITestCase):
         self.assertEqual(res2.status_code, status.HTTP_201_CREATED)
 
         # assert that the new rating is 4
-        res3 = self.client.get(
+        res3 = self.client.put(
             "/api/articles/rate/{}/".format(slug))
         self.assertEqual(res3.status_code, status.HTTP_200_OK)
         self.assertEqual(res3.data['ratings'], 4)
