@@ -175,38 +175,23 @@ class DislikeArticleApiView(ListCreateAPIView):
         return Response(serializer.data, status.HTTP_200_OK)
 
 
-class AverageRatingsAPIView(UpdateAPIView):
+class AverageRatingsAPIView(ListAPIView):
     """
     Class for viewing article ratings
     """
 
     serializer_class = RatingSerializer
 
-    def put(self, request, slug):
+    def get(self, request, slug):
         """method for viewing and updating average ratings"""
-        rate = 0
 
         try:
             article = Article.objects.get(slug=slug)
         except ObjectDoesNotExist:
             raise NotFound('article not found')
 
-        rate_articles = ArticleRating.objects.filter(article=article)
-
-        for rate_article in rate_articles:
-            rate += rate_article.rate
-        rate_value = 0
-        if not rate:
-            return Response(
-            data={"ratings": 0}, status=status.HTTP_200_OK)
-            
-        rate_value = rate / rate_articles.count()
-        average_rating = round(rate_value, 1)
-        serializer=ArticleSerializer(article)
-        article.average_rating=average_rating
-        article.save()
         return Response(
-            data={"ratings": average_rating}, status=status.HTTP_200_OK)
+            data={"ratings": article.average_rating}, status=status.HTTP_200_OK)
 
 
 class PostRatingsAPIView(CreateAPIView):
@@ -221,6 +206,7 @@ class PostRatingsAPIView(CreateAPIView):
         data = request.data
         serializer = self.serializer_class(data=data)
         serializer.is_valid(raise_exception=True)
+        rate = 0
 
         if not int(data['rate']) > 0 or not int(data['rate']) <= 5:
             return Response(
@@ -240,13 +226,6 @@ class PostRatingsAPIView(CreateAPIView):
                 status=status.HTTP_400_BAD_REQUEST)
 
         user = request.user
-        response = Response(
-            {
-                "message": "Article successfully rated",
-                "rating": serializer.data['rate']
-            },
-            status=status.HTTP_201_CREATED
-        )
 
         # update the rating if there's one
         try:
@@ -255,14 +234,55 @@ class PostRatingsAPIView(CreateAPIView):
             )
             article_ratings.rate = data['rate']
             article_ratings.save()
-            return response
+            # average all ratings and update in the db
+            rate_articles = ArticleRating.objects.filter(article=article)
+            for rate_article in rate_articles:
+                rate += rate_article.rate
+            rate_value = 0
+            if not rate:
+                return Response(data={"ratings": 0}, status=status.HTTP_200_OK)
+            rate_value = rate / rate_articles.count()
+            average_rating = round(rate_value, 1)
+            serializer=ArticleSerializer(article)
+            article.average_rating=average_rating
+            article.save()
+
+            return Response(
+                {
+                    "message": "Article successfully rated",
+                    "rating": article_ratings.rate,
+                    "average_rating": article.average_rating
+                },
+                status=status.HTTP_201_CREATED
+            )
+            
         # create new rating if none exists
         except ArticleRating.DoesNotExist:
             article_ratings = ArticleRating(
                 user=user, article=article, rate=data['rate']
             )
             article_ratings.save()
-            return response
+            # average all ratings and update in the db
+            rate_articles = ArticleRating.objects.filter(article=article)
+            for rate_article in rate_articles:
+                rate += rate_article.rate
+            rate_value = 0
+            if not rate:
+                return Response(data={"ratings": 0}, status=status.HTTP_200_OK)
+            rate_value = rate / rate_articles.count()
+            average_rating = round(rate_value, 1)
+            serializer=ArticleSerializer(article)
+            article.average_rating=average_rating
+            article.save()
+            
+            return Response(
+                {
+                    "message": "Article successfully rated",
+                    "rating": data['rate'],
+                    "average_rating": article.average_rating
+                },
+                status=status.HTTP_201_CREATED
+            )
 
 
 class FavoriteArticle(CreateAPIView, DestroyAPIView):
