@@ -347,6 +347,16 @@ class CreateComment(ListCreateAPIView):
     queryset = Comment.objects.filter(is_deleted=False)
     permission_classes = (IsAuthenticated,)
 
+
+    def get(self, request, slug, *args, **Kwargs):
+        article = Article.objects.filter(slug=slug, is_deleted=False).first()
+        if not article:
+            message = {"error": "Article does not exist"}
+            return Response(message, status=status.HTTP_404_NOT_FOUND)
+        comment = article.comments.filter(parent=None)
+        serializer = self.serializer_class(comment, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
     def post(self, request, slug, *args, **kwargs):
         # User shouldn't be able to comment on an article has been deleted.
         article = Article.objects.filter(slug=slug, is_deleted=False).first()
