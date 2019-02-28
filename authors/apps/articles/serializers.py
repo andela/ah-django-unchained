@@ -70,6 +70,8 @@ class GetArticleSerializer(serializers.ModelSerializer):
     # Uploads an image to the Cloudinary servers
     images = serializers.URLField(required=False)
     tagList = TagListSerializerField()
+    likes_count = serializers.SerializerMethodField()
+    dislikes_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Article
@@ -83,7 +85,11 @@ class GetArticleSerializer(serializers.ModelSerializer):
                   'slug',
                   'tagList',
                   'favorite',
-                  'average_rating']
+                  'average_rating',
+                  'user_id_likes',
+                  'user_id_dislikes',
+                  'likes_count',
+                  'dislikes_count']
         read_only_fields = ['modified',
                             'author',
                             'slug',
@@ -93,6 +99,14 @@ class GetArticleSerializer(serializers.ModelSerializer):
 
     def get_author(self, obj):
         return obj.author.username
+    
+    # insert total likes
+    def get_likes_count(self, obj):
+        return obj.user_id_likes.count()
+
+    # insert total dislikes
+    def get_dislikes_count(self, obj):
+        return obj.user_id_dislikes.count()
 
 
 class DeleteArticleSerializer(serializers.ModelSerializer):
