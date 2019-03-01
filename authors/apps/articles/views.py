@@ -70,6 +70,10 @@ class ArticleDetailsView(RetrieveUpdateAPIView):
 
     def get(self, request, slug, *args, **kwargs):
         """Retrieve a single article"""
+        article = Article.objects.filter(is_deleted=False, is_published=True, slug=slug)
+        if not article:
+            message = {'detail': 'Not found.'}
+            return Response(message, status=status.HTTP_404_NOT_FOUND)
         article = get_object_or_404(Article, slug=self.kwargs["slug"])
         serializer = self.serializer_class(article)
         return set_favorite_status(serializer, self.request.user.id)
